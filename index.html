@@ -167,8 +167,8 @@
 
   .canvas-stage {
     position: relative;
-    width: 1280px;
-    height: 720px;
+    width: 600px;
+    height: 600px;
     overflow: hidden;
     background: #000;
     border: 1px solid rgba(255,255,255,0.14);
@@ -422,13 +422,13 @@
 
     <label class="control">
       Canvas width:
-      <input id="canvasWidthInput" class="canvas-size-input" type="number" min="100" max="4000" value="1280" />
+      <input id="canvasWidthInput" class="canvas-size-input" type="number" min="100" max="4000" value="600" />
       px
     </label>
 
     <label class="control">
       Canvas height:
-      <input id="canvasHeightInput" class="canvas-size-input" type="number" min="100" max="4000" value="720" />
+      <input id="canvasHeightInput" class="canvas-size-input" type="number" min="100" max="4000" value="600" />
       px
     </label>
 
@@ -558,13 +558,13 @@
 
   function getCanvasWidth() {
     const value = Number(canvasWidthInput.value);
-    if (Number.isNaN(value) || value < 100) return 1280;
+    if (Number.isNaN(value) || value < 100) return 600;
     return Math.min(value, 4000);
   }
 
   function getCanvasHeight() {
     const value = Number(canvasHeightInput.value);
-    if (Number.isNaN(value) || value < 100) return 720;
+    if (Number.isNaN(value) || value < 100) return 600;
     return Math.min(value, 4000);
   }
 
@@ -690,6 +690,38 @@
     value = Math.min(Math.max(value, 50), 4000);
     textPanelWidthInput.value = value;
     updateTextPanelWidth();
+  }
+
+  function normalizeCanvasWidthOnBlur() {
+    const rawValue = canvasWidthInput.value.trim();
+    if (rawValue === "") {
+      canvasWidthInput.value = 600;
+      updateCanvasStageSize();
+      return;
+    }
+    let value = Number(rawValue);
+    if (Number.isNaN(value) || value < 100) {
+      value = 600;
+    }
+    value = Math.min(Math.max(value, 100), 4000);
+    canvasWidthInput.value = value;
+    updateCanvasStageSize();
+  }
+
+  function normalizeCanvasHeightOnBlur() {
+    const rawValue = canvasHeightInput.value.trim();
+    if (rawValue === "") {
+      canvasHeightInput.value = 600;
+      updateCanvasStageSize();
+      return;
+    }
+    let value = Number(rawValue);
+    if (Number.isNaN(value) || value < 100) {
+      value = 600;
+    }
+    value = Math.min(Math.max(value, 100), 4000);
+    canvasHeightInput.value = value;
+    updateCanvasStageSize();
   }
 
   function escapeHtml(value) {
@@ -1458,7 +1490,11 @@
   timestampToggle.addEventListener("change", render);
 
   canvasWidthInput.addEventListener("input", updateCanvasStageSize);
+  canvasWidthInput.addEventListener("blur", normalizeCanvasWidthOnBlur);
+  canvasWidthInput.addEventListener("change", normalizeCanvasWidthOnBlur);
   canvasHeightInput.addEventListener("input", updateCanvasStageSize);
+  canvasHeightInput.addEventListener("blur", normalizeCanvasHeightOnBlur);
+  canvasHeightInput.addEventListener("change", normalizeCanvasHeightOnBlur);
 
   backgroundImageInput.addEventListener("change", event => {
     const file = event.target.files && event.target.files[0];
