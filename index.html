@@ -226,10 +226,10 @@
     box-decoration-break: clone;
     -webkit-box-decoration-break: clone;
     text-shadow:
-      -1px -1px 0 rgba(0,0,0,0.9),
-       1px -1px 0 rgba(0,0,0,0.9),
-      -1px  1px 0 rgba(0,0,0,0.9),
-       1px  1px 0 rgba(0,0,0,0.9);
+      -1px -1px 0 rgba(0,0,0,0.6),
+       1px -1px 0 rgba(0,0,0,0.6),
+      -1px  1px 0 rgba(0,0,0,0.6),
+       1px  1px 0 rgba(0,0,0,0.6);
   }
 
   .no-text-background .text-bg {
@@ -416,12 +416,19 @@
       px
     </label>
 
+    <label class="control">
+      JPEG Quality:
+      <input id="jpegQualityInput" type="range" min="0.1" max="1" step="0.05" value="0.9" style="width: 90px;" />
+      <span id="jpegQualityValue">90%</span>
+    </label>
+
     <button id="removeImageButton">Remove Image</button>
     <button id="resetTextPositionButton">Reset Text Position</button>
     <button id="copyTextButton">Copy Plain Text</button>
     <button id="copyHtmlButton">Copy HTML</button>
     <button id="copyPngButton">Copy PNG</button>
     <button id="downloadPngButton">Download PNG</button>
+    <button id="downloadJpegButton">Download JPEG</button>
     <button id="clearButton">Clear</button>
   </div>
 
@@ -469,12 +476,15 @@
   const backgroundImage = document.getElementById("backgroundImage");
   const canvasWidthInput = document.getElementById("canvasWidthInput");
   const canvasHeightInput = document.getElementById("canvasHeightInput");
+  const jpegQualityInput = document.getElementById("jpegQualityInput");
+  const jpegQualityValue = document.getElementById("jpegQualityValue");
   const removeImageButton = document.getElementById("removeImageButton");
   const resetTextPositionButton = document.getElementById("resetTextPositionButton");
   const copyTextButton = document.getElementById("copyTextButton");
   const copyHtmlButton = document.getElementById("copyHtmlButton");
   const copyPngButton = document.getElementById("copyPngButton");
   const downloadPngButton = document.getElementById("downloadPngButton");
+  const downloadJpegButton = document.getElementById("downloadJpegButton");
   const clearButton = document.getElementById("clearButton");
 
   const TIMESTAMP_REGEX = /^\[\d{2}:\d{2}:\d{2}\]\s*/;
@@ -1019,8 +1029,8 @@
   }
 
   function drawTextWithStroke(ctx, text, x, y, fillStyle) {
-    ctx.lineWidth = 3;
-    ctx.strokeStyle = "rgba(0,0,0,0.6)";
+    ctx.lineWidth = 1.5;
+    ctx.strokeStyle = "rgba(0,0,0,0.4)";
     ctx.strokeText(text, x, y);
     ctx.fillStyle = fillStyle;
     ctx.fillText(text, x, y);
@@ -1234,6 +1244,15 @@
     link.click();
   }
 
+  function downloadCanvasAsJpeg() {
+    const canvas = createChatCanvas();
+    const quality = Number(jpegQualityInput.value);
+    const link = document.createElement("a");
+    link.download = "gta-rp-chatlog.jpeg";
+    link.href = canvas.toDataURL("image/jpeg", quality);
+    link.click();
+  }
+
   function getStagePoint(event) {
     const rect = canvasStage.getBoundingClientRect();
 
@@ -1340,6 +1359,11 @@
 
   textPanelWidthInput.addEventListener("change", () => {
     normalizeTextPanelWidthOnBlur();
+  });
+
+  jpegQualityInput.addEventListener("input", () => {
+    const qualityPercent = Math.round(jpegQualityInput.value * 100);
+    jpegQualityValue.textContent = qualityPercent + "%";
   });
 
   backgroundToggle.addEventListener("change", () => {
@@ -1449,6 +1473,10 @@
 
   downloadPngButton.addEventListener("click", () => {
     downloadCanvasAsPng();
+  });
+
+  downloadJpegButton.addEventListener("click", () => {
+    downloadCanvasAsJpeg();
   });
 
   clearButton.addEventListener("click", () => {
