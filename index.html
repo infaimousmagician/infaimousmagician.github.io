@@ -197,6 +197,18 @@
     pointer-events: none;
   }
 
+  .jpeg-preview-layer {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: fill;
+    user-select: none;
+    -webkit-user-drag: none;
+    pointer-events: none;
+    display: block;
+  }
+
   .preview-box {
     position: absolute;
     left: 0;
@@ -422,7 +434,7 @@
 
     <label class="control">
       JPEG Quality:
-      <input id="jpegQualityInput" type="range" min="0.1" max="1" step="0.05" value="0.9" style="width: 90px;" />
+      <input id="jpegQualityInput" type="range" min="0.05" max="1" step="0.01" value="0.9" style="width: 90px;" />
       <span id="jpegQualityValue">90%</span>
     </label>
 
@@ -457,6 +469,7 @@
             <img id="backgroundImage" alt="" />
           </div>
           <div id="preview" class="preview-box"></div>
+          <img id="jpegPreviewImage" class="jpeg-preview-layer" alt="" />
         </div>
       </div>
     </section>
@@ -482,6 +495,7 @@
   const canvasHeightInput = document.getElementById("canvasHeightInput");
   const jpegQualityInput = document.getElementById("jpegQualityInput");
   const jpegQualityValue = document.getElementById("jpegQualityValue");
+  const jpegPreviewImage = document.getElementById("jpegPreviewImage");
   const removeImageButton = document.getElementById("removeImageButton");
   const resetTextPositionButton = document.getElementById("resetTextPositionButton");
   const copyTextButton = document.getElementById("copyTextButton");
@@ -565,6 +579,7 @@
     const height = getCanvasHeight();
     canvasStage.style.width = width + "px";
     canvasStage.style.height = height + "px";
+    scheduleJpegPreview();
   }
 
   function updateTextPanelWidth() {
@@ -575,10 +590,12 @@
 
   function updateBackgroundTransform() {
     backgroundImage.style.transform = `translate(${bgX}px, ${bgY}px) scale(${bgScale})`;
+    scheduleJpegPreview();
   }
 
   function updateTextPosition() {
     preview.style.transform = `translate(${textOffsetX}px, ${textOffsetY}px)`;
+    scheduleJpegPreview();
   }
 
   function getTimestampStrippedLine(line) {
@@ -1140,7 +1157,42 @@
     return wrappedRows;
   }
 
-  function createChatCanvas() {
+  let sharedChatCanvas = null;
+  let jpegPreviewPending = false;
+
+  function scheduleJpegPreview() {
+    if (jpegPreviewPending) return;
+    jpegPreviewPending = true;
+    requestAnimationFrame(() => {
+      jpegPreviewPending = false;
+      renderJpegPreview();
+    });
+  }
+
+  function getJpegQuality() {
+    const value = Number(jpegQualityInput.value);
+    if (Number.isNaN(value) || value <= 0) return 0.9;
+    return Math.min(Math.max(value, 0.01), 1);
+  }
+
+  function renderJpegPreview() {
+    try {
+      if (!sharedChatCanvas) {
+        sharedChatCanvas = document.createElement("canvas");
+      }
+      const canvas = createChatCanvas(sharedChatCanvas);
+      const quality = getJpegQuality();
+      const dataUrl = canvas.toDataURL("image/jpeg", quality);
+      if (jpegPreviewImage) {
+        jpegPreviewImage.src = dataUrl;
+        jpegPreviewImage.style.display = "block";
+      }
+    } catch (err) {
+      console.error("Failed to render real-time JPEG preview:", err);
+    }
+  }
+
+  function createChatCanvas(targetCanvas = null) {
     const scale = 1;
     const fontPx = getFontSize();
     const fontFamily = "Arial, Helvetica, sans-serif";
@@ -1152,20 +1204,23 @@
     const canvasWidth = getCanvasWidth();
     const canvasHeight = getCanvasHeight();
 
-    const canvas = document.createElement("canvas");
-    canvas.width = canvasWidth * scale;
-    canvas.height = canvasHeight * scale;
+    const canvas = targetCanvas || document.createElement("canvas");
+    if (canvas.width !== canvasWidth * scale || canvas.height !== canvasHeight * scale) {
+      canvas.width = canvasWidth * scale;
+      canvas.height = canvasHeight * scale;
+    }
     canvas.style.width = canvasWidth + "px";
     canvas.style.height = canvasHeight + "px";
 
     const ctx = canvas.getContext("2d");
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.scale(scale, scale);
     ctx.clearRect(0, 0, canvasWidth, canvasHeight);
 
     ctx.fillStyle = "#000";
     ctx.fillRect(0, 0, canvasWidth, canvasHeight);
 
-    if (bgImageObject) {
+    if (bgImageObject && bgImageObject.complete && bgImageObject.naturalWidth > 0) {
       ctx.drawImage(
         bgImageObject,
         bgX,
@@ -1250,7 +1305,7 @@
 
   function downloadCanvasAsJpeg() {
     const canvas = createChatCanvas();
-    const quality = Number(jpegQualityInput.value);
+    const quality = getJpegQuality();
     const link = document.createElement("a");
     link.download = "gta-rp-chatlog.jpeg";
     link.href = canvas.toDataURL("image/jpeg", quality);
@@ -1340,6 +1395,24 @@
     updateBackgroundTransform();
   }, { passive: false });
 
+  canvasStage.addEventListener("mousemove", event => {
+    if (dragMode) return;
+    const point = getStagePoint(event);
+    if (pointIsInsideTextBounds(point.x, point.y)) {
+      canvasStage.style.cursor = "move";
+    } else if (bgImageObject) {
+      canvasStage.style.cursor = "grab";
+    } else {
+      canvasStage.style.cursor = "default";
+    }
+  });
+
+  canvasStage.addEventListener("mouseleave", () => {
+    if (!dragMode) {
+      canvasStage.style.cursor = "default";
+    }
+  });
+
   fontSize.addEventListener("input", () => {
     applyFontSizeFromTypedValue();
     render();
@@ -1368,10 +1441,18 @@
   jpegQualityInput.addEventListener("input", () => {
     const qualityPercent = Math.round(jpegQualityInput.value * 100);
     jpegQualityValue.textContent = qualityPercent + "%";
+    scheduleJpegPreview();
+  });
+
+  jpegQualityInput.addEventListener("change", () => {
+    const qualityPercent = Math.round(jpegQualityInput.value * 100);
+    jpegQualityValue.textContent = qualityPercent + "%";
+    scheduleJpegPreview();
   });
 
   backgroundToggle.addEventListener("change", () => {
     preview.classList.toggle("no-text-background", !backgroundToggle.checked);
+    scheduleJpegPreview();
   });
 
   timestampToggle.addEventListener("change", render);
@@ -1495,6 +1576,12 @@
   updateBackgroundTransform();
   updateTextPosition();
   render();
+
+  if (document.fonts && document.fonts.ready) {
+    document.fonts.ready.then(() => {
+      render();
+    });
+  }
 </script>
 </body>
 </html>
