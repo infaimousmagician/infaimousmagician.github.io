@@ -453,7 +453,7 @@
     <button id="removeImageButton">Remove Image</button>
     <button id="clearButton">Clear Text</button>
     <button id="resetTextPositionButton">Reset Text Position</button>
-    <button id="copyBlurSymbolButton">Copy Blur ÷</button>
+    <button id="copyBlurSymbolButton">Copy Blur ☘</button>
     <button id="copyPngButton">Copy PNG</button>
     <button id="downloadPngButton">Download PNG</button>
     <button id="downloadJpegButton">Download JPEG</button>
@@ -463,11 +463,11 @@
     <section class="pane">
       <div class="pane-title">Input</div>
       <textarea id="input" spellcheck="false" placeholder="[00:00:00] Carl Johnson says: I love money *rubs his money* I love money.
-[00:00:02] Carl Johnson says: Did you talk to ÷John÷?
+[00:00:02] Carl Johnson says: Did you talk to ☘John☘?
 [00:00:04] * Carl Johnson does an example action.
 [00:00:08] Carl Johnson says [low]: This is a low line.
 [00:00:10] Carl Johnson says [lower]: This is a lower line.
-[00:00:12] Carl Johnson whispers: Secret plan with ÷Officer Tenpenny÷.
+[00:00:12] Carl Johnson whispers: Secret plan with ☘Officer Tenpenny☘.
 [00:00:16] Someone paid you $46,800.
 [00:00:20] [Character kill] Carl Johnson has been killed.
 [00:00:24] (iFruit 1) Message from Contact: Example phone message."></textarea>
@@ -941,7 +941,7 @@
   }
 
   function parseBlurInSegments(segments) {
-    const BLUR_REGEX = /÷([^÷\r\n]+)÷/g;
+    const BLUR_REGEX = /☘([^☘\r\n]+)☘/g;
     const result = [];
 
     for (const seg of segments) {
@@ -1747,29 +1747,29 @@
 
   copyBlurSymbolButton.addEventListener("click", async () => {
     try {
-      await navigator.clipboard.writeText("÷");
-      copyBlurSymbolButton.textContent = "Copied ÷!";
+      await navigator.clipboard.writeText("☘");
+      copyBlurSymbolButton.textContent = "Copied ☘!";
       setTimeout(() => {
-        copyBlurSymbolButton.textContent = "Copy Blur ÷";
+        copyBlurSymbolButton.textContent = "Copy Blur ☘";
       }, 1200);
     } catch {
       try {
         const textarea = document.createElement("textarea");
-        textarea.value = "÷";
+        textarea.value = "☘";
         textarea.style.position = "fixed";
         textarea.style.opacity = "0";
         document.body.appendChild(textarea);
         textarea.select();
         document.execCommand("copy");
         document.body.removeChild(textarea);
-        copyBlurSymbolButton.textContent = "Copied ÷!";
+        copyBlurSymbolButton.textContent = "Copied ☘!";
         setTimeout(() => {
-          copyBlurSymbolButton.textContent = "Copy Blur ÷";
+          copyBlurSymbolButton.textContent = "Copy Blur ☘";
         }, 1200);
       } catch {
         copyBlurSymbolButton.textContent = "Copy failed";
         setTimeout(() => {
-          copyBlurSymbolButton.textContent = "Copy Blur ÷";
+          copyBlurSymbolButton.textContent = "Copy Blur ☘";
         }, 1200);
       }
     }
