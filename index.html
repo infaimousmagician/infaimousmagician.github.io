@@ -548,8 +548,11 @@
   let bgY = 0;
   let bgScale = 1;
 
-  let textOffsetX = 0;
-  let textOffsetY = 0;
+  const DEFAULT_TEXT_OFFSET_X = 15;
+  const DEFAULT_TEXT_OFFSET_Y = 15;
+
+  let textOffsetX = DEFAULT_TEXT_OFFSET_X;
+  let textOffsetY = DEFAULT_TEXT_OFFSET_Y;
 
   let dragMode = null;
   let dragStartX = 0;
@@ -1542,8 +1545,8 @@
   });
 
   resetTextPositionButton.addEventListener("click", () => {
-    textOffsetX = 0;
-    textOffsetY = 0;
+    textOffsetX = DEFAULT_TEXT_OFFSET_X;
+    textOffsetY = DEFAULT_TEXT_OFFSET_Y;
     updateTextPosition();
   });
 
