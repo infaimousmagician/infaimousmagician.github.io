@@ -257,6 +257,14 @@
     padding-right: 0;
   }
 
+  .blurred-text {
+    filter: blur(0.28em);
+    display: inline-block;
+    vertical-align: baseline;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+
   .timestamp {
     color: #d8d8d8;
   }
@@ -445,8 +453,7 @@
     <button id="removeImageButton">Remove Image</button>
     <button id="clearButton">Clear Text</button>
     <button id="resetTextPositionButton">Reset Text Position</button>
-    <button id="copyTextButton">Copy Plain Text</button>
-    <button id="copyHtmlButton">Copy HTML</button>
+    <button id="copyBlurSymbolButton">Copy Blur ÷</button>
     <button id="copyPngButton">Copy PNG</button>
     <button id="downloadPngButton">Download PNG</button>
     <button id="downloadJpegButton">Download JPEG</button>
@@ -456,10 +463,11 @@
     <section class="pane">
       <div class="pane-title">Input</div>
       <textarea id="input" spellcheck="false" placeholder="[00:00:00] Carl Johnson says: I love money *rubs his money* I love money.
+[00:00:02] Carl Johnson says: Did you talk to ÷John÷?
 [00:00:04] * Carl Johnson does an example action.
 [00:00:08] Carl Johnson says [low]: This is a low line.
 [00:00:10] Carl Johnson says [lower]: This is a lower line.
-[00:00:12] Carl Johnson whispers: This is a whisper.
+[00:00:12] Carl Johnson whispers: Secret plan with ÷Officer Tenpenny÷.
 [00:00:16] Someone paid you $46,800.
 [00:00:20] [Character kill] Carl Johnson has been killed.
 [00:00:24] (iFruit 1) Message from Contact: Example phone message."></textarea>
@@ -502,8 +510,7 @@
   const jpegPreviewImage = document.getElementById("jpegPreviewImage");
   const removeImageButton = document.getElementById("removeImageButton");
   const resetTextPositionButton = document.getElementById("resetTextPositionButton");
-  const copyTextButton = document.getElementById("copyTextButton");
-  const copyHtmlButton = document.getElementById("copyHtmlButton");
+  const copyBlurSymbolButton = document.getElementById("copyBlurSymbolButton");
   const copyPngButton = document.getElementById("copyPngButton");
   const downloadPngButton = document.getElementById("downloadPngButton");
   const downloadJpegButton = document.getElementById("downloadJpegButton");
@@ -933,6 +940,50 @@
     return `<span class="text-bg"><span class="ck-blue">${parts.tag}</span>${parts.spacing}<span class="ck-red">${parts.rest}</span></span>`;
   }
 
+  function parseBlurInSegments(segments) {
+    const BLUR_REGEX = /÷([^÷\r\n]+)÷/g;
+    const result = [];
+
+    for (const seg of segments) {
+      if (seg.className === "timestamp") {
+        result.push(seg);
+        continue;
+      }
+
+      let lastIndex = 0;
+      let match;
+
+      while ((match = BLUR_REGEX.exec(seg.text)) !== null) {
+        if (match.index > lastIndex) {
+          result.push({
+            text: seg.text.slice(lastIndex, match.index),
+            color: seg.color,
+            className: seg.className,
+            isBlurred: false
+          });
+        }
+        result.push({
+          text: match[1],
+          color: seg.color,
+          className: seg.className,
+          isBlurred: true
+        });
+        lastIndex = match.index + match[0].length;
+      }
+
+      if (lastIndex < seg.text.length) {
+        result.push({
+          text: seg.text.slice(lastIndex),
+          color: seg.color,
+          className: seg.className,
+          isBlurred: false
+        });
+      }
+    }
+
+    return result;
+  }
+
   function getLineSegments(text, className, isCharacterKill) {
     if (!text) return [];
 
@@ -946,7 +997,8 @@
         segments.push({
           text: timestampMatch[1],
           color: CHAT_COLORS.timestamp,
-          className: "timestamp"
+          className: "timestamp",
+          isBlurred: false
         });
         restText = text.slice(timestampMatch[1].length);
       }
@@ -954,56 +1006,60 @@
 
     if (isCharacterKill) {
       const parts = splitCharacterKillLine(restText);
+      const ckSegments = [];
       if (!parts.tag) {
-        segments.push({ text: restText, color: CHAT_COLORS.ckred, className: "ck-red" });
+        ckSegments.push({ text: restText, color: CHAT_COLORS.ckred, className: "ck-red", isBlurred: false });
       } else {
-        segments.push({ text: parts.tag, color: CHAT_COLORS.ckblue, className: "ck-blue" });
+        ckSegments.push({ text: parts.tag, color: CHAT_COLORS.ckblue, className: "ck-blue", isBlurred: false });
         if (parts.spacing) {
-          segments.push({ text: parts.spacing, color: CHAT_COLORS.ckred, className: "ck-red" });
+          ckSegments.push({ text: parts.spacing, color: CHAT_COLORS.ckred, className: "ck-red", isBlurred: false });
         }
         if (parts.rest) {
-          segments.push({ text: parts.rest, color: CHAT_COLORS.ckred, className: "ck-red" });
+          ckSegments.push({ text: parts.rest, color: CHAT_COLORS.ckred, className: "ck-red", isBlurred: false });
         }
       }
-      return segments;
+      return segments.concat(parseBlurInSegments(ckSegments));
     }
 
     const baseColor = CHAT_COLORS[className] || CHAT_COLORS.default;
+    const midSegments = [];
 
     if (className === "me" || className === "ame" || className === "do") {
-      segments.push({ text: restText, color: CHAT_COLORS.me, className: "me" });
-      return segments;
-    }
+      midSegments.push({ text: restText, color: CHAT_COLORS.me, className: "me", isBlurred: false });
+    } else {
+      const ASTERISK_REGEX = /\*([^*\r\n]+)\*/g;
+      let lastIndex = 0;
+      let match;
 
-    const ASTERISK_REGEX = /\*([^*\r\n]+)\*/g;
-    let lastIndex = 0;
-    let match;
+      while ((match = ASTERISK_REGEX.exec(restText)) !== null) {
+        if (match.index > lastIndex) {
+          midSegments.push({
+            text: restText.slice(lastIndex, match.index),
+            color: baseColor,
+            className: className,
+            isBlurred: false
+          });
+        }
+        midSegments.push({
+          text: match[1],
+          color: CHAT_COLORS.me,
+          className: "me",
+          isBlurred: false
+        });
+        lastIndex = match.index + match[0].length;
+      }
 
-    while ((match = ASTERISK_REGEX.exec(restText)) !== null) {
-      if (match.index > lastIndex) {
-        segments.push({
-          text: restText.slice(lastIndex, match.index),
+      if (lastIndex < restText.length) {
+        midSegments.push({
+          text: restText.slice(lastIndex),
           color: baseColor,
-          className: className
+          className: className,
+          isBlurred: false
         });
       }
-      segments.push({
-        text: match[1],
-        color: CHAT_COLORS.me,
-        className: "me"
-      });
-      lastIndex = match.index + match[0].length;
     }
 
-    if (lastIndex < restText.length) {
-      segments.push({
-        text: restText.slice(lastIndex),
-        color: baseColor,
-        className: className
-      });
-    }
-
-    return segments;
+    return segments.concat(parseBlurInSegments(midSegments));
   }
 
   function sliceSegments(segments, startIndex, length) {
@@ -1028,7 +1084,8 @@
         result.push({
           text: textSlice,
           color: seg.color,
-          className: seg.className
+          className: seg.className,
+          isBlurred: Boolean(seg.isBlurred)
         });
       }
     }
@@ -1051,19 +1108,21 @@
       const segments = getLineSegments(visibleLine, className, isCharacterKill);
       const innerHtml = segments.map(seg => {
         const escaped = escapeHtml(seg.text);
+        let content = escaped;
         if (seg.className === "timestamp") {
-          return `<span class="timestamp">${escaped}</span>`;
+          content = `<span class="timestamp">${escaped}</span>`;
+        } else if (seg.className === "me") {
+          content = `<span class="me">${escaped}</span>`;
+        } else if (seg.className === "ck-blue") {
+          content = `<span class="ck-blue">${escaped}</span>`;
+        } else if (seg.className === "ck-red") {
+          content = `<span class="ck-red">${escaped}</span>`;
         }
-        if (seg.className === "me") {
-          return `<span class="me">${escaped}</span>`;
+
+        if (seg.isBlurred) {
+          return `<span class="blurred-text">${content}</span>`;
         }
-        if (seg.className === "ck-blue") {
-          return `<span class="ck-blue">${escaped}</span>`;
-        }
-        if (seg.className === "ck-red") {
-          return `<span class="ck-red">${escaped}</span>`;
-        }
-        return escaped;
+        return content;
       }).join("");
 
       return `<span class="line"><span class="text-bg ${className}">${innerHtml}</span></span>`;
@@ -1196,12 +1255,24 @@
     );
   }
 
-  function drawTextWithStroke(ctx, text, x, y, fillStyle) {
-    ctx.lineWidth = 1.5;
-    ctx.strokeStyle = "rgba(0,0,0,0.83)";
-    ctx.strokeText(text, x, y);
-    ctx.fillStyle = fillStyle;
-    ctx.fillText(text, x, y);
+  function drawTextWithStroke(ctx, text, x, y, fillStyle, isBlurred = false) {
+    if (isBlurred) {
+      ctx.save();
+      const blurAmount = Math.max(2, Math.round(getFontSize() * 0.28));
+      ctx.filter = `blur(${blurAmount}px)`;
+      ctx.lineWidth = 1.5;
+      ctx.strokeStyle = "rgba(0,0,0,0.83)";
+      ctx.strokeText(text, x, y);
+      ctx.fillStyle = fillStyle;
+      ctx.fillText(text, x, y);
+      ctx.restore();
+    } else {
+      ctx.lineWidth = 1.5;
+      ctx.strokeStyle = "rgba(0,0,0,0.83)";
+      ctx.strokeText(text, x, y);
+      ctx.fillStyle = fillStyle;
+      ctx.fillText(text, x, y);
+    }
   }
 
   function drawLineWithTimestamp(ctx, text, classColor, x, y) {
@@ -1417,7 +1488,7 @@
       if (row.segments && row.segments.length > 0) {
         let currentX = textOffsetX + xPadding;
         row.segments.forEach(seg => {
-          drawTextWithStroke(ctx, seg.text, currentX, y, seg.color);
+          drawTextWithStroke(ctx, seg.text, currentX, y, seg.color, seg.isBlurred);
           currentX += ctx.measureText(seg.text).width;
         });
       } else if (row.isCharacterKill) {
@@ -1674,38 +1745,37 @@
     updateTextPosition();
   });
 
+  copyBlurSymbolButton.addEventListener("click", async () => {
+    try {
+      await navigator.clipboard.writeText("÷");
+      copyBlurSymbolButton.textContent = "Copied ÷!";
+      setTimeout(() => {
+        copyBlurSymbolButton.textContent = "Copy Blur ÷";
+      }, 1200);
+    } catch {
+      try {
+        const textarea = document.createElement("textarea");
+        textarea.value = "÷";
+        textarea.style.position = "fixed";
+        textarea.style.opacity = "0";
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand("copy");
+        document.body.removeChild(textarea);
+        copyBlurSymbolButton.textContent = "Copied ÷!";
+        setTimeout(() => {
+          copyBlurSymbolButton.textContent = "Copy Blur ÷";
+        }, 1200);
+      } catch {
+        copyBlurSymbolButton.textContent = "Copy failed";
+        setTimeout(() => {
+          copyBlurSymbolButton.textContent = "Copy Blur ÷";
+        }, 1200);
+      }
+    }
+  });
+
   input.addEventListener("input", render);
-
-  copyTextButton.addEventListener("click", async () => {
-    try {
-      const outputText = getVisibleLinesForCanvas().map(line => line.text).join("\n");
-      await navigator.clipboard.writeText(outputText);
-      copyTextButton.textContent = "Copied!";
-      setTimeout(() => {
-        copyTextButton.textContent = "Copy Plain Text";
-      }, 1200);
-    } catch {
-      copyTextButton.textContent = "Copy failed";
-      setTimeout(() => {
-        copyTextButton.textContent = "Copy Plain Text";
-      }, 1200);
-    }
-  });
-
-  copyHtmlButton.addEventListener("click", async () => {
-    try {
-      await navigator.clipboard.writeText(preview.innerHTML);
-      copyHtmlButton.textContent = "Copied!";
-      setTimeout(() => {
-        copyHtmlButton.textContent = "Copy HTML";
-      }, 1200);
-    } catch {
-      copyHtmlButton.textContent = "Copy failed";
-      setTimeout(() => {
-        copyHtmlButton.textContent = "Copy HTML";
-      }, 1200);
-    }
-  });
 
   copyPngButton.addEventListener("click", async () => {
     try {
