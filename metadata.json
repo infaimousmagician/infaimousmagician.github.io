@@ -1,0 +1,8 @@
+{
+  "name": "GTA RP Chatlog Formatter",
+  "description": "GTA roleplay chatlog formatter and preview tool with in-game styling, timestamps, character kill tags, canvas export, and background imagery.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

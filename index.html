@@ -4,6 +4,9 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>GTA RP Chatlog Formatter</title>
+<meta name="description" content="GTA roleplay chatlog formatter and preview tool with in-game styling, timestamps, character kill tags, canvas export, and background imagery." />
+<meta property="og:title" content="GTA RP Chatlog Formatter" />
+<meta property="og:description" content="GTA roleplay chatlog formatter and preview tool with in-game styling, timestamps, character kill tags, canvas export, and background imagery." />
 <style>
   :root {
     --page-bg: #181818;
@@ -14,7 +17,7 @@
     --muted: #a8a8a8;
     --accent: #d18b00;
     --chat-font-size: 14px;
-    --text-panel-width: 980px;
+    --text-panel-width: 500px;
   }
 
   * {
@@ -384,12 +387,6 @@
     </label>
 
     <label class="control">
-      Text panel width:
-      <input id="textPanelWidthInput" class="text-panel-width-input" type="number" min="50" max="4000" value="980" />
-      px
-    </label>
-
-    <label class="control">
       <input id="backgroundToggle" type="checkbox" checked />
       Black background under text
     </label>
@@ -407,6 +404,12 @@
     <label class="control">
       Canvas width:
       <input id="canvasWidthInput" class="canvas-size-input" type="number" min="100" max="4000" value="1280" />
+      px
+    </label>
+
+    <label class="control">
+      Text panel width:
+      <input id="textPanelWidthInput" class="text-panel-width-input" type="number" min="50" max="4000" value="500" />
       px
     </label>
 
@@ -552,7 +555,7 @@
 
   function getTextPanelWidth() {
     const value = Number(textPanelWidthInput.value);
-    if (Number.isNaN(value) || value < 50) return 980;
+    if (Number.isNaN(value) || value < 50) return 500;
     return Math.min(value, 4000);
   }
 
@@ -655,7 +658,7 @@
     const rawValue = textPanelWidthInput.value.trim();
 
     if (rawValue === "") {
-      textPanelWidthInput.value = 980;
+      textPanelWidthInput.value = 500;
       updateTextPanelWidth();
       return;
     }
@@ -663,7 +666,7 @@
     let value = Number(rawValue);
 
     if (Number.isNaN(value) || value < 50) {
-      value = 980;
+      value = 500;
     }
 
     value = Math.min(Math.max(value, 50), 4000);
@@ -1485,7 +1488,7 @@
   });
 
   document.documentElement.style.setProperty("--chat-font-size", "14px");
-  document.documentElement.style.setProperty("--text-panel-width", "980px");
+  document.documentElement.style.setProperty("--text-panel-width", "500px");
   preview.classList.toggle("no-text-background", !backgroundToggle.checked);
   updateCanvasStageSize();
   updateBackgroundTransform();
