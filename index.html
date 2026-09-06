@@ -288,7 +288,8 @@
 
   .me,
   .do,
-  .ame {
+  .ame,
+  .text-bg .me {
     color: #c2a3da;
     font-weight: 700;
   }
@@ -454,7 +455,7 @@
   <main class="workspace">
     <section class="pane">
       <div class="pane-title">Input</div>
-      <textarea id="input" spellcheck="false" placeholder="[00:00:00] Carl Johnson says: Example dialogue goes here.
+      <textarea id="input" spellcheck="false" placeholder="[00:00:00] Carl Johnson says: I love money *rubs his money* I love money.
 [00:00:04] * Carl Johnson does an example action.
 [00:00:08] Carl Johnson says [low]: This is a low line.
 [00:00:10] Carl Johnson says [lower]: This is a lower line.
@@ -932,6 +933,109 @@
     return `<span class="text-bg"><span class="ck-blue">${parts.tag}</span>${parts.spacing}<span class="ck-red">${parts.rest}</span></span>`;
   }
 
+  function getLineSegments(text, className, isCharacterKill) {
+    if (!text) return [];
+
+    const showTimestamps = timestampToggle.checked;
+    const segments = [];
+    let restText = text;
+
+    if (showTimestamps) {
+      const timestampMatch = text.match(TIMESTAMP_CAPTURE_REGEX);
+      if (timestampMatch) {
+        segments.push({
+          text: timestampMatch[1],
+          color: CHAT_COLORS.timestamp,
+          className: "timestamp"
+        });
+        restText = text.slice(timestampMatch[1].length);
+      }
+    }
+
+    if (isCharacterKill) {
+      const parts = splitCharacterKillLine(restText);
+      if (!parts.tag) {
+        segments.push({ text: restText, color: CHAT_COLORS.ckred, className: "ck-red" });
+      } else {
+        segments.push({ text: parts.tag, color: CHAT_COLORS.ckblue, className: "ck-blue" });
+        if (parts.spacing) {
+          segments.push({ text: parts.spacing, color: CHAT_COLORS.ckred, className: "ck-red" });
+        }
+        if (parts.rest) {
+          segments.push({ text: parts.rest, color: CHAT_COLORS.ckred, className: "ck-red" });
+        }
+      }
+      return segments;
+    }
+
+    const baseColor = CHAT_COLORS[className] || CHAT_COLORS.default;
+
+    if (className === "me" || className === "ame" || className === "do") {
+      segments.push({ text: restText, color: CHAT_COLORS.me, className: "me" });
+      return segments;
+    }
+
+    const ASTERISK_REGEX = /\*([^*\r\n]+)\*/g;
+    let lastIndex = 0;
+    let match;
+
+    while ((match = ASTERISK_REGEX.exec(restText)) !== null) {
+      if (match.index > lastIndex) {
+        segments.push({
+          text: restText.slice(lastIndex, match.index),
+          color: baseColor,
+          className: className
+        });
+      }
+      segments.push({
+        text: match[1],
+        color: CHAT_COLORS.me,
+        className: "me"
+      });
+      lastIndex = match.index + match[0].length;
+    }
+
+    if (lastIndex < restText.length) {
+      segments.push({
+        text: restText.slice(lastIndex),
+        color: baseColor,
+        className: className
+      });
+    }
+
+    return segments;
+  }
+
+  function sliceSegments(segments, startIndex, length) {
+    const result = [];
+    let currentPos = 0;
+    const targetEnd = startIndex + length;
+
+    for (const seg of segments) {
+      const segStart = currentPos;
+      const segEnd = currentPos + seg.text.length;
+      currentPos = segEnd;
+
+      if (segEnd <= startIndex || segStart >= targetEnd) {
+        continue;
+      }
+
+      const sliceStart = Math.max(0, startIndex - segStart);
+      const sliceEnd = Math.min(seg.text.length, targetEnd - segStart);
+      const textSlice = seg.text.slice(sliceStart, sliceEnd);
+
+      if (textSlice) {
+        result.push({
+          text: textSlice,
+          color: seg.color,
+          className: seg.className
+        });
+      }
+    }
+
+    return result;
+  }
+
   function render() {
     const showTimestamps = timestampToggle.checked;
 
@@ -941,28 +1045,28 @@
       }
 
       const visibleLine = showTimestamps ? rawLine : stripTimestamp(rawLine);
-      const visibleLineWithoutTimestamp = stripTimestamp(visibleLine);
       const className = classifyLine(rawLine);
+      const isCharacterKill = className === "characterkill";
 
-      if (className === "characterkill") {
-        if (showTimestamps) {
-          const timestampMatch = visibleLine.match(TIMESTAMP_CAPTURE_REGEX);
-          const timestampPart = timestampMatch ? timestampMatch[1] : "";
-          const restPart = timestampPart ? visibleLine.slice(timestampPart.length) : visibleLine;
-          const ckHtml = renderCharacterKillLine(restPart).replace(/^<span class="text-bg">|<\/span>$/g, "");
-
-          return `<span class="line"><span class="text-bg"><span class="timestamp">${escapeHtml(timestampPart)}</span>${ckHtml}</span></span>`;
+      const segments = getLineSegments(visibleLine, className, isCharacterKill);
+      const innerHtml = segments.map(seg => {
+        const escaped = escapeHtml(seg.text);
+        if (seg.className === "timestamp") {
+          return `<span class="timestamp">${escaped}</span>`;
         }
+        if (seg.className === "me") {
+          return `<span class="me">${escaped}</span>`;
+        }
+        if (seg.className === "ck-blue") {
+          return `<span class="ck-blue">${escaped}</span>`;
+        }
+        if (seg.className === "ck-red") {
+          return `<span class="ck-red">${escaped}</span>`;
+        }
+        return escaped;
+      }).join("");
 
-        return `<span class="line">${renderCharacterKillLine(visibleLineWithoutTimestamp)}</span>`;
-      }
-
-      let safe = escapeHtml(visibleLine);
-      if (showTimestamps) {
-        safe = colorTimestamp(safe);
-      }
-
-      return `<span class="line"><span class="text-bg ${className}">${safe}</span></span>`;
+      return `<span class="line"><span class="text-bg ${className}">${innerHtml}</span></span>`;
     });
 
     preview.innerHTML = lines.join("");
@@ -976,14 +1080,19 @@
       const isBlank = rawLine.trim() === "";
       const visibleText = showTimestamps ? rawLine : stripTimestamp(rawLine);
       const className = classifyLine(rawLine);
+      const isCharacterKill = className === "characterkill";
+
+      const segments = getLineSegments(visibleText, className, isCharacterKill);
+      const displayText = segments.length > 0 ? segments.map(seg => seg.text).join("") : visibleText;
 
       return {
         raw: rawLine,
-        text: visibleText,
+        text: displayText,
         className,
         color: CHAT_COLORS[className] || CHAT_COLORS.default,
         isBlank,
-        isCharacterKill: className === "characterkill"
+        isCharacterKill,
+        segments
       };
     });
   }
@@ -1162,21 +1271,29 @@
           className: line.className,
           isContinuation: false,
           isBlank: true,
-          isCharacterKill: false
+          isCharacterKill: false,
+          segments: []
         });
         return;
       }
 
       const wrapped = wrapText(ctx, line.text, maxTextWidth);
 
+      let cursor = 0;
       wrapped.forEach((part, index) => {
+        const partIndex = line.text.indexOf(part, cursor);
+        const actualStart = partIndex !== -1 ? partIndex : cursor;
+        cursor = actualStart + part.length;
+        const rowSegments = sliceSegments(line.segments, actualStart, part.length);
+
         wrappedRows.push({
           text: part,
           color: line.color,
           className: line.className,
           isContinuation: index > 0,
           isBlank: false,
-          isCharacterKill: line.isCharacterKill
+          isCharacterKill: line.isCharacterKill,
+          segments: rowSegments
         });
       });
     });
@@ -1188,7 +1305,8 @@
         className: "default",
         isContinuation: false,
         isBlank: true,
-        isCharacterKill: false
+        isCharacterKill: false,
+        segments: []
       });
     }
 
@@ -1296,7 +1414,13 @@
         ctx.fill();
       }
 
-      if (row.isCharacterKill) {
+      if (row.segments && row.segments.length > 0) {
+        let currentX = textOffsetX + xPadding;
+        row.segments.forEach(seg => {
+          drawTextWithStroke(ctx, seg.text, currentX, y, seg.color);
+          currentX += ctx.measureText(seg.text).width;
+        });
+      } else if (row.isCharacterKill) {
         drawCharacterKillLine(
           ctx,
           row.text,
@@ -1554,7 +1678,8 @@
 
   copyTextButton.addEventListener("click", async () => {
     try {
-      await navigator.clipboard.writeText(input.value);
+      const outputText = getVisibleLinesForCanvas().map(line => line.text).join("\n");
+      await navigator.clipboard.writeText(outputText);
       copyTextButton.textContent = "Copied!";
       setTimeout(() => {
         copyTextButton.textContent = "Copy Plain Text";
