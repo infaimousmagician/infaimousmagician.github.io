@@ -3873,44 +3873,31 @@
       uploadImgbbButton.disabled = true;
       uploadImgbbButton.innerHTML = `
         <svg class="spin-anim" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10" stroke-dasharray="32" stroke-linecap="round"></circle></svg>
-        <span>Uploading...</span>
+        <span>Uploading to ImgBB...</span>
       `;
 
       try {
-        const canvas = createChatCanvas();
-        const dataUrl = canvas.toDataURL("image/png");
-        const localKey = (localStorage.getItem("imgbb_user_key") || "").trim();
-
-        let response;
-        try {
-          response = await fetch("/api/upload-imgbb", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              image: dataUrl,
-              name: "gta-rp-chatlog",
-              customApiKey: localKey
-            })
-          });
-        } catch (fetchErr) {
-          throw new Error("Network error connecting to local upload service.");
+        // 1. Resolve API key (localStorage first, then server environment config)
+        let keyToUse = (localStorage.getItem("imgbb_user_key") || "").trim();
+        if (!keyToUse) {
+          try {
+            const keyRes = await fetch("/api/imgbb-key");
+            const keyData = await keyRes.json();
+            if (keyData?.apiKey) {
+              keyToUse = keyData.apiKey.trim();
+            }
+          } catch (e) {
+            console.warn("Could not check server for environment key:", e);
+          }
         }
 
-        const rawText = await response.text();
-        let result;
-        try {
-          result = JSON.parse(rawText);
-        } catch {
-          // If server or reverse proxy returned HTML
-          throw new Error("Server returned an invalid response format instead of JSON.");
-        }
-
-        if (result.needsKey) {
+        // If still no key, guide user to enter one
+        if (!keyToUse) {
           openImgbbModal();
           showToast(
             "error",
             "ImgBB API Key Required",
-            "An API key is required to upload directly to ImgBB. Create a free account at imgbb.com, get your key from api.imgbb.com, and enter it here.",
+            "An API key is required to upload directly to ImgBB. Create a free account at <strong>imgbb.com</strong>, navigate to <strong>api.imgbb.com</strong>, and enter your key.",
             null,
             { text: "Open Setup Guide", onClick: openImgbbModal }
           );
@@ -3919,85 +3906,43 @@
           return;
         }
 
-        // Handle datacenter IP block fallback: perform direct browser upload
-        if (result.fallbackClientUpload) {
-          const keyToUse = result.clientKey || localKey;
-          if (!keyToUse) {
+        // 2. Render canvas and get binary Blob (avoids reverse-proxy payload limits)
+        const canvas = createChatCanvas();
+        const blob = await new Promise((resolve, reject) => {
+          canvas.toBlob(b => {
+            if (b) resolve(b);
+            else reject(new Error("Failed to generate image from canvas."));
+          }, "image/png");
+        });
+
+        // 3. Upload directly to ImgBB from browser (ImgBB allows CORS & accepts user residential IP)
+        const fd = new FormData();
+        fd.append("image", blob, "chatlog.png");
+        fd.append("name", "gta-rp-chatlog");
+
+        const directRes = await fetch(`https://api.imgbb.com/1/upload?key=${encodeURIComponent(keyToUse)}`, {
+          method: "POST",
+          body: fd
+        });
+
+        const rawText = await directRes.text();
+        let directData = null;
+        try {
+          directData = JSON.parse(rawText);
+        } catch {
+          throw new Error("ImgBB service returned an unexpected response. Please verify your connection.");
+        }
+
+        if (!directRes.ok || !directData || !directData.success) {
+          const errMsg = directData?.error?.message || `ImgBB upload failed (Status ${directRes.status})`;
+          if (directData?.error?.code === 100 || errMsg.toLowerCase().includes("api key") || errMsg.toLowerCase().includes("invalid")) {
             openImgbbModal();
-            showToast(
-              "error",
-              "ImgBB API Key Required",
-              "Please enter your free ImgBB API key to upload directly from your browser.",
-              null,
-              { text: "Enter Key", onClick: openImgbbModal }
-            );
-            uploadImgbbButton.innerHTML = originalHtml;
-            uploadImgbbButton.disabled = false;
-            return;
+            throw new Error(`ImgBB rejected the key: ${errMsg}. Please verify your key at api.imgbb.com.`);
           }
-
-          uploadImgbbButton.innerHTML = `
-            <svg class="spin-anim" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10" stroke-dasharray="32" stroke-linecap="round"></circle></svg>
-            <span>Direct Uploading...</span>
-          `;
-
-          const base64Data = dataUrl.replace(/^data:image\/[a-z]+;base64,/, "");
-          const fd = new FormData();
-          fd.append("image", base64Data);
-          fd.append("name", "gta-rp-chatlog");
-
-          const directRes = await fetch(`https://api.imgbb.com/1/upload?key=${encodeURIComponent(keyToUse)}`, {
-            method: "POST",
-            body: fd
-          });
-
-          const directRaw = await directRes.text();
-          let directData;
-          try {
-            directData = JSON.parse(directRaw);
-          } catch {
-            throw new Error("ImgBB returned an unexpected response. Please check your internet connection.");
-          }
-
-          if (!directRes.ok || !directData.success) {
-            const directErrMsg = directData?.error?.message || `ImgBB upload error (Code ${directData?.error?.code || directRes.status})`;
-            throw new Error(directErrMsg);
-          }
-
-          const uploadedUrl = directData.data.url || directData.data.display_url || directData.data.url_viewer;
-          await copyTextToClipboard(uploadedUrl);
-
-          uploadImgbbButton.innerHTML = `
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
-            <span>Link Copied! (Ctrl+V)</span>
-          `;
-
-          showToast(
-            "success",
-            "Uploaded to ImgBB & Copied!",
-            `Image uploaded successfully! Direct link copied to clipboard for Ctrl+V: <a href="${uploadedUrl}" target="_blank" rel="noopener noreferrer" class="toast-link">${uploadedUrl}</a>`,
-            uploadedUrl
-          );
-
-          setTimeout(() => {
-            uploadImgbbButton.innerHTML = originalHtml;
-            uploadImgbbButton.disabled = false;
-          }, 3200);
-          return;
+          throw new Error(errMsg);
         }
 
-        if (!response.ok || !result.success) {
-          const errMsg = result.error || "Upload to ImgBB failed.";
-          showToast("error", "ImgBB Upload Failed", errMsg);
-          uploadImgbbButton.innerHTML = `<span>Upload Failed</span>`;
-          setTimeout(() => {
-            uploadImgbbButton.innerHTML = originalHtml;
-            uploadImgbbButton.disabled = false;
-          }, 2000);
-          return;
-        }
-
-        const uploadedUrl = result.url || result.display_url || result.viewer_url;
+        const uploadedUrl = directData.data.url || directData.data.display_url || directData.data.url_viewer;
         await copyTextToClipboard(uploadedUrl);
 
         uploadImgbbButton.innerHTML = `
@@ -4008,7 +3953,7 @@
         showToast(
           "success",
           "Uploaded to ImgBB & Copied!",
-          `Image uploaded! Direct link copied to clipboard for Ctrl+V: <a href="${uploadedUrl}" target="_blank" rel="noopener noreferrer" class="toast-link">${uploadedUrl}</a>`,
+          `Image uploaded successfully! Direct link copied to clipboard for Ctrl+V: <a href="${uploadedUrl}" target="_blank" rel="noopener noreferrer" class="toast-link">${uploadedUrl}</a>`,
           uploadedUrl
         );
 
@@ -4019,11 +3964,11 @@
       } catch (err) {
         console.error("ImgBB upload error:", err);
         showToast("error", "ImgBB Upload Error", err.message || "Failed to complete upload.");
-        uploadImgbbButton.innerHTML = `<span>Error</span>`;
+        uploadImgbbButton.innerHTML = `<span>Upload Failed</span>`;
         setTimeout(() => {
           uploadImgbbButton.innerHTML = originalHtml;
           uploadImgbbButton.disabled = false;
-        }, 2000);
+        }, 2200);
       }
     });
   }

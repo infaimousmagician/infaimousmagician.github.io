@@ -20,6 +20,14 @@ app.get('/api/imgbb-status', (req, res) => {
   });
 });
 
+app.get('/api/imgbb-key', (req, res) => {
+  const apiKey = process.env.IMGBB_API_KEY ? process.env.IMGBB_API_KEY.trim() : '';
+  res.json({
+    configured: Boolean(apiKey && apiKey.length > 5),
+    apiKey: apiKey || null
+  });
+});
+
 app.post('/api/upload-imgbb', async (req, res) => {
   try {
     const envApiKey = process.env.IMGBB_API_KEY ? process.env.IMGBB_API_KEY.trim() : '';
