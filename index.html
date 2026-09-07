@@ -23,6 +23,12 @@
     --text: #e8e8e8;
     --muted: #a8a8a8;
     --accent: #009E60;
+    --accent-hover: #00b36d;
+    --accent-dark: #004d2e;
+    --accent-dark-hover: #00663d;
+    --accent-border: #007a4a;
+    --accent-bg: rgba(0, 158, 96, 0.16);
+    --accent-glow: rgba(0, 158, 96, 0.35);
     --chat-font-size: 14px;
     --text-panel-width: 500px;
   }
@@ -46,8 +52,8 @@
 
   header {
     padding: 14px 18px;
-    border-bottom: 1px solid #167a3f;
-    background: linear-gradient(180deg, #0f6834 0%, #0a4f27 100%);
+    border-bottom: 1px solid var(--accent-border);
+    background: linear-gradient(180deg, #005c38 0%, #003d25 100%);
     display: flex;
     justify-content: space-between;
     gap: 12px;
@@ -103,7 +109,7 @@
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.06em;
-    color: #9ae6b4;
+    color: #00d984;
     user-select: none;
     padding-right: 4px;
     border-right: 1px solid #333333;
@@ -232,13 +238,16 @@
   }
 
   .btn-accent {
-    background: var(--accent);
-    color: #ffffff;
-    border-color: rgba(255, 255, 255, 0.15);
+    background: var(--accent-dark);
+    border-color: var(--accent);
+    color: #d4fced;
   }
 
   .btn-accent:hover {
-    filter: brightness(1.15);
+    background: var(--accent-dark-hover);
+    border-color: var(--accent-hover);
+    color: #ffffff;
+    filter: brightness(1.08);
   }
 
   .btn-danger {
@@ -254,16 +263,16 @@
   }
 
   .btn-export {
-    background: #194622;
-    border-color: #276b35;
-    color: #d8fcd8;
+    background: var(--accent-dark);
+    border-color: var(--accent-border);
+    color: #d4fced;
   }
 
   .btn-export:hover {
-    background: #215a2c;
-    border-color: #358f47;
+    background: var(--accent-dark-hover);
+    border-color: var(--accent);
     color: #ffffff;
-    filter: brightness(1.1);
+    filter: brightness(1.08);
   }
 
   .btn-imgbb {
@@ -326,8 +335,8 @@
   }
 
   .toast.toast-success {
-    border-color: #22c55e;
-    background: #0d2817;
+    border-color: var(--accent);
+    background: #002617;
   }
 
   .toast.toast-error {
@@ -361,14 +370,14 @@
   }
 
   .toast-link {
-    color: #6ee7b7;
+    color: #00d984;
     text-decoration: underline;
     font-weight: 600;
     word-break: break-all;
   }
 
   .toast-link:hover {
-    color: #a7f3d0;
+    color: #d4fced;
   }
 
   .toast-actions {
@@ -484,8 +493,8 @@
   }
 
   .modal-step-number {
-    background: #1b4b39;
-    color: #aff5db;
+    background: var(--accent-dark);
+    color: #d4fced;
     font-weight: 700;
     width: 24px;
     height: 24px;
@@ -514,13 +523,13 @@
   }
 
   .modal-step-desc a {
-    color: #6ee7b7;
+    color: #00d984;
     text-decoration: underline;
     font-weight: 600;
   }
 
   .modal-step-desc a:hover {
-    color: #a7f3d0;
+    color: #d4fced;
   }
 
   .modal-input-group {
@@ -541,17 +550,17 @@
   }
 
   .modal-input:focus {
-    border-color: #22c55e;
+    border-color: var(--accent);
     outline: none;
   }
 
   .modal-tip-box {
-    background: rgba(34, 197, 94, 0.08);
-    border: 1px solid rgba(34, 197, 94, 0.25);
+    background: var(--accent-bg);
+    border: 1px solid var(--accent-border);
     border-radius: 8px;
     padding: 10px 14px;
     font-size: 12px;
-    color: #aff5db;
+    color: #d4fced;
     line-height: 1.4;
   }
 
@@ -669,9 +678,9 @@
   .layer-badge {
     font-size: 11px;
     font-weight: 700;
-    color: #9ae6b4;
-    background: #143521;
-    border: 1px solid #1a562f;
+    color: #d4fced;
+    background: var(--accent-bg);
+    border: 1px solid var(--accent-border);
     padding: 2px 7px;
     border-radius: 999px;
   }
@@ -723,9 +732,9 @@
   }
 
   .layer-item.active {
-    background: #16301f;
+    background: var(--accent-bg);
     border-color: var(--accent);
-    box-shadow: 0 0 0 1px rgba(34, 197, 94, 0.3);
+    box-shadow: 0 0 0 1px var(--accent-glow);
   }
 
   .layer-visibility-btn {
@@ -948,7 +957,7 @@
   }
 
   .overlay-img-item.is-selected {
-    outline: 2px dashed #22c55e;
+    outline: 2px dashed var(--accent);
     outline-offset: 1px;
   }
 
@@ -1031,7 +1040,7 @@
   .selection-box-overlay {
     position: absolute;
     pointer-events: none;
-    border: 2px dashed #22c55e;
+    border: 2px dashed var(--accent);
     box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.65);
     z-index: 60;
     display: none;
@@ -1234,13 +1243,13 @@
     align-items: center;
     gap: 5px;
     font-weight: 800;
-    color: #4ade80;
+    color: #d4fced;
     text-transform: uppercase;
     font-size: 11px;
     letter-spacing: 0.05em;
-    padding: 2px 7px;
-    background: rgba(34, 197, 94, 0.12);
-    border: 1px solid rgba(34, 197, 94, 0.25);
+    padding: 2px 8px;
+    background: var(--accent-dark);
+    border: 1px solid var(--accent);
     border-radius: 4px;
     flex-shrink: 0;
   }
@@ -1432,14 +1441,14 @@
       <div class="toolbar-divider"></div>
 
       <label class="control" title="Upload background screenshot">
-        <span>BG:</span>
+        <span>BG Canvas:</span>
         <input id="backgroundImageInput" type="file" accept="image/*" />
       </label>
 
       <div class="toolbar-divider"></div>
 
       <label class="control" title="JPEG export quality">
-        <span>JPEG:</span>
+        <span>JPEG Quality:</span>
         <input id="jpegQualityInput" type="range" min="0.05" max="1" step="0.01" value="1" style="width: 75px;" />
         <span id="jpegQualityValue">100%</span>
       </label>
@@ -3816,14 +3825,14 @@
     if (!imgbbKeyStatus) return;
     const storedKey = localStorage.getItem("imgbb_user_key") || "";
     if (storedKey) {
-      imgbbKeyStatus.innerHTML = `<span style="color: #6ee7b7;">✓ Key saved locally in browser (${storedKey.slice(0, 4)}...${storedKey.slice(-4)})</span>`;
+      imgbbKeyStatus.innerHTML = `<span style="color: #00d984;">✓ Key saved locally in browser (${storedKey.slice(0, 4)}...${storedKey.slice(-4)})</span>`;
       return;
     }
     try {
       const res = await fetch("/api/imgbb-status");
       const statusData = await res.json();
       if (statusData.hasEnvKey) {
-        imgbbKeyStatus.innerHTML = `<span style="color: #6ee7b7;">✓ Key is configured in app environment</span>`;
+        imgbbKeyStatus.innerHTML = `<span style="color: #00d984;">✓ Key is configured in app environment</span>`;
       } else {
         imgbbKeyStatus.innerHTML = `<span style="color: #f59e0b;">⚠️ No key found. Follow the 3 steps above to add one.</span>`;
       }
