@@ -4,9 +4,9 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>GTA RP Chatlog Magician</title>
-<meta name="description" content="GTA roleplay chatlog magician and preview tool with server-accurate fonts, stroke & shadow styles, censor blur and redaction, clipboard image pasting, drag-and-drop screenshots, and canvas export." />
+<meta name="description" content="GTA roleplay chatlog magician and preview tool with multi-layer canvas support, overlay images, server-accurate fonts, stroke & shadow styles, censor blur and redaction, clipboard image pasting, drag-and-drop screenshots, and canvas export." />
 <meta property="og:title" content="GTA RP Chatlog Magician" />
-<meta property="og:description" content="GTA roleplay chatlog magician and preview tool with server-accurate fonts, stroke & shadow styles, censor blur and redaction, clipboard image pasting, drag-and-drop screenshots, and canvas export." />
+<meta property="og:description" content="GTA roleplay chatlog magician and preview tool with multi-layer canvas support, overlay images, server-accurate fonts, stroke & shadow styles, censor blur and redaction, clipboard image pasting, drag-and-drop screenshots, and canvas export." />
 <link rel="icon" type="image/svg+xml" href="clover.svg" />
 <link rel="icon" type="image/png" sizes="64x64" href="clover.png" />
 <link rel="shortcut icon" href="clover.png" />
@@ -46,8 +46,8 @@
 
   header {
     padding: 14px 18px;
-    border-bottom: 1px solid #1a6337;
-    background: #0d4a25;
+    border-bottom: 1px solid #167a3f;
+    background: linear-gradient(180deg, #0f6834 0%, #0a4f27 100%);
     display: flex;
     justify-content: space-between;
     gap: 12px;
@@ -236,8 +236,20 @@
   .workspace {
     flex: 1;
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    min-height: 0;
+    grid-template-columns: 30% 20% 50%;
+    min-height: 520px;
+    align-items: stretch;
+  }
+
+  @media (max-width: 1024px) {
+    .workspace {
+      display: flex;
+      flex-direction: column;
+    }
+    .workspace .pane {
+      border-right: none;
+      border-bottom: 1px solid var(--border);
+    }
   }
 
   .pane {
@@ -245,6 +257,7 @@
     display: flex;
     flex-direction: column;
     border-right: 1px solid var(--border);
+    height: 100%;
   }
 
   .pane:last-child {
@@ -252,18 +265,316 @@
   }
 
   .pane-title {
-    padding: 10px 14px;
+    height: 42px;
+    min-height: 42px;
+    max-height: 42px;
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    padding: 0 14px;
     background: var(--panel-bg-soft);
     border-bottom: 1px solid var(--border);
     color: var(--muted);
     font-size: 13px;
     text-transform: uppercase;
     letter-spacing: 0.04em;
+    line-height: 1;
+  }
+
+  .pane-title-flex {
+    justify-content: space-between;
+  }
+
+  .layer-badge {
+    font-size: 11px;
+    font-weight: 700;
+    color: #9ae6b4;
+    background: #143521;
+    border: 1px solid #1a562f;
+    padding: 2px 7px;
+    border-radius: 999px;
+  }
+
+  .pane-layers {
+    background: #181818;
+    min-width: 180px;
+    user-select: none;
+  }
+
+  .layers-toolbar {
+    padding: 8px 10px;
+    background: #141414;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
+  .layers-list-container {
+    flex: 1;
+    overflow-y: auto;
+    padding: 8px;
+    min-height: 160px;
+  }
+
+  .layers-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .layer-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 8px;
+    background: #1f1f1f;
+    border: 1px solid #2e2e2e;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.12s ease, border-color 0.12s ease;
+  }
+
+  .layer-item:hover {
+    background: #272727;
+    border-color: #3f3f3f;
+  }
+
+  .layer-item.active {
+    background: #16301f;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 1px rgba(34, 197, 94, 0.3);
+  }
+
+  .layer-visibility-btn {
+    background: none;
+    border: none;
+    color: #a0a0a0;
+    cursor: pointer;
+    padding: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    font-size: 13px;
+    line-height: 1;
+    flex-shrink: 0;
+  }
+
+  .layer-visibility-btn:hover {
+    color: #ffffff;
+    background: rgba(255,255,255,0.08);
+  }
+
+  .layer-visibility-btn.is-hidden {
+    color: #555555;
+    opacity: 0.6;
+  }
+
+  .layer-thumb {
+    width: 28px;
+    height: 28px;
+    border-radius: 4px;
+    background: #111111;
+    border: 1px solid #333333;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    flex-shrink: 0;
+  }
+
+  .layer-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .layer-thumb-icon {
+    font-size: 11px;
+    font-weight: 800;
+    color: var(--accent);
+  }
+
+  .layer-info {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .layer-name {
+    font-size: 12px;
+    font-weight: 600;
+    color: #e5e5e5;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .layer-item.active .layer-name {
+    color: #86efac;
+  }
+
+  .layer-meta {
+    font-size: 10px;
+    color: #777777;
+  }
+
+  .layer-quick-reorder {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    flex-shrink: 0;
+  }
+
+  .layer-mini-btn {
+    background: #292929;
+    border: 1px solid #3d3d3d;
+    color: #b0b0b0;
+    font-size: 8px;
+    line-height: 1;
+    padding: 3px 5px;
+    border-radius: 3px;
+    cursor: pointer;
+  }
+
+  .layer-mini-btn:hover:not(:disabled) {
+    background: #3a3a3a;
+    color: #ffffff;
+    border-color: #555555;
+  }
+
+  .layer-mini-btn:disabled {
+    opacity: 0.2;
+    cursor: not-allowed;
+  }
+
+  .layer-delete-btn {
+    color: #f87171;
+    background: #2b1818;
+    border: 1px solid #4a2424;
+    padding: 3px 6px;
+    border-radius: 3px;
+    font-size: 10px;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+
+  .layer-delete-btn:hover {
+    background: #422020;
+    color: #fca5a5;
+  }
+
+  .layer-inspector {
+    padding: 10px 12px;
+    background: #141414;
+    border-top: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .inspector-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+
+  .inspector-title {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: #888888;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .inspector-type-badge {
+    font-size: 10px;
+    color: #a3a3a3;
+    background: #242424;
+    padding: 2px 6px;
+    border-radius: 4px;
+    border: 1px solid #333333;
+  }
+
+  .inspector-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    color: var(--muted);
+  }
+
+  .inspector-label {
+    width: 48px;
+    font-size: 11px;
+    color: #999999;
+  }
+
+  .inspector-slider {
+    flex: 1;
+    accent-color: var(--accent);
+    cursor: pointer;
+    height: 4px;
+  }
+
+  .inspector-val {
+    width: 36px;
+    text-align: right;
+    font-family: Consolas, Monaco, monospace;
+    font-size: 11px;
+    color: #ffffff;
+  }
+
+  .inspector-actions {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-top: 2px;
+  }
+
+  .btn-xs {
+    padding: 4px 8px;
+    font-size: 11px;
+  }
+
+  .btn-sm {
+    padding: 5px 9px;
+    font-size: 12px;
+  }
+
+  .overlay-layers-container {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    pointer-events: none;
+  }
+
+  .overlay-img-item {
+    position: absolute;
+    left: 0;
+    top: 0;
+    transform-origin: top left;
+    user-select: none;
+    -webkit-user-drag: none;
+    pointer-events: none;
+  }
+
+  .overlay-img-item.is-selected {
+    outline: 2px dashed #22c55e;
+    outline-offset: 1px;
   }
 
   textarea {
     flex: 1;
-    min-height: 420px;
+    min-height: 0;
+    height: 100%;
     width: 100%;
     resize: none;
     border: none;
@@ -278,6 +589,7 @@
 
   .preview-outer {
     flex: 1;
+    min-height: 0;
     overflow: auto;
     background:
       linear-gradient(135deg, rgba(255,255,255,0.04), rgba(255,255,255,0)),
@@ -652,7 +964,7 @@
   </div>
 
   <main class="workspace">
-    <section class="pane">
+    <section class="pane pane-input">
       <div class="pane-title">Input</div>
       <textarea id="input" spellcheck="false" placeholder="[00:00:00] Carl Johnson says: I love money *rubs his money* I love money.
 [00:00:02] Carl Johnson says: Did you talk to ☘John☘?
@@ -665,13 +977,55 @@
 [00:00:24] (iFruit 1) Message from Contact: Example phone message."></textarea>
     </section>
 
-    <section class="pane">
+    <section class="pane pane-layers" id="layersPane">
+      <div class="pane-title pane-title-flex">
+        <span>Layers</span>
+        <span id="layersCountBadge" class="layer-badge">2 Layers</span>
+      </div>
+
+      <div class="layers-toolbar">
+        <button id="addLayerImageBtn" class="btn btn-accent btn-sm" title="Add an image layer on top of the canvas">
+          + Add Image Layer
+        </button>
+        <input type="file" id="layerImageFileInput" accept="image/*" multiple style="display: none;" />
+      </div>
+
+      <div class="layers-list-container" id="layersListContainer">
+        <div id="layersList" class="layers-list"></div>
+      </div>
+
+      <div class="layer-inspector" id="layerInspector">
+        <div class="inspector-header">
+          <span class="inspector-title" id="inspectorLayerName">Selected Layer</span>
+          <span id="inspectorLayerType" class="inspector-type-badge">Text</span>
+        </div>
+        <div class="inspector-row">
+          <span class="inspector-label">Opacity:</span>
+          <input type="range" id="layerOpacityInput" min="0" max="1" step="0.01" value="1" class="inspector-slider" />
+          <span id="layerOpacityValue" class="inspector-val">100%</span>
+        </div>
+        <div class="inspector-row" id="layerScaleRow">
+          <span class="inspector-label">Scale:</span>
+          <input type="range" id="layerScaleInput" min="0.05" max="3" step="0.01" value="1" class="inspector-slider" />
+          <span id="layerScaleValue" class="inspector-val">100%</span>
+        </div>
+        <div class="inspector-actions">
+          <button id="layerMoveUpBtn" class="btn btn-neutral btn-xs" title="Move layer forward (up)">▲ Forward</button>
+          <button id="layerMoveDownBtn" class="btn btn-neutral btn-xs" title="Move layer backward (down)">▼ Backward</button>
+          <button id="layerCenterBtn" class="btn btn-neutral btn-xs" title="Center layer on canvas">Center</button>
+          <button id="layerDeleteBtn" class="btn btn-danger btn-xs" title="Delete selected layer">Delete</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="pane pane-preview">
       <div class="pane-title">Preview</div>
       <div id="previewOuter" class="preview-outer">
         <div id="canvasStage" class="canvas-stage">
-          <div class="background-layer">
+          <div id="backgroundLayerDom" class="background-layer">
             <img id="backgroundImage" alt="" />
           </div>
+          <div id="overlayLayersContainer" class="overlay-layers-container"></div>
           <div id="preview" class="preview-box"></div>
           <img id="jpegPreviewImage" class="jpeg-preview-layer" alt="" />
         </div>
@@ -689,8 +1043,9 @@
 
     <div class="actions-group">
       <span class="actions-group-label">Canvas & View</span>
+      <button id="addLayerImageQuickBtn" class="btn btn-neutral">+ Add Image Layer</button>
       <button id="resetTextPositionButton" class="btn btn-neutral">Reset Text Position</button>
-      <button id="removeImageButton" class="btn btn-danger">Remove Image</button>
+      <button id="removeImageButton" class="btn btn-danger">Remove Background</button>
     </div>
 
     <div class="actions-group">
@@ -702,7 +1057,7 @@
   </div>
 
   <div class="footer-note">
-    Tip: Paste screenshots directly with Ctrl+V or drag and drop an image onto the canvas. Select text and press Ctrl+B or click "Blur Selection ☘" to censor words with Gaussian blur, mosaic blur, or black bars. Drag background or text to reposition.
+    Tip: Add images on top of the canvas via the Layers box or "+ Add Image Layer". Drag on the canvas to move any layer, or use the mouse wheel to scale image layers. Reorder layers with Forward/Backward and adjust opacity seamlessly.
   </div>
 </div>
 
@@ -739,6 +1094,49 @@
   const downloadPngButton = document.getElementById("downloadPngButton");
   const downloadJpegButton = document.getElementById("downloadJpegButton");
   const clearButton = document.getElementById("clearButton");
+
+  const layersPane = document.getElementById("layersPane");
+  const layersList = document.getElementById("layersList");
+  const layersCountBadge = document.getElementById("layersCountBadge");
+  const addLayerImageBtn = document.getElementById("addLayerImageBtn");
+  const layerImageFileInput = document.getElementById("layerImageFileInput");
+  const addLayerImageQuickBtn = document.getElementById("addLayerImageQuickBtn");
+  const overlayLayersContainer = document.getElementById("overlayLayersContainer");
+  const backgroundLayerDom = document.getElementById("backgroundLayerDom");
+
+  const inspectorLayerName = document.getElementById("inspectorLayerName");
+  const inspectorLayerType = document.getElementById("inspectorLayerType");
+  const layerOpacityInput = document.getElementById("layerOpacityInput");
+  const layerOpacityValue = document.getElementById("layerOpacityValue");
+  const layerScaleRow = document.getElementById("layerScaleRow");
+  const layerScaleInput = document.getElementById("layerScaleInput");
+  const layerScaleValue = document.getElementById("layerScaleValue");
+  const layerMoveUpBtn = document.getElementById("layerMoveUpBtn");
+  const layerMoveDownBtn = document.getElementById("layerMoveDownBtn");
+  const layerCenterBtn = document.getElementById("layerCenterBtn");
+  const layerDeleteBtn = document.getElementById("layerDeleteBtn");
+
+  let layers = [
+    {
+      id: "layer-bg",
+      type: "background",
+      name: "Background Image",
+      visible: true,
+      opacity: 1
+    },
+    {
+      id: "layer-text",
+      type: "text",
+      name: "Chatlog Text",
+      visible: true,
+      opacity: 1
+    }
+  ];
+  let selectedLayerId = "layer-text";
+  let layerIdCounter = 0;
+  let draggingLayerId = null;
+  let originalLayerX = 0;
+  let originalLayerY = 0;
 
   const TIMESTAMP_REGEX = /^\[\d{2}:\d{2}:\d{2}\]\s*/;
   const TIMESTAMP_CAPTURE_REGEX = /^(\[\d{2}:\d{2}:\d{2}\]\s*)/;
@@ -941,6 +1339,8 @@
         );
 
         updateBackgroundTransform();
+        renderLayersUI();
+        updateDomLayers();
       };
 
       bgImageObject.src = bgImageDataUrl;
@@ -970,6 +1370,362 @@
 
   function updateTextPosition() {
     preview.style.transform = `translate(${textOffsetX}px, ${textOffsetY}px)`;
+    scheduleJpegPreview();
+  }
+
+  function getSelectedLayer() {
+    return layers.find(l => l.id === selectedLayerId) || layers[layers.length - 1];
+  }
+
+  function addOverlayImageLayerFromFile(file) {
+    if (!file || !file.type.startsWith("image/")) return;
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      const dataUrl = reader.result;
+      const img = new Image();
+      img.onload = () => {
+        layerIdCounter++;
+        const cw = getCanvasWidth();
+        const ch = getCanvasHeight();
+
+        let scale = 1;
+        const maxFit = 0.75;
+        if (img.naturalWidth > cw * maxFit || img.naturalHeight > ch * maxFit) {
+          scale = Math.min((cw * maxFit) / img.naturalWidth, (ch * maxFit) / img.naturalHeight);
+          scale = Math.round(scale * 100) / 100;
+        }
+
+        const w = img.naturalWidth * scale;
+        const h = img.naturalHeight * scale;
+        const x = Math.round((cw - w) / 2);
+        const y = Math.round((ch - h) / 2);
+
+        const cleanName = file.name ? file.name.replace(/\.[^.]+$/, "") : `Image ${layerIdCounter}`;
+
+        const newLayer = {
+          id: "layer-img-" + Date.now() + "-" + layerIdCounter,
+          type: "image",
+          name: cleanName,
+          visible: true,
+          opacity: 1,
+          scale: Math.max(0.05, scale),
+          x: x,
+          y: y,
+          img: img,
+          dataUrl: dataUrl,
+          width: img.naturalWidth,
+          height: img.naturalHeight
+        };
+
+        layers.push(newLayer);
+        selectedLayerId = newLayer.id;
+
+        renderLayersUI();
+        updateDomLayers();
+        scheduleJpegPreview();
+      };
+      img.src = dataUrl;
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function renderLayersUI() {
+    if (!layersList) return;
+
+    if (layersCountBadge) {
+      layersCountBadge.textContent = `${layers.length} Layers`;
+    }
+
+    // Visual order: top layer on top
+    const reversed = layers.slice().reverse();
+    layersList.innerHTML = "";
+
+    reversed.forEach((layer, revIdx) => {
+      const actualIdx = layers.length - 1 - revIdx;
+      const isTop = actualIdx === layers.length - 1;
+      const isBottom = actualIdx === 0;
+      const isSelected = layer.id === selectedLayerId;
+
+      const item = document.createElement("div");
+      item.className = `layer-item ${isSelected ? "active" : ""}`;
+      item.setAttribute("data-layer-id", layer.id);
+
+      // Visibility button
+      const visBtn = document.createElement("button");
+      visBtn.type = "button";
+      visBtn.className = `layer-visibility-btn ${layer.visible ? "" : "is-hidden"}`;
+      visBtn.title = layer.visible ? "Hide layer" : "Show layer";
+      visBtn.innerHTML = layer.visible
+        ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>'
+        : '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>';
+
+      visBtn.addEventListener("click", e => {
+        e.stopPropagation();
+        layer.visible = !layer.visible;
+        renderLayersUI();
+        updateDomLayers();
+        scheduleJpegPreview();
+      });
+
+      // Thumbnail
+      const thumb = document.createElement("div");
+      thumb.className = "layer-thumb";
+      if (layer.type === "image" && layer.dataUrl) {
+        const imgEl = document.createElement("img");
+        imgEl.src = layer.dataUrl;
+        imgEl.alt = "";
+        thumb.appendChild(imgEl);
+      } else if (layer.type === "background") {
+        if (bgImageDataUrl) {
+          const imgEl = document.createElement("img");
+          imgEl.src = bgImageDataUrl;
+          imgEl.alt = "";
+          thumb.appendChild(imgEl);
+        } else {
+          thumb.innerHTML = '<span class="layer-thumb-icon">🌄</span>';
+        }
+      } else if (layer.type === "text") {
+        thumb.innerHTML = '<span class="layer-thumb-icon">Aa</span>';
+      }
+
+      // Layer Info
+      const info = document.createElement("div");
+      info.className = "layer-info";
+
+      const nameSpan = document.createElement("span");
+      nameSpan.className = "layer-name";
+      nameSpan.textContent = layer.name;
+
+      const metaSpan = document.createElement("span");
+      metaSpan.className = "layer-meta";
+      const opPercent = Math.round((typeof layer.opacity === "number" ? layer.opacity : 1) * 100);
+      metaSpan.textContent = `${layer.type.toUpperCase()} • ${opPercent}%`;
+
+      info.appendChild(nameSpan);
+      info.appendChild(metaSpan);
+
+      // Reorder buttons
+      const reorder = document.createElement("div");
+      reorder.className = "layer-quick-reorder";
+
+      const upBtn = document.createElement("button");
+      upBtn.type = "button";
+      upBtn.className = "layer-mini-btn";
+      upBtn.title = "Move Forward (Up)";
+      upBtn.textContent = "▲";
+      upBtn.disabled = isTop;
+      upBtn.addEventListener("click", e => {
+        e.stopPropagation();
+        moveLayerUp(layer.id);
+      });
+
+      const downBtn = document.createElement("button");
+      downBtn.type = "button";
+      downBtn.className = "layer-mini-btn";
+      downBtn.title = "Move Backward (Down)";
+      downBtn.textContent = "▼";
+      downBtn.disabled = isBottom;
+      downBtn.addEventListener("click", e => {
+        e.stopPropagation();
+        moveLayerDown(layer.id);
+      });
+
+      reorder.appendChild(upBtn);
+      reorder.appendChild(downBtn);
+
+      item.appendChild(visBtn);
+      item.appendChild(thumb);
+      item.appendChild(info);
+      item.appendChild(reorder);
+
+      // Delete button for image layers
+      if (layer.type === "image") {
+        const delBtn = document.createElement("button");
+        delBtn.type = "button";
+        delBtn.className = "layer-delete-btn";
+        delBtn.title = "Delete Layer";
+        delBtn.textContent = "✕";
+        delBtn.addEventListener("click", e => {
+          e.stopPropagation();
+          deleteLayer(layer.id);
+        });
+        item.appendChild(delBtn);
+      }
+
+      item.addEventListener("click", () => {
+        selectedLayerId = layer.id;
+        renderLayersUI();
+        updateDomLayers();
+      });
+
+      layersList.appendChild(item);
+    });
+
+    updateInspectorUI();
+  }
+
+  function updateInspectorUI() {
+    const layer = getSelectedLayer();
+    if (!layer) return;
+
+    if (inspectorLayerName) inspectorLayerName.textContent = layer.name;
+    if (inspectorLayerType) inspectorLayerType.textContent = layer.type.toUpperCase();
+
+    if (layerOpacityInput) {
+      layerOpacityInput.value = typeof layer.opacity === "number" ? layer.opacity : 1;
+      layerOpacityValue.textContent = Math.round(layerOpacityInput.value * 100) + "%";
+    }
+
+    const layerIdx = layers.findIndex(l => l.id === layer.id);
+    if (layerMoveUpBtn) layerMoveUpBtn.disabled = layerIdx === layers.length - 1;
+    if (layerMoveDownBtn) layerMoveDownBtn.disabled = layerIdx === 0;
+
+    if (layer.type === "image") {
+      if (layerScaleRow) layerScaleRow.style.display = "flex";
+      if (layerScaleInput) {
+        layerScaleInput.value = layer.scale || 1;
+        layerScaleValue.textContent = Math.round((layer.scale || 1) * 100) + "%";
+      }
+      if (layerCenterBtn) layerCenterBtn.style.display = "inline-flex";
+      if (layerDeleteBtn) {
+        layerDeleteBtn.style.display = "inline-flex";
+        layerDeleteBtn.textContent = "Delete";
+      }
+    } else if (layer.type === "background") {
+      if (layerScaleRow) layerScaleRow.style.display = "flex";
+      if (layerScaleInput) {
+        layerScaleInput.value = bgScale || 1;
+        layerScaleValue.textContent = Math.round((bgScale || 1) * 100) + "%";
+      }
+      if (layerCenterBtn) layerCenterBtn.style.display = "inline-flex";
+      if (layerDeleteBtn) {
+        layerDeleteBtn.style.display = bgImageObject ? "inline-flex" : "none";
+        layerDeleteBtn.textContent = "Clear BG";
+      }
+    } else {
+      if (layerScaleRow) layerScaleRow.style.display = "none";
+      if (layerCenterBtn) layerCenterBtn.style.display = "inline-flex";
+      if (layerDeleteBtn) layerDeleteBtn.style.display = "none";
+    }
+  }
+
+  function moveLayerUp(layerId) {
+    const idx = layers.findIndex(l => l.id === layerId);
+    if (idx < 0 || idx >= layers.length - 1) return;
+    const temp = layers[idx];
+    layers[idx] = layers[idx + 1];
+    layers[idx + 1] = temp;
+    renderLayersUI();
+    updateDomLayers();
+    scheduleJpegPreview();
+  }
+
+  function moveLayerDown(layerId) {
+    const idx = layers.findIndex(l => l.id === layerId);
+    if (idx <= 0) return;
+    const temp = layers[idx];
+    layers[idx] = layers[idx - 1];
+    layers[idx - 1] = temp;
+    renderLayersUI();
+    updateDomLayers();
+    scheduleJpegPreview();
+  }
+
+  function deleteLayer(layerId) {
+    const targetLayer = layers.find(l => l.id === layerId);
+    if (!targetLayer) return;
+
+    if (targetLayer.type === "image") {
+      layers = layers.filter(l => l.id !== layerId);
+      if (selectedLayerId === layerId) {
+        selectedLayerId = layers[layers.length - 1] ? layers[layers.length - 1].id : "layer-text";
+      }
+      renderLayersUI();
+      updateDomLayers();
+      scheduleJpegPreview();
+    } else if (targetLayer.type === "background") {
+      removeBackgroundAction();
+    }
+  }
+
+  function centerLayer(layerId) {
+    const layer = layers.find(l => l.id === layerId);
+    if (!layer) return;
+
+    const cw = getCanvasWidth();
+    const ch = getCanvasHeight();
+
+    if (layer.type === "text") {
+      textOffsetX = DEFAULT_TEXT_OFFSET_X;
+      textOffsetY = DEFAULT_TEXT_OFFSET_Y;
+      updateTextPosition();
+    } else if (layer.type === "image" && layer.img) {
+      const w = layer.img.naturalWidth * (layer.scale || 1);
+      const h = layer.img.naturalHeight * (layer.scale || 1);
+      layer.x = Math.round((cw - w) / 2);
+      layer.y = Math.round((ch - h) / 2);
+      updateDomLayers();
+      scheduleJpegPreview();
+    } else if (layer.type === "background" && bgImageObject) {
+      const w = bgImageObject.naturalWidth * bgScale;
+      const h = bgImageObject.naturalHeight * bgScale;
+      bgX = Math.round((cw - w) / 2);
+      bgY = Math.round((ch - h) / 2);
+      updateBackgroundTransform();
+    }
+  }
+
+  function updateDomLayers() {
+    if (!overlayLayersContainer) return;
+
+    const bgLayer = layers.find(l => l.type === "background");
+    const textLayer = layers.find(l => l.type === "text");
+
+    const bgIdx = layers.findIndex(l => l.type === "background");
+    const textIdx = layers.findIndex(l => l.type === "text");
+
+    if (backgroundLayerDom) {
+      backgroundLayerDom.style.zIndex = bgIdx !== -1 ? (bgIdx + 1) : 1;
+      backgroundLayerDom.style.display = (bgLayer && bgLayer.visible !== false) ? "block" : "none";
+      backgroundLayerDom.style.opacity = bgLayer && typeof bgLayer.opacity === "number" ? bgLayer.opacity : 1;
+    }
+
+    if (preview) {
+      preview.style.zIndex = textIdx !== -1 ? (textIdx + 1) : 2;
+      preview.style.display = (textLayer && textLayer.visible !== false) ? "block" : "none";
+      preview.style.opacity = textLayer && typeof textLayer.opacity === "number" ? textLayer.opacity : 1;
+    }
+
+    overlayLayersContainer.innerHTML = "";
+    layers.forEach((layer, index) => {
+      if (layer.type !== "image") return;
+      if (!layer.visible) return;
+
+      const imgEl = document.createElement("img");
+      imgEl.className = `overlay-img-item ${layer.id === selectedLayerId ? "is-selected" : ""}`;
+      imgEl.src = layer.dataUrl;
+      imgEl.alt = layer.name;
+      imgEl.style.zIndex = index + 1;
+      imgEl.style.opacity = typeof layer.opacity === "number" ? layer.opacity : 1;
+      imgEl.style.transform = `translate(${layer.x}px, ${layer.y}px) scale(${layer.scale || 1})`;
+      imgEl.setAttribute("data-layer-id", layer.id);
+
+      overlayLayersContainer.appendChild(imgEl);
+    });
+  }
+
+  function removeBackgroundAction() {
+    bgImageObject = null;
+    bgImageDataUrl = "";
+    backgroundImage.src = "";
+    backgroundImageInput.value = "";
+    bgX = 0;
+    bgY = 0;
+    bgScale = 1;
+    updateBackgroundTransform();
+    renderLayersUI();
+    updateDomLayers();
     scheduleJpegPreview();
   }
 
@@ -1875,44 +2631,7 @@
     }
   }
 
-  function createChatCanvas(targetCanvas = null) {
-    const scale = 1;
-    const fontPx = getFontSize();
-    const fontFamily = getFontFamily();
-    const lineHeight = Math.round(fontPx * 1.25);
-    const xPadding = 4;
-    const yPadding = 2;
-    const maxTextWidth = getTextPanelWidth();
-
-    const canvasWidth = getCanvasWidth();
-    const canvasHeight = getCanvasHeight();
-
-    const canvas = targetCanvas || document.createElement("canvas");
-    if (canvas.width !== canvasWidth * scale || canvas.height !== canvasHeight * scale) {
-      canvas.width = canvasWidth * scale;
-      canvas.height = canvasHeight * scale;
-    }
-    canvas.style.width = canvasWidth + "px";
-    canvas.style.height = canvasHeight + "px";
-
-    const ctx = canvas.getContext("2d");
-    ctx.setTransform(1, 0, 0, 1, 0, 0);
-    ctx.scale(scale, scale);
-    ctx.clearRect(0, 0, canvasWidth, canvasHeight);
-
-    ctx.fillStyle = "#000";
-    ctx.fillRect(0, 0, canvasWidth, canvasHeight);
-
-    if (bgImageObject && bgImageObject.complete && bgImageObject.naturalWidth > 0) {
-      ctx.drawImage(
-        bgImageObject,
-        bgX,
-        bgY,
-        bgImageObject.naturalWidth * bgScale,
-        bgImageObject.naturalHeight * bgScale
-      );
-    }
-
+  function drawTextLayerToCanvas(ctx, fontPx, fontFamily, lineHeight, xPadding, yPadding, maxTextWidth) {
     ctx.font = `700 ${fontPx}px ${fontFamily}`;
     ctx.textBaseline = "top";
     ctx.lineJoin = "round";
@@ -1966,6 +2685,68 @@
         );
       }
     });
+  }
+
+  function createChatCanvas(targetCanvas = null) {
+    const scale = 1;
+    const fontPx = getFontSize();
+    const fontFamily = getFontFamily();
+    const lineHeight = Math.round(fontPx * 1.25);
+    const xPadding = 4;
+    const yPadding = 2;
+    const maxTextWidth = getTextPanelWidth();
+
+    const canvasWidth = getCanvasWidth();
+    const canvasHeight = getCanvasHeight();
+
+    const canvas = targetCanvas || document.createElement("canvas");
+    if (canvas.width !== canvasWidth * scale || canvas.height !== canvasHeight * scale) {
+      canvas.width = canvasWidth * scale;
+      canvas.height = canvasHeight * scale;
+    }
+    canvas.style.width = canvasWidth + "px";
+    canvas.style.height = canvasHeight + "px";
+
+    const ctx = canvas.getContext("2d");
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.scale(scale, scale);
+    ctx.clearRect(0, 0, canvasWidth, canvasHeight);
+
+    ctx.fillStyle = "#000";
+    ctx.fillRect(0, 0, canvasWidth, canvasHeight);
+
+    layers.forEach(layer => {
+      if (!layer.visible) return;
+
+      ctx.save();
+      ctx.globalAlpha = typeof layer.opacity === "number" ? layer.opacity : 1;
+
+      if (layer.type === "background") {
+        if (bgImageObject && bgImageObject.complete && bgImageObject.naturalWidth > 0) {
+          ctx.drawImage(
+            bgImageObject,
+            bgX,
+            bgY,
+            bgImageObject.naturalWidth * bgScale,
+            bgImageObject.naturalHeight * bgScale
+          );
+        }
+      } else if (layer.type === "image") {
+        if (layer.img && layer.img.complete && layer.img.naturalWidth > 0) {
+          ctx.drawImage(
+            layer.img,
+            layer.x,
+            layer.y,
+            layer.img.naturalWidth * (layer.scale || 1),
+            layer.img.naturalHeight * (layer.scale || 1)
+          );
+        }
+      } else if (layer.type === "text") {
+        drawTextLayerToCanvas(ctx, fontPx, fontFamily, lineHeight, xPadding, yPadding, maxTextWidth);
+      }
+
+      ctx.restore();
+    });
 
     return canvas;
   }
@@ -2012,28 +2793,65 @@
     };
   }
 
+  function findLayerAtPoint(pointX, pointY) {
+    for (let i = layers.length - 1; i >= 0; i--) {
+      const layer = layers[i];
+      if (!layer.visible) continue;
+
+      if (layer.type === "text") {
+        if (pointIsInsideTextBounds(pointX, pointY)) {
+          return layer;
+        }
+      } else if (layer.type === "image") {
+        if (layer.img && layer.img.naturalWidth > 0) {
+          const w = layer.img.naturalWidth * (layer.scale || 1);
+          const h = layer.img.naturalHeight * (layer.scale || 1);
+          if (
+            pointX >= layer.x &&
+            pointX <= layer.x + w &&
+            pointY >= layer.y &&
+            pointY <= layer.y + h
+          ) {
+            return layer;
+          }
+        }
+      } else if (layer.type === "background") {
+        if (bgImageObject && bgImageObject.complete && bgImageObject.naturalWidth > 0) {
+          return layer;
+        }
+      }
+    }
+    return null;
+  }
+
   canvasStage.addEventListener("mousedown", event => {
     const point = getStagePoint(event);
+    const hitLayer = findLayerAtPoint(point.x, point.y);
 
-    if (pointIsInsideTextBounds(point.x, point.y)) {
-      dragMode = "text";
+    if (hitLayer) {
+      selectedLayerId = hitLayer.id;
+      renderLayersUI();
+      updateDomLayers();
+
       dragStartX = point.x;
       dragStartY = point.y;
-      originalTextX = textOffsetX;
-      originalTextY = textOffsetY;
       canvasStage.classList.add("dragging");
       event.preventDefault();
-      return;
-    }
 
-    if (bgImageObject) {
-      dragMode = "background";
-      dragStartX = point.x;
-      dragStartY = point.y;
-      originalBgX = bgX;
-      originalBgY = bgY;
-      canvasStage.classList.add("dragging");
-      event.preventDefault();
+      if (hitLayer.type === "text") {
+        dragMode = "text";
+        originalTextX = textOffsetX;
+        originalTextY = textOffsetY;
+      } else if (hitLayer.type === "image") {
+        dragMode = "image";
+        draggingLayerId = hitLayer.id;
+        originalLayerX = hitLayer.x;
+        originalLayerY = hitLayer.y;
+      } else if (hitLayer.type === "background") {
+        dragMode = "background";
+        originalBgX = bgX;
+        originalBgY = bgY;
+      }
     }
   });
 
@@ -2050,9 +2868,15 @@
       textOffsetX = originalTextX + dx;
       textOffsetY = originalTextY + dy;
       updateTextPosition();
-    }
-
-    if (dragMode === "background") {
+    } else if (dragMode === "image") {
+      const layer = layers.find(l => l.id === draggingLayerId);
+      if (layer) {
+        layer.x = originalLayerX + dx;
+        layer.y = originalLayerY + dy;
+        updateDomLayers();
+        scheduleJpegPreview();
+      }
+    } else if (dragMode === "background") {
       bgX = originalBgX + dx;
       bgY = originalBgY + dy;
       updateBackgroundTransform();
@@ -2061,38 +2885,49 @@
 
   window.addEventListener("mouseup", () => {
     dragMode = null;
+    draggingLayerId = null;
     canvasStage.classList.remove("dragging");
   });
 
   canvasStage.addEventListener("wheel", event => {
-    if (!bgImageObject) {
-      return;
-    }
-
-    event.preventDefault();
-
     const point = getStagePoint(event);
-    const previousScale = bgScale;
+    const hitLayer = findLayerAtPoint(point.x, point.y) || getSelectedLayer();
+    if (!hitLayer) return;
+
     const zoomFactor = event.deltaY < 0 ? 1.08 : 0.92;
 
-    bgScale = Math.min(Math.max(bgScale * zoomFactor, 0.05), 10);
+    if (hitLayer.type === "image") {
+      event.preventDefault();
+      hitLayer.scale = Math.min(Math.max((hitLayer.scale || 1) * zoomFactor, 0.05), 10);
+      updateDomLayers();
+      updateInspectorUI();
+      scheduleJpegPreview();
+    } else if (hitLayer.type === "background" && bgImageObject) {
+      event.preventDefault();
+      const previousScale = bgScale;
+      bgScale = Math.min(Math.max(bgScale * zoomFactor, 0.05), 10);
 
-    const imagePointX = (point.x - bgX) / previousScale;
-    const imagePointY = (point.y - bgY) / previousScale;
+      const imagePointX = (point.x - bgX) / previousScale;
+      const imagePointY = (point.y - bgY) / previousScale;
 
-    bgX = point.x - imagePointX * bgScale;
-    bgY = point.y - imagePointY * bgScale;
+      bgX = point.x - imagePointX * bgScale;
+      bgY = point.y - imagePointY * bgScale;
 
-    updateBackgroundTransform();
+      updateBackgroundTransform();
+      updateInspectorUI();
+    }
   }, { passive: false });
 
   canvasStage.addEventListener("mousemove", event => {
     if (dragMode) return;
     const point = getStagePoint(event);
-    if (pointIsInsideTextBounds(point.x, point.y)) {
-      canvasStage.style.cursor = "move";
-    } else if (bgImageObject) {
-      canvasStage.style.cursor = "grab";
+    const hit = findLayerAtPoint(point.x, point.y);
+    if (hit) {
+      if (hit.type === "text" || hit.type === "image") {
+        canvasStage.style.cursor = "move";
+      } else if (hit.type === "background") {
+        canvasStage.style.cursor = "grab";
+      }
     } else {
       canvasStage.style.cursor = "default";
     }
@@ -2164,6 +2999,91 @@
     }
   });
 
+  // Layer inspector controls and actions
+  if (layerOpacityInput) {
+    const handleOpacityChange = () => {
+      const layer = getSelectedLayer();
+      if (!layer) return;
+      layer.opacity = parseFloat(layerOpacityInput.value);
+      layerOpacityValue.textContent = Math.round(layer.opacity * 100) + "%";
+      renderLayersUI();
+      updateDomLayers();
+      scheduleJpegPreview();
+    };
+    layerOpacityInput.addEventListener("input", handleOpacityChange);
+    layerOpacityInput.addEventListener("change", handleOpacityChange);
+  }
+
+  if (layerScaleInput) {
+    const handleScaleChange = () => {
+      const layer = getSelectedLayer();
+      if (!layer) return;
+      const val = parseFloat(layerScaleInput.value);
+      if (layer.type === "image") {
+        layer.scale = val;
+        layerScaleValue.textContent = Math.round(val * 100) + "%";
+        updateDomLayers();
+        scheduleJpegPreview();
+      } else if (layer.type === "background") {
+        bgScale = val;
+        layerScaleValue.textContent = Math.round(val * 100) + "%";
+        updateBackgroundTransform();
+      }
+    };
+    layerScaleInput.addEventListener("input", handleScaleChange);
+    layerScaleInput.addEventListener("change", handleScaleChange);
+  }
+
+  if (layerMoveUpBtn) {
+    layerMoveUpBtn.addEventListener("click", () => {
+      const layer = getSelectedLayer();
+      if (layer) moveLayerUp(layer.id);
+    });
+  }
+
+  if (layerMoveDownBtn) {
+    layerMoveDownBtn.addEventListener("click", () => {
+      const layer = getSelectedLayer();
+      if (layer) moveLayerDown(layer.id);
+    });
+  }
+
+  if (layerCenterBtn) {
+    layerCenterBtn.addEventListener("click", () => {
+      const layer = getSelectedLayer();
+      if (layer) centerLayer(layer.id);
+    });
+  }
+
+  if (layerDeleteBtn) {
+    layerDeleteBtn.addEventListener("click", () => {
+      const layer = getSelectedLayer();
+      if (layer) deleteLayer(layer.id);
+    });
+  }
+
+  if (addLayerImageBtn) {
+    addLayerImageBtn.addEventListener("click", () => {
+      layerImageFileInput.click();
+    });
+  }
+
+  if (addLayerImageQuickBtn) {
+    addLayerImageQuickBtn.addEventListener("click", () => {
+      layerImageFileInput.click();
+    });
+  }
+
+  if (layerImageFileInput) {
+    layerImageFileInput.addEventListener("change", event => {
+      const files = event.target.files;
+      if (files && files.length > 0) {
+        Array.from(files).forEach(file => addOverlayImageLayerFromFile(file));
+        layerImageFileInput.value = "";
+      }
+    });
+  }
+
   // Global Clipboard Paste (Ctrl+V) for screenshots and images
   window.addEventListener("paste", event => {
     const clipboardData = event.clipboardData;
@@ -2191,7 +3111,11 @@
 
     if (imageFile) {
       event.preventDefault();
-      loadBackgroundImageFile(imageFile);
+      if (!bgImageObject) {
+        loadBackgroundImageFile(imageFile);
+      } else {
+        addOverlayImageLayerFromFile(imageFile);
+      }
     }
   });
 
@@ -2219,9 +3143,16 @@
 
     const files = event.dataTransfer && event.dataTransfer.files;
     if (files && files.length > 0) {
-      const file = Array.from(files).find(f => f.type && f.type.startsWith("image/"));
-      if (file) {
-        loadBackgroundImageFile(file);
+      const imageFiles = Array.from(files).filter(f => f.type && f.type.startsWith("image/"));
+      if (imageFiles.length > 0) {
+        if (!bgImageObject) {
+          loadBackgroundImageFile(imageFiles[0]);
+          for (let i = 1; i < imageFiles.length; i++) {
+            addOverlayImageLayerFromFile(imageFiles[i]);
+          }
+        } else {
+          imageFiles.forEach(file => addOverlayImageLayerFromFile(file));
+        }
       }
     }
   });
@@ -2241,14 +3172,7 @@
   });
 
   removeImageButton.addEventListener("click", () => {
-    bgImageObject = null;
-    bgImageDataUrl = "";
-    backgroundImage.src = "";
-    backgroundImageInput.value = "";
-    bgX = 0;
-    bgY = 0;
-    bgScale = 1;
-    updateBackgroundTransform();
+    removeBackgroundAction();
   });
 
   resetTextPositionButton.addEventListener("click", () => {
@@ -2328,6 +3252,8 @@
   updateOutlineSettings();
   updateCensorSettings();
   render();
+  renderLayersUI();
+  updateDomLayers();
 
   if (document.fonts && document.fonts.ready) {
     document.fonts.ready.then(() => {

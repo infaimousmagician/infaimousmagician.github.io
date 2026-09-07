@@ -1,6 +1,6 @@
 {
   "name": "GTA RP Chatlog Magician",
-  "description": "GTA roleplay chatlog magician and preview tool with server-accurate fonts, stroke & shadow styles, censor blur and redaction, clipboard image pasting, drag-and-drop screenshots, and canvas export.",
+  "description": "GTA roleplay chatlog magician and preview tool with multi-layer canvas support, overlay images, server-accurate fonts, stroke & shadow styles, censor blur and redaction, clipboard image pasting, drag-and-drop screenshots, and canvas export.",
   "requestFramePermissions": [],
   "majorCapabilities": [
     "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
