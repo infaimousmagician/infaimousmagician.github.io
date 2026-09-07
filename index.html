@@ -1712,8 +1712,8 @@
   let originalLayerX = 0;
   let originalLayerY = 0;
 
-  const TIMESTAMP_REGEX = /^\[\d{2}:\d{2}:\d{2}\]\s*/;
-  const TIMESTAMP_CAPTURE_REGEX = /^(\[\d{2}:\d{2}:\d{2}\]\s*)/;
+  const TIMESTAMP_REGEX = /^\s*\[\d{2}:\d{2}:\d{2}\]\s*/;
+  const TIMESTAMP_CAPTURE_REGEX = /^(\s*\[\d{2}:\d{2}:\d{2}\]\s*)/;
 
   const CHAT_COLORS = {
     timestamp: "#d8d8d8",
@@ -3077,8 +3077,8 @@
     return {
       x: textOffsetX,
       y: textOffsetY,
-      width: Math.max(maxWidth + xPadding * 2, maxTextWidth),
-      height: rowCount * lineHeight + yPadding * 2
+      width: Math.max(20, Math.min(maxWidth + xPadding * 2, maxTextWidth)),
+      height: Math.max(lineHeight, rowCount * lineHeight + yPadding * 2)
     };
   }
 
@@ -3281,7 +3281,7 @@
     ctx.moveTo(x + r, y);
     ctx.arcTo(x + width, y, x + width, y + height, r);
     ctx.arcTo(x + width, y + height, x, y + height, r);
-    ctx.arcTo(x, y + height, x, y + height, r);
+    ctx.arcTo(x, y + height, x, y, r);
     ctx.arcTo(x, y, x + width, y, r);
     ctx.closePath();
   }
@@ -3535,28 +3535,44 @@
   }
 
   async function downloadCanvasAsPng() {
-    const canvas = await getExportCanvas();
-    const link = document.createElement("a");
-    link.download = "gta-rp-chatlog.png";
-    link.href = canvas.toDataURL("image/png");
-    link.click();
+    try {
+      const canvas = await getExportCanvas();
+      const link = document.createElement("a");
+      link.download = "gta-rp-chatlog.png";
+      link.href = canvas.toDataURL("image/png");
+      link.click();
+    } catch (err) {
+      console.error("Failed to download PNG:", err);
+      showToast("error", "Download Failed", err?.message || "Could not generate PNG for download.");
+    }
   }
 
   function downloadCanvasAsJpeg() {
-    const canvas = createChatCanvas();
-    const quality = getJpegQuality();
-    const link = document.createElement("a");
-    link.download = "gta-rp-chatlog.jpeg";
-    link.href = canvas.toDataURL("image/jpeg", quality);
-    link.click();
+    try {
+      const canvas = createChatCanvas();
+      const quality = getJpegQuality();
+      const link = document.createElement("a");
+      link.download = "gta-rp-chatlog.jpeg";
+      link.href = canvas.toDataURL("image/jpeg", quality);
+      link.click();
+    } catch (err) {
+      console.error("Failed to download JPEG:", err);
+      showToast("error", "Download Failed", err?.message || "Could not generate JPEG for download.");
+    }
   }
 
   function getStagePoint(event) {
     const rect = canvasStage.getBoundingClientRect();
+    const borderLeft = canvasStage.clientLeft || 0;
+    const borderTop = canvasStage.clientTop || 0;
+    const clientW = canvasStage.clientWidth || getCanvasWidth();
+    const clientH = canvasStage.clientHeight || getCanvasHeight();
+    const scaleX = getCanvasWidth() / (clientW || 1);
+    const scaleY = getCanvasHeight() / (clientH || 1);
 
     return {
-      x: event.clientX - rect.left,
-      y: event.clientY - rect.top
+      x: ((event.clientX - rect.left) - borderLeft) * scaleX,
+      y: ((event.clientY - rect.top) - borderTop) * scaleY
     };
   }
 
@@ -4277,6 +4293,7 @@
       }, 1200);
     } catch (error) {
       copyPngButton.textContent = "Copy failed";
+      showToast("error", "Clipboard Copy Failed", error?.message || "Direct image clipboard access was blocked. Use 'Download PNG' or 'Upload to ImgBB' instead.");
       setTimeout(() => {
         copyPngButton.textContent = "Copy PNG";
       }, 1400);
