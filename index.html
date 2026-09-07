@@ -351,6 +351,172 @@
     }
   }
 
+  .modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.78);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 100000;
+    padding: 16px;
+    animation: fadeInModal 0.2s ease;
+  }
+
+  @keyframes fadeInModal {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  .modal-dialog {
+    background: #181818;
+    border: 1px solid #333333;
+    border-radius: 12px;
+    width: 540px;
+    max-width: 100%;
+    box-shadow: 0 20px 48px rgba(0, 0, 0, 0.85);
+    overflow: hidden;
+    color: #e5e5e5;
+    font-size: 13px;
+  }
+
+  .modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 18px;
+    background: #1f1f1f;
+    border-bottom: 1px solid #2e2e2e;
+  }
+
+  .modal-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .modal-body {
+    padding: 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    max-height: 75vh;
+    overflow-y: auto;
+  }
+
+  .modal-step {
+    background: #131313;
+    border: 1px solid #262626;
+    border-radius: 8px;
+    padding: 12px 14px;
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+  }
+
+  .modal-step-number {
+    background: #1b4b39;
+    color: #aff5db;
+    font-weight: 700;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-size: 12px;
+  }
+
+  .modal-step-content {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .modal-step-title {
+    font-weight: 600;
+    color: #ffffff;
+    margin-bottom: 4px;
+  }
+
+  .modal-step-desc {
+    color: #aaaaaa;
+    line-height: 1.45;
+  }
+
+  .modal-step-desc a {
+    color: #6ee7b7;
+    text-decoration: underline;
+    font-weight: 600;
+  }
+
+  .modal-step-desc a:hover {
+    color: #a7f3d0;
+  }
+
+  .modal-input-group {
+    display: flex;
+    gap: 8px;
+    margin-top: 8px;
+  }
+
+  .modal-input {
+    flex: 1;
+    background: #0f0f0f;
+    border: 1px solid #333333;
+    border-radius: 6px;
+    padding: 8px 12px;
+    color: #ffffff;
+    font-family: monospace;
+    font-size: 13px;
+  }
+
+  .modal-input:focus {
+    border-color: #22c55e;
+    outline: none;
+  }
+
+  .modal-tip-box {
+    background: rgba(34, 197, 94, 0.08);
+    border: 1px solid rgba(34, 197, 94, 0.25);
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: 12px;
+    color: #aff5db;
+    line-height: 1.4;
+  }
+
+  .modal-footer {
+    padding: 12px 18px;
+    background: #1a1a1a;
+    border-top: 1px solid #2e2e2e;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  .btn-icon-help {
+    padding: 6px 9px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 700;
+    background: #202020;
+    border: 1px solid #383838;
+    color: #88d4b3;
+    cursor: pointer;
+  }
+
+  .btn-icon-help:hover {
+    background: #2a2a2a;
+    border-color: #555555;
+    color: #ffffff;
+  }
+
   .bottom-actions-panel {
     padding: 12px 18px;
     border-top: 1px solid var(--border);
@@ -1282,9 +1448,71 @@
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
         <span>Upload to ImgBB</span>
       </button>
+      <button id="imgbbHelpButton" class="btn-icon-help" type="button" title="How to get free ImgBB API key">?</button>
       <button id="copyPngButton" class="btn btn-export">Copy PNG</button>
       <button id="downloadPngButton" class="btn btn-export">Download PNG</button>
       <button id="downloadJpegButton" class="btn btn-export">Download JPEG</button>
+    </div>
+  </div>
+
+  <!-- ImgBB Setup Guide Modal -->
+  <div id="imgbbModal" class="modal-backdrop" style="display: none;">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <div class="modal-title">
+          <span>☘</span>
+          <span>ImgBB API Key Setup Guide</span>
+        </div>
+        <button type="button" id="closeImgbbModalBtn" class="toast-close" title="Close modal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p style="color: #cccccc; line-height: 1.5; margin: 0;">
+          <strong>ImgBB</strong> is a free image hosting service. To let this tool upload your screenshots directly to ImgBB and generate quick links, a free API key is needed.
+        </p>
+
+        <div class="modal-step">
+          <div class="modal-step-number">1</div>
+          <div class="modal-step-content">
+            <div class="modal-step-title">Create a free account on ImgBB</div>
+            <div class="modal-step-desc">
+              Go to <a href="https://imgbb.com/" target="_blank" rel="noopener noreferrer">imgbb.com</a> and sign up for a free account (or log in if you already have one).
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-step">
+          <div class="modal-step-number">2</div>
+          <div class="modal-step-content">
+            <div class="modal-step-title">Get your free API Key</div>
+            <div class="modal-step-desc">
+              Visit <a href="https://api.imgbb.com/" target="_blank" rel="noopener noreferrer">api.imgbb.com</a> and click the blue <strong>"Get API key"</strong> button to generate your 32-character key.
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-step">
+          <div class="modal-step-number">3</div>
+          <div class="modal-step-content">
+            <div class="modal-step-title">Save your key below (or in Settings)</div>
+            <div class="modal-step-desc">
+              Paste your key here to use it immediately in this browser:
+            </div>
+            <div class="modal-input-group">
+              <input type="text" id="imgbbKeyInput" class="modal-input" placeholder="Paste 32-character API key here..." autocomplete="off" spellcheck="false" />
+              <button type="button" id="saveImgbbKeyBtn" class="btn btn-neutral" style="font-weight: 600;">Save Key</button>
+            </div>
+            <div id="imgbbKeyStatus" style="font-size: 11px; margin-top: 5px; color: #888888;"></div>
+          </div>
+        </div>
+
+        <div class="modal-tip-box">
+          💡 <strong>No key needed for normal use!</strong> If you just want to paste your rendered screenshot into Discord, forum posts, or graphic software, click the <strong>Copy PNG</strong> button next to Upload — it copies directly to your clipboard completely offline with no setup required.
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" id="clearImgbbKeyBtn" class="btn btn-neutral" style="font-size: 12px;">Clear Stored Key</button>
+        <button type="button" id="doneImgbbModalBtn" class="btn btn-imgbb">Done</button>
+      </div>
     </div>
   </div>
 
@@ -3456,7 +3684,89 @@
 
   input.addEventListener("input", render);
 
-  function showToast(type, title, messageHtml, linkUrl = null) {
+  // ImgBB modal and key management
+  const imgbbModal = document.getElementById("imgbbModal");
+  const imgbbHelpButton = document.getElementById("imgbbHelpButton");
+  const closeImgbbModalBtn = document.getElementById("closeImgbbModalBtn");
+  const doneImgbbModalBtn = document.getElementById("doneImgbbModalBtn");
+  const imgbbKeyInput = document.getElementById("imgbbKeyInput");
+  const saveImgbbKeyBtn = document.getElementById("saveImgbbKeyBtn");
+  const clearImgbbKeyBtn = document.getElementById("clearImgbbKeyBtn");
+  const imgbbKeyStatus = document.getElementById("imgbbKeyStatus");
+
+  function openImgbbModal() {
+    if (!imgbbModal) return;
+    const storedKey = localStorage.getItem("imgbb_user_key") || "";
+    if (imgbbKeyInput) imgbbKeyInput.value = storedKey;
+    updateKeyStatusDisplay();
+    imgbbModal.style.display = "flex";
+  }
+
+  function closeImgbbModal() {
+    if (!imgbbModal) return;
+    imgbbModal.style.display = "none";
+  }
+
+  async function updateKeyStatusDisplay() {
+    if (!imgbbKeyStatus) return;
+    const storedKey = localStorage.getItem("imgbb_user_key") || "";
+    if (storedKey) {
+      imgbbKeyStatus.innerHTML = `<span style="color: #6ee7b7;">✓ Key saved locally in browser (${storedKey.slice(0, 4)}...${storedKey.slice(-4)})</span>`;
+      return;
+    }
+    try {
+      const res = await fetch("/api/imgbb-status");
+      const statusData = await res.json();
+      if (statusData.hasEnvKey) {
+        imgbbKeyStatus.innerHTML = `<span style="color: #6ee7b7;">✓ Key is configured in app environment</span>`;
+      } else {
+        imgbbKeyStatus.innerHTML = `<span style="color: #f59e0b;">⚠️ No key found. Follow the 3 steps above to add one.</span>`;
+      }
+    } catch {
+      imgbbKeyStatus.innerHTML = "";
+    }
+  }
+
+  if (imgbbHelpButton) {
+    imgbbHelpButton.addEventListener("click", openImgbbModal);
+  }
+  if (closeImgbbModalBtn) {
+    closeImgbbModalBtn.addEventListener("click", closeImgbbModal);
+  }
+  if (doneImgbbModalBtn) {
+    doneImgbbModalBtn.addEventListener("click", closeImgbbModal);
+  }
+  if (imgbbModal) {
+    imgbbModal.addEventListener("click", event => {
+      if (event.target === imgbbModal) closeImgbbModal();
+    });
+  }
+
+  if (saveImgbbKeyBtn) {
+    saveImgbbKeyBtn.addEventListener("click", () => {
+      const val = (imgbbKeyInput?.value || "").trim();
+      if (!val) {
+        localStorage.removeItem("imgbb_user_key");
+        updateKeyStatusDisplay();
+        showToast("error", "ImgBB Key Cleared", "No key entered. Key has been removed from this browser.");
+        return;
+      }
+      localStorage.setItem("imgbb_user_key", val);
+      updateKeyStatusDisplay();
+      showToast("success", "ImgBB Key Saved", "Your key is saved and ready for uploads in this browser!");
+    });
+  }
+
+  if (clearImgbbKeyBtn) {
+    clearImgbbKeyBtn.addEventListener("click", () => {
+      localStorage.removeItem("imgbb_user_key");
+      if (imgbbKeyInput) imgbbKeyInput.value = "";
+      updateKeyStatusDisplay();
+      showToast("error", "ImgBB Key Removed", "Stored key cleared from browser.");
+    });
+  }
+
+  function showToast(type, title, messageHtml, linkUrl = null, actionBtn = null) {
     if (!toastContainer) return;
     const toast = document.createElement("div");
     toast.className = `toast toast-${type}`;
@@ -3468,6 +3778,12 @@
       actionsHtml = `
         <div class="toast-actions">
           <button type="button" class="toast-copy-btn" data-url="${linkUrl}">Copy Link</button>
+        </div>
+      `;
+    } else if (actionBtn) {
+      actionsHtml = `
+        <div class="toast-actions">
+          <button type="button" class="toast-copy-btn toast-action-custom-btn">${actionBtn.text}</button>
         </div>
       `;
     }
@@ -3497,7 +3813,7 @@
       closeBtn.addEventListener("click", removeToast);
     }
 
-    const copyBtn = toast.querySelector(".toast-copy-btn");
+    const copyBtn = toast.querySelector(".toast-copy-btn[data-url]");
     if (copyBtn) {
       copyBtn.addEventListener("click", async () => {
         const urlToCopy = copyBtn.getAttribute("data-url");
@@ -3511,7 +3827,15 @@
       });
     }
 
-    setTimeout(removeToast, 7000);
+    const customActionBtn = toast.querySelector(".toast-action-custom-btn");
+    if (customActionBtn && actionBtn && actionBtn.onClick) {
+      customActionBtn.addEventListener("click", () => {
+        actionBtn.onClick();
+        removeToast();
+      });
+    }
+
+    setTimeout(removeToast, 8000);
   }
 
   async function copyTextToClipboard(text) {
@@ -3555,20 +3879,115 @@
       try {
         const canvas = createChatCanvas();
         const dataUrl = canvas.toDataURL("image/png");
+        const localKey = (localStorage.getItem("imgbb_user_key") || "").trim();
 
-        const response = await fetch("/api/upload-imgbb", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            image: dataUrl,
-            name: "gta-rp-chatlog"
-          })
-        });
+        let response;
+        try {
+          response = await fetch("/api/upload-imgbb", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              image: dataUrl,
+              name: "gta-rp-chatlog",
+              customApiKey: localKey
+            })
+          });
+        } catch (fetchErr) {
+          throw new Error("Network error connecting to local upload service.");
+        }
 
-        const result = await response.json();
+        const rawText = await response.text();
+        let result;
+        try {
+          result = JSON.parse(rawText);
+        } catch {
+          // If server or reverse proxy returned HTML
+          throw new Error("Server returned an invalid response format instead of JSON.");
+        }
+
+        if (result.needsKey) {
+          openImgbbModal();
+          showToast(
+            "error",
+            "ImgBB API Key Required",
+            "An API key is required to upload directly to ImgBB. Create a free account at imgbb.com, get your key from api.imgbb.com, and enter it here.",
+            null,
+            { text: "Open Setup Guide", onClick: openImgbbModal }
+          );
+          uploadImgbbButton.innerHTML = originalHtml;
+          uploadImgbbButton.disabled = false;
+          return;
+        }
+
+        // Handle datacenter IP block fallback: perform direct browser upload
+        if (result.fallbackClientUpload) {
+          const keyToUse = result.clientKey || localKey;
+          if (!keyToUse) {
+            openImgbbModal();
+            showToast(
+              "error",
+              "ImgBB API Key Required",
+              "Please enter your free ImgBB API key to upload directly from your browser.",
+              null,
+              { text: "Enter Key", onClick: openImgbbModal }
+            );
+            uploadImgbbButton.innerHTML = originalHtml;
+            uploadImgbbButton.disabled = false;
+            return;
+          }
+
+          uploadImgbbButton.innerHTML = `
+            <svg class="spin-anim" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10" stroke-dasharray="32" stroke-linecap="round"></circle></svg>
+            <span>Direct Uploading...</span>
+          `;
+
+          const base64Data = dataUrl.replace(/^data:image\/[a-z]+;base64,/, "");
+          const fd = new FormData();
+          fd.append("image", base64Data);
+          fd.append("name", "gta-rp-chatlog");
+
+          const directRes = await fetch(`https://api.imgbb.com/1/upload?key=${encodeURIComponent(keyToUse)}`, {
+            method: "POST",
+            body: fd
+          });
+
+          const directRaw = await directRes.text();
+          let directData;
+          try {
+            directData = JSON.parse(directRaw);
+          } catch {
+            throw new Error("ImgBB returned an unexpected response. Please check your internet connection.");
+          }
+
+          if (!directRes.ok || !directData.success) {
+            const directErrMsg = directData?.error?.message || `ImgBB upload error (Code ${directData?.error?.code || directRes.status})`;
+            throw new Error(directErrMsg);
+          }
+
+          const uploadedUrl = directData.data.url || directData.data.display_url || directData.data.url_viewer;
+          await copyTextToClipboard(uploadedUrl);
+
+          uploadImgbbButton.innerHTML = `
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
+            <span>Link Copied! (Ctrl+V)</span>
+          `;
+
+          showToast(
+            "success",
+            "Uploaded to ImgBB & Copied!",
+            `Image uploaded successfully! Direct link copied to clipboard for Ctrl+V: <a href="${uploadedUrl}" target="_blank" rel="noopener noreferrer" class="toast-link">${uploadedUrl}</a>`,
+            uploadedUrl
+          );
+
+          setTimeout(() => {
+            uploadImgbbButton.innerHTML = originalHtml;
+            uploadImgbbButton.disabled = false;
+          }, 3200);
+          return;
+        }
 
         if (!response.ok || !result.success) {
-          const errMsg = result.error || "Upload to ImgBB failed. Please verify network and API key settings.";
+          const errMsg = result.error || "Upload to ImgBB failed.";
           showToast("error", "ImgBB Upload Failed", errMsg);
           uploadImgbbButton.innerHTML = `<span>Upload Failed</span>`;
           setTimeout(() => {
@@ -3599,7 +4018,7 @@
         }, 3200);
       } catch (err) {
         console.error("ImgBB upload error:", err);
-        showToast("error", "ImgBB Upload Error", err.message || "Failed to reach upload server.");
+        showToast("error", "ImgBB Upload Error", err.message || "Failed to complete upload.");
         uploadImgbbButton.innerHTML = `<span>Error</span>`;
         setTimeout(() => {
           uploadImgbbButton.innerHTML = originalHtml;

@@ -8,17 +8,29 @@ const __dirname = path.dirname(__filename);
 const app = express();
 const PORT = 3000;
 
-app.use(express.json({ limit: '35mb' }));
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 app.use(express.static(__dirname));
+
+app.get('/api/imgbb-status', (req, res) => {
+  const apiKey = process.env.IMGBB_API_KEY ? process.env.IMGBB_API_KEY.trim() : '';
+  res.json({
+    configured: Boolean(apiKey && apiKey.length > 5),
+    hasEnvKey: Boolean(apiKey && apiKey.length > 5)
+  });
+});
 
 app.post('/api/upload-imgbb', async (req, res) => {
   try {
-    const apiKey = process.env.IMGBB_API_KEY;
+    const envApiKey = process.env.IMGBB_API_KEY ? process.env.IMGBB_API_KEY.trim() : '';
+    const userApiKey = req.body?.customApiKey ? String(req.body.customApiKey).trim() : '';
+    const apiKey = userApiKey || envApiKey;
+
     if (!apiKey) {
       return res.status(400).json({
         success: false,
         needsKey: true,
-        error: 'ImgBB API key is missing. To upload directly to ImgBB, create a free account at imgbb.com, generate an API key at api.imgbb.com, and enter it into the app Settings under IMGBB_API_KEY.'
+        error: 'No ImgBB API key found. Please enter your free key from api.imgbb.com.'
       });
     }
 
@@ -39,16 +51,55 @@ app.post('/api/upload-imgbb', async (req, res) => {
       formData.append('name', name);
     }
 
-    const imgbbResponse = await fetch(`https://api.imgbb.com/1/upload?key=${encodeURIComponent(apiKey)}`, {
-      method: 'POST',
-      body: formData,
-    });
+    let imgbbResponse;
+    try {
+      imgbbResponse = await fetch(`https://api.imgbb.com/1/upload?key=${encodeURIComponent(apiKey)}`, {
+        method: 'POST',
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
+          'Accept': 'application/json'
+        },
+        body: formData,
+      });
+    } catch (netErr) {
+      console.error('Network error contacting ImgBB:', netErr);
+      return res.json({
+        success: false,
+        fallbackClientUpload: true,
+        clientKey: apiKey,
+        error: 'Direct server connection to ImgBB timed out. Trying direct browser upload...'
+      });
+    }
 
-    const data = await imgbbResponse.json();
+    const rawText = await imgbbResponse.text();
+    let data = null;
+    try {
+      data = JSON.parse(rawText);
+    } catch {
+      console.warn('ImgBB returned non-JSON response (likely Cloudflare or HTML block):', rawText.slice(0, 200));
+      // Cloudflare or HTML block on datacenter IP: signal client to upload directly from browser
+      return res.json({
+        success: false,
+        fallbackClientUpload: true,
+        clientKey: apiKey,
+        error: 'ImgBB cloud firewall blocked server IP. Falling back to direct browser upload...'
+      });
+    }
 
-    if (!imgbbResponse.ok || !data.success) {
-      const errMsg = data?.error?.message || `ImgBB upload failed with status ${imgbbResponse.status}`;
-      return res.status(imgbbResponse.status || 500).json({
+    // If ImgBB returned code 103 (datacenter IP block)
+    if (data?.error?.code === 103 || (data?.error?.message && data.error.message.includes('forbidden to use this website'))) {
+      console.log('ImgBB blocked cloud runner IP (code 103). Instructing client to upload directly.');
+      return res.json({
+        success: false,
+        fallbackClientUpload: true,
+        clientKey: apiKey,
+        error: 'ImgBB flagged cloud server IP. Completing upload directly from your browser...'
+      });
+    }
+
+    if (!imgbbResponse.ok || !data?.success) {
+      const errMsg = data?.error?.message || `ImgBB upload failed (Status ${imgbbResponse.status})`;
+      return res.status(imgbbResponse.status || 400).json({
         success: false,
         error: errMsg
       });
@@ -64,12 +115,26 @@ app.post('/api/upload-imgbb', async (req, res) => {
       height: data.data.height
     });
   } catch (err) {
-    console.error('Error during ImgBB upload proxy:', err);
+    console.error('Error in /api/upload-imgbb:', err);
     return res.status(500).json({
       success: false,
-      error: err.message || 'Internal server error while uploading to ImgBB'
+      error: 'An internal error occurred while processing the upload.'
     });
   }
+});
+
+// Express error handler for payload-too-large or parser errors
+app.use((err, req, res, next) => {
+  if (err) {
+    console.error('Express middleware error:', err.message);
+    return res.status(err.status || 500).json({
+      success: false,
+      error: err.type === 'entity.too.large'
+        ? 'Screenshot image is too large to send to server. Try reducing dimensions.'
+        : err.message || 'Server request error.'
+    });
+  }
+  next();
 });
 
 app.get('/favicon.ico', (req, res) => {
