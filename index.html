@@ -7,8 +7,9 @@
 <meta name="description" content="GTA roleplay chatlog magician and preview tool with server-accurate fonts, stroke & shadow styles, censor blur and redaction, clipboard image pasting, drag-and-drop screenshots, and canvas export." />
 <meta property="og:title" content="GTA RP Chatlog Magician" />
 <meta property="og:description" content="GTA roleplay chatlog magician and preview tool with server-accurate fonts, stroke & shadow styles, censor blur and redaction, clipboard image pasting, drag-and-drop screenshots, and canvas export." />
-<link rel="icon" type="image/png" href="clover.png" />
-<link rel="shortcut icon" type="image/png" href="clover.png" />
+<link rel="icon" type="image/svg+xml" href="clover.svg" />
+<link rel="icon" type="image/png" sizes="64x64" href="clover.png" />
+<link rel="shortcut icon" href="clover.png" />
 <link rel="apple-touch-icon" href="clover.png" />
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -45,8 +46,8 @@
 
   header {
     padding: 14px 18px;
-    border-bottom: 1px solid var(--border);
-    background: #111;
+    border-bottom: 1px solid #1a6337;
+    background: #0d4a25;
     display: flex;
     justify-content: space-between;
     gap: 12px;
@@ -58,10 +59,21 @@
     margin: 0;
     font-size: 20px;
     font-weight: 700;
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    gap: 9px;
+  }
+
+  .header-icon {
+    width: 22px;
+    height: 22px;
+    display: inline-block;
+    flex-shrink: 0;
   }
 
   header span {
-    color: var(--muted);
+    color: #bbf7d0;
     font-size: 13px;
   }
 
@@ -543,7 +555,7 @@
 <div class="app">
   <header>
     <div>
-      <h1>GTA RP Chatlog Magician</h1>
+      <h1><img src="clover.svg" alt="☘" class="header-icon" /> GTA RP Chatlog Magician</h1>
       <span>Paste a GTA-style chatlog and preview it with in-game-like colors.</span>
     </div>
   </header>
