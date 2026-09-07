@@ -960,6 +960,18 @@
     -webkit-user-drag: none;
     pointer-events: none;
     display: block;
+    z-index: 50;
+  }
+
+  .selection-box-overlay {
+    position: absolute;
+    pointer-events: none;
+    border: 2px dashed #22c55e;
+    box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.65);
+    z-index: 60;
+    display: none;
+    box-sizing: border-box;
+    transform-origin: top left;
   }
 
   .preview-box {
@@ -1417,6 +1429,7 @@
           <div id="overlayLayersContainer" class="overlay-layers-container"></div>
           <div id="preview" class="preview-box"></div>
           <img id="jpegPreviewImage" class="jpeg-preview-layer" alt="" />
+          <div id="selectionBox" class="selection-box-overlay"></div>
         </div>
       </div>
     </section>
@@ -1566,6 +1579,7 @@
   const addLayerImageQuickBtn = document.getElementById("addLayerImageQuickBtn");
   const overlayLayersContainer = document.getElementById("overlayLayersContainer");
   const backgroundLayerDom = document.getElementById("backgroundLayerDom");
+  const selectionBox = document.getElementById("selectionBox");
 
   const inspectorLayerName = document.getElementById("inspectorLayerName");
   const inspectorLayerType = document.getElementById("inspectorLayerType");
@@ -1833,6 +1847,7 @@
 
   function updateTextPosition() {
     preview.style.transform = `translate(${textOffsetX}px, ${textOffsetY}px)`;
+    updateSelectionBox();
     scheduleJpegPreview();
   }
 
@@ -2176,6 +2191,12 @@
 
       overlayLayersContainer.appendChild(imgEl);
     });
+
+    if (jpegPreviewImage) {
+      jpegPreviewImage.style.zIndex = "50";
+    }
+
+    updateSelectionBox();
   }
 
   function removeBackgroundAction() {
@@ -2817,6 +2838,34 @@
     );
   }
 
+  function updateSelectionBox() {
+    if (!selectionBox) return;
+    const selected = getSelectedLayer();
+    if (!selected || selected.visible === false) {
+      selectionBox.style.display = "none";
+      return;
+    }
+
+    if (selected.type === "image" && selected.img) {
+      const w = Math.round((selected.img.naturalWidth || selected.width || 50) * (selected.scale || 1));
+      const h = Math.round((selected.img.naturalHeight || selected.height || 50) * (selected.scale || 1));
+      selectionBox.style.display = "block";
+      selectionBox.style.left = Math.round(selected.x) + "px";
+      selectionBox.style.top = Math.round(selected.y) + "px";
+      selectionBox.style.width = w + "px";
+      selectionBox.style.height = h + "px";
+    } else if (selected.type === "text") {
+      const bounds = getTextBounds();
+      selectionBox.style.display = "block";
+      selectionBox.style.left = Math.round(bounds.x) + "px";
+      selectionBox.style.top = Math.round(bounds.y) + "px";
+      selectionBox.style.width = Math.round(bounds.width) + "px";
+      selectionBox.style.height = Math.round(bounds.height) + "px";
+    } else {
+      selectionBox.style.display = "none";
+    }
+  }
+
   function pixelateCanvasRect(ctx, rx, ry, rw, rh, blockSize) {
     const startX = Math.max(0, Math.floor(rx));
     const startY = Math.max(0, Math.floor(ry));
@@ -3048,7 +3097,9 @@
       if (jpegPreviewImage) {
         jpegPreviewImage.src = dataUrl;
         jpegPreviewImage.style.display = "block";
+        jpegPreviewImage.style.zIndex = "50";
       }
+      updateSelectionBox();
     } catch (err) {
       console.error("Failed to render real-time JPEG preview:", err);
     }
@@ -3174,8 +3225,29 @@
     return canvas;
   }
 
-  async function copyCanvasAsPng() {
+  async function getExportCanvas() {
     const canvas = createChatCanvas();
+    const quality = getJpegQuality();
+    if (quality >= 0.98) {
+      return canvas;
+    }
+    const jpegDataUrl = canvas.toDataURL("image/jpeg", quality);
+    const img = new Image();
+    await new Promise((resolve, reject) => {
+      img.onload = resolve;
+      img.onerror = reject;
+      img.src = jpegDataUrl;
+    });
+    const bakedCanvas = document.createElement("canvas");
+    bakedCanvas.width = canvas.width;
+    bakedCanvas.height = canvas.height;
+    const ctx = bakedCanvas.getContext("2d");
+    ctx.drawImage(img, 0, 0);
+    return bakedCanvas;
+  }
+
+  async function copyCanvasAsPng() {
+    const canvas = await getExportCanvas();
 
     if (!navigator.clipboard || !window.ClipboardItem) {
       throw new Error("PNG clipboard copying is not supported in this browser.");
@@ -3190,8 +3262,8 @@
     ]);
   }
 
-  function downloadCanvasAsPng() {
-    const canvas = createChatCanvas();
+  async function downloadCanvasAsPng() {
+    const canvas = await getExportCanvas();
     const link = document.createElement("a");
     link.download = "gta-rp-chatlog.png";
     link.href = canvas.toDataURL("image/png");
@@ -3827,7 +3899,7 @@
         }
 
         // 2. Render canvas and get binary Blob (avoids reverse-proxy payload limits)
-        const canvas = createChatCanvas();
+        const canvas = await getExportCanvas();
         const blob = await new Promise((resolve, reject) => {
           canvas.toBlob(b => {
             if (b) resolve(b);
