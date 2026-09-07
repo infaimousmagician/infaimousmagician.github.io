@@ -1453,6 +1453,13 @@
         <span id="jpegQualityValue">100%</span>
       </label>
     </div>
+
+    <div class="toolbar-group">
+      <span class="toolbar-group-label">Settings</span>
+      <button id="resetSettingsButton" type="button" class="btn btn-neutral btn-sm" title="Reset all settings to default values">
+        ↺ Reset Settings
+      </button>
+    </div>
   </div>
 
   <main class="workspace">
@@ -1660,6 +1667,7 @@
   const downloadPngButton = document.getElementById("downloadPngButton");
   const downloadJpegButton = document.getElementById("downloadJpegButton");
   const clearButton = document.getElementById("clearButton");
+  const resetSettingsButton = document.getElementById("resetSettingsButton");
   const toastContainer = document.getElementById("toastContainer");
 
   const layersPane = document.getElementById("layersPane");
@@ -1759,6 +1767,143 @@
   let originalBgY = 0;
   let originalTextX = 0;
   let originalTextY = 0;
+
+  const SETTINGS_STORAGE_KEY = "gtarp_chatlog_magician_settings_v1";
+
+  const DEFAULT_SETTINGS = {
+    fontFamily: "Arial, Helvetica, sans-serif",
+    fontSize: 14,
+    textPanelWidth: 500,
+    outlineStyle: "stroke",
+    strokeWidth: 1.5,
+    backgroundToggle: true,
+    censorStyle: "blur",
+    blurStrength: 3,
+    canvasWidth: 600,
+    canvasHeight: 600,
+    jpegQuality: 1
+  };
+
+  let saveSettingsTimer = null;
+
+  function saveCurrentSettings() {
+    try {
+      const current = {
+        fontFamily: fontFamilySelect ? fontFamilySelect.value : DEFAULT_SETTINGS.fontFamily,
+        fontSize: Number(fontSize.value) || DEFAULT_SETTINGS.fontSize,
+        textPanelWidth: Number(textPanelWidthInput.value) || DEFAULT_SETTINGS.textPanelWidth,
+        outlineStyle: outlineStyleSelect ? outlineStyleSelect.value : DEFAULT_SETTINGS.outlineStyle,
+        strokeWidth: parseFloat(strokeWidthInput ? strokeWidthInput.value : String(DEFAULT_SETTINGS.strokeWidth)) || DEFAULT_SETTINGS.strokeWidth,
+        backgroundToggle: backgroundToggle ? backgroundToggle.checked : DEFAULT_SETTINGS.backgroundToggle,
+        censorStyle: censorStyleSelect ? censorStyleSelect.value : DEFAULT_SETTINGS.censorStyle,
+        blurStrength: parseInt(blurStrengthInput ? blurStrengthInput.value : String(DEFAULT_SETTINGS.blurStrength), 10) || DEFAULT_SETTINGS.blurStrength,
+        canvasWidth: Number(canvasWidthInput.value) || DEFAULT_SETTINGS.canvasWidth,
+        canvasHeight: Number(canvasHeightInput.value) || DEFAULT_SETTINGS.canvasHeight,
+        jpegQuality: Number(jpegQualityInput.value) || DEFAULT_SETTINGS.jpegQuality
+      };
+      localStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify(current));
+    } catch (err) {
+      console.warn("Could not save settings to localStorage:", err);
+    }
+  }
+
+  function saveCurrentSettingsDebounced() {
+    if (saveSettingsTimer) clearTimeout(saveSettingsTimer);
+    saveSettingsTimer = setTimeout(() => {
+      saveCurrentSettings();
+    }, 250);
+  }
+
+  function loadAndApplySavedSettings() {
+    try {
+      const raw = localStorage.getItem(SETTINGS_STORAGE_KEY);
+      if (!raw) return;
+      const parsed = JSON.parse(raw);
+      if (!parsed || typeof parsed !== "object") return;
+
+      // Safe schema merge: any missing or new settings safely fall back to DEFAULT_SETTINGS,
+      // and any deleted/obsolete setting from prior versions is safely ignored without breaking.
+      const s = { ...DEFAULT_SETTINGS, ...parsed };
+
+      if (fontFamilySelect && typeof s.fontFamily === "string") {
+        fontFamilySelect.value = s.fontFamily;
+      }
+      if (fontSize && typeof s.fontSize === "number" && !isNaN(s.fontSize)) {
+        fontSize.value = Math.max(8, Math.min(s.fontSize, 72));
+      }
+      if (textPanelWidthInput && typeof s.textPanelWidth === "number" && !isNaN(s.textPanelWidth)) {
+        textPanelWidthInput.value = Math.max(50, Math.min(s.textPanelWidth, 4000));
+      }
+      if (outlineStyleSelect && typeof s.outlineStyle === "string") {
+        outlineStyleSelect.value = s.outlineStyle;
+      }
+      if (strokeWidthInput && typeof s.strokeWidth === "number" && !isNaN(s.strokeWidth)) {
+        strokeWidthInput.value = Math.max(0.5, Math.min(s.strokeWidth, 10));
+      }
+      if (backgroundToggle && typeof s.backgroundToggle === "boolean") {
+        backgroundToggle.checked = s.backgroundToggle;
+      }
+      if (censorStyleSelect && typeof s.censorStyle === "string") {
+        censorStyleSelect.value = s.censorStyle;
+      }
+      if (blurStrengthInput && typeof s.blurStrength === "number" && !isNaN(s.blurStrength)) {
+        blurStrengthInput.value = Math.max(1, Math.min(s.blurStrength, 20));
+        if (blurStrengthValue) blurStrengthValue.textContent = `${blurStrengthInput.value}px`;
+      }
+      if (canvasWidthInput && typeof s.canvasWidth === "number" && !isNaN(s.canvasWidth)) {
+        canvasWidthInput.value = Math.max(100, Math.min(s.canvasWidth, 4000));
+      }
+      if (canvasHeightInput && typeof s.canvasHeight === "number" && !isNaN(s.canvasHeight)) {
+        canvasHeightInput.value = Math.max(100, Math.min(s.canvasHeight, 4000));
+      }
+      if (jpegQualityInput && typeof s.jpegQuality === "number" && !isNaN(s.jpegQuality)) {
+        jpegQualityInput.value = Math.max(0.05, Math.min(s.jpegQuality, 1));
+        if (jpegQualityValue) {
+          jpegQualityValue.textContent = Math.round(jpegQualityInput.value * 100) + "%";
+        }
+      }
+    } catch (err) {
+      console.warn("Could not load settings from localStorage:", err);
+    }
+  }
+
+  function resetSettingsToDefault() {
+    try {
+      localStorage.removeItem(SETTINGS_STORAGE_KEY);
+    } catch (err) {
+      console.warn("Could not clear settings from localStorage:", err);
+    }
+
+    if (fontFamilySelect) fontFamilySelect.value = DEFAULT_SETTINGS.fontFamily;
+    if (fontSize) fontSize.value = DEFAULT_SETTINGS.fontSize;
+    if (textPanelWidthInput) textPanelWidthInput.value = DEFAULT_SETTINGS.textPanelWidth;
+    if (outlineStyleSelect) outlineStyleSelect.value = DEFAULT_SETTINGS.outlineStyle;
+    if (strokeWidthInput) strokeWidthInput.value = DEFAULT_SETTINGS.strokeWidth;
+    if (backgroundToggle) backgroundToggle.checked = DEFAULT_SETTINGS.backgroundToggle;
+    if (censorStyleSelect) censorStyleSelect.value = DEFAULT_SETTINGS.censorStyle;
+    if (blurStrengthInput) {
+      blurStrengthInput.value = DEFAULT_SETTINGS.blurStrength;
+      if (blurStrengthValue) blurStrengthValue.textContent = `${DEFAULT_SETTINGS.blurStrength}px`;
+    }
+    if (canvasWidthInput) canvasWidthInput.value = DEFAULT_SETTINGS.canvasWidth;
+    if (canvasHeightInput) canvasHeightInput.value = DEFAULT_SETTINGS.canvasHeight;
+    if (jpegQualityInput) {
+      jpegQualityInput.value = DEFAULT_SETTINGS.jpegQuality;
+      if (jpegQualityValue) jpegQualityValue.textContent = "100%";
+    }
+
+    document.documentElement.style.setProperty("--chat-font-size", `${DEFAULT_SETTINGS.fontSize}px`);
+    updateTextPanelWidth();
+    preview.classList.toggle("no-text-background", !backgroundToggle.checked);
+    updateCanvasStageSize();
+    updateFontFamily();
+    updateOutlineSettings();
+    updateCensorSettings();
+    scheduleJpegPreview();
+    render();
+
+    showToast("success", "Settings Reset", "All settings have been restored to their original defaults.");
+  }
 
   function getCanvasWidth() {
     const value = Number(canvasWidthInput.value);
@@ -2376,6 +2521,7 @@
     fontSize.value = value;
     document.documentElement.style.setProperty("--chat-font-size", value + "px");
     render();
+    saveCurrentSettings();
   }
 
   function normalizeTextPanelWidthOnBlur() {
@@ -2384,6 +2530,7 @@
     if (rawValue === "") {
       textPanelWidthInput.value = 500;
       updateTextPanelWidth();
+      saveCurrentSettings();
       return;
     }
 
@@ -2396,6 +2543,7 @@
     value = Math.min(Math.max(value, 50), 4000);
     textPanelWidthInput.value = value;
     updateTextPanelWidth();
+    saveCurrentSettings();
   }
 
   function normalizeCanvasWidthOnBlur() {
@@ -2403,6 +2551,7 @@
     if (rawValue === "") {
       canvasWidthInput.value = 600;
       updateCanvasStageSize();
+      saveCurrentSettings();
       return;
     }
     let value = Number(rawValue);
@@ -2412,6 +2561,7 @@
     value = Math.min(Math.max(value, 100), 4000);
     canvasWidthInput.value = value;
     updateCanvasStageSize();
+    saveCurrentSettings();
   }
 
   function normalizeCanvasHeightOnBlur() {
@@ -2419,6 +2569,7 @@
     if (rawValue === "") {
       canvasHeightInput.value = 600;
       updateCanvasStageSize();
+      saveCurrentSettings();
       return;
     }
     let value = Number(rawValue);
@@ -2428,6 +2579,7 @@
     value = Math.min(Math.max(value, 100), 4000);
     canvasHeightInput.value = value;
     updateCanvasStageSize();
+    saveCurrentSettings();
   }
 
   function escapeHtml(value) {
@@ -3559,51 +3711,82 @@
   fontSize.addEventListener("input", () => {
     applyFontSizeFromTypedValue();
     render();
+    saveCurrentSettingsDebounced();
   });
 
   fontSize.addEventListener("blur", () => {
     normalizeFontSizeOnBlur();
+    saveCurrentSettings();
   });
 
   fontSize.addEventListener("change", () => {
     normalizeFontSizeOnBlur();
+    saveCurrentSettings();
   });
 
   textPanelWidthInput.addEventListener("input", () => {
     updateTextPanelWidth();
+    saveCurrentSettingsDebounced();
   });
 
   textPanelWidthInput.addEventListener("blur", () => {
     normalizeTextPanelWidthOnBlur();
+    saveCurrentSettings();
   });
 
   textPanelWidthInput.addEventListener("change", () => {
     normalizeTextPanelWidthOnBlur();
+    saveCurrentSettings();
   });
 
   jpegQualityInput.addEventListener("input", () => {
     const qualityPercent = Math.round(jpegQualityInput.value * 100);
     jpegQualityValue.textContent = qualityPercent + "%";
     scheduleJpegPreview();
+    saveCurrentSettingsDebounced();
   });
 
   jpegQualityInput.addEventListener("change", () => {
     const qualityPercent = Math.round(jpegQualityInput.value * 100);
     jpegQualityValue.textContent = qualityPercent + "%";
     scheduleJpegPreview();
+    saveCurrentSettings();
   });
 
   backgroundToggle.addEventListener("change", () => {
     preview.classList.toggle("no-text-background", !backgroundToggle.checked);
     scheduleJpegPreview();
+    saveCurrentSettings();
   });
 
-  fontFamilySelect.addEventListener("change", updateFontFamily);
-  outlineStyleSelect.addEventListener("change", updateOutlineSettings);
-  strokeWidthInput.addEventListener("input", updateOutlineSettings);
-  strokeWidthInput.addEventListener("change", updateOutlineSettings);
-  censorStyleSelect.addEventListener("change", updateCensorSettings);
-  blurStrengthInput.addEventListener("input", updateCensorSettings);
+  fontFamilySelect.addEventListener("change", () => {
+    updateFontFamily();
+    saveCurrentSettings();
+  });
+  outlineStyleSelect.addEventListener("change", () => {
+    updateOutlineSettings();
+    saveCurrentSettings();
+  });
+  strokeWidthInput.addEventListener("input", () => {
+    updateOutlineSettings();
+    saveCurrentSettingsDebounced();
+  });
+  strokeWidthInput.addEventListener("change", () => {
+    updateOutlineSettings();
+    saveCurrentSettings();
+  });
+  censorStyleSelect.addEventListener("change", () => {
+    updateCensorSettings();
+    saveCurrentSettings();
+  });
+  blurStrengthInput.addEventListener("input", () => {
+    updateCensorSettings();
+    saveCurrentSettingsDebounced();
+  });
+  blurStrengthInput.addEventListener("change", () => {
+    updateCensorSettings();
+    saveCurrentSettings();
+  });
 
   blurSelectionButton.addEventListener("click", blurSelectedTextInInput);
 
@@ -3772,10 +3955,16 @@
     }
   });
 
-  canvasWidthInput.addEventListener("input", updateCanvasStageSize);
+  canvasWidthInput.addEventListener("input", () => {
+    updateCanvasStageSize();
+    saveCurrentSettingsDebounced();
+  });
   canvasWidthInput.addEventListener("blur", normalizeCanvasWidthOnBlur);
   canvasWidthInput.addEventListener("change", normalizeCanvasWidthOnBlur);
-  canvasHeightInput.addEventListener("input", updateCanvasStageSize);
+  canvasHeightInput.addEventListener("input", () => {
+    updateCanvasStageSize();
+    saveCurrentSettingsDebounced();
+  });
   canvasHeightInput.addEventListener("blur", normalizeCanvasHeightOnBlur);
   canvasHeightInput.addEventListener("change", normalizeCanvasHeightOnBlur);
 
@@ -4116,7 +4305,14 @@
     render();
   });
 
-  document.documentElement.style.setProperty("--chat-font-size", "14px");
+  if (resetSettingsButton) {
+    resetSettingsButton.addEventListener("click", resetSettingsToDefault);
+  }
+
+  loadAndApplySavedSettings();
+
+  const initialFontSize = Number(fontSize.value) || 14;
+  document.documentElement.style.setProperty("--chat-font-size", initialFontSize + "px");
   updateTextPanelWidth();
   preview.classList.toggle("no-text-background", !backgroundToggle.checked);
   updateCanvasStageSize();
@@ -4131,6 +4327,7 @@
 
   // Tip Rotation Carousel
   const siteTips = [
+    "Your customized canvas dimensions, fonts, outline styles, and censorship settings are automatically saved and remembered across visits.",
     "Add images on top of the canvas via the Layers box or <strong>+ Add Image Layer</strong>. Drag on the canvas to move any layer, or use the mouse wheel to scale.",
     "Highlight any text and press <strong>Ctrl+B</strong> (or click <strong>Blur Selection ☘</strong>) to censor sensitive names, radio channels, or locations.",
     "Switch censor modes in top controls: choose between smooth <strong>Gaussian Blur</strong>, retro <strong>Mosaic Blur</strong>, or <strong>Redacted Black Bar</strong>.",
