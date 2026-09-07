@@ -1542,7 +1542,6 @@
 
     <div class="actions-group">
       <span class="actions-group-label">Canvas & View</span>
-      <button id="addLayerImageQuickBtn" class="btn btn-neutral">+ Add Image Layer</button>
       <button id="resetTextPositionButton" class="btn btn-neutral">Reset Text Position</button>
       <button id="removeImageButton" class="btn btn-danger">Remove Background</button>
     </div>
@@ -1675,7 +1674,6 @@
   const layersCountBadge = document.getElementById("layersCountBadge");
   const addLayerImageBtn = document.getElementById("addLayerImageBtn");
   const layerImageFileInput = document.getElementById("layerImageFileInput");
-  const addLayerImageQuickBtn = document.getElementById("addLayerImageQuickBtn");
   const overlayLayersContainer = document.getElementById("overlayLayersContainer");
   const backgroundLayerDom = document.getElementById("backgroundLayerDom");
   const selectionBox = document.getElementById("selectionBox");
@@ -3862,12 +3860,6 @@
 
   if (addLayerImageBtn) {
     addLayerImageBtn.addEventListener("click", () => {
-      layerImageFileInput.click();
-    });
-  }
-
-  if (addLayerImageQuickBtn) {
-    addLayerImageQuickBtn.addEventListener("click", () => {
       layerImageFileInput.click();
     });
   }
