@@ -1323,11 +1323,6 @@
     </label>
 
     <label class="control">
-      <input id="timestampToggle" type="checkbox" />
-      Show timestamps
-    </label>
-
-    <label class="control">
       Background image
       <input id="backgroundImageInput" type="file" accept="image/*" />
     </label>
@@ -1431,7 +1426,6 @@
     <div class="actions-group">
       <span class="actions-group-label">Text & Censor</span>
       <button id="blurSelectionButton" class="btn btn-accent" title="Wrap selection with ☘ (Shortcut: Ctrl+B)">Blur Selection ☘ (Ctrl+B)</button>
-      <button id="copyBlurSymbolButton" class="btn btn-neutral">Copy Blur ☘</button>
       <button id="clearButton" class="btn btn-danger">Clear Text</button>
     </div>
 
@@ -1548,7 +1542,6 @@
   const blurSelectionButton = document.getElementById("blurSelectionButton");
   const textPanelWidthInput = document.getElementById("textPanelWidthInput");
   const backgroundToggle = document.getElementById("backgroundToggle");
-  const timestampToggle = document.getElementById("timestampToggle");
   const backgroundImageInput = document.getElementById("backgroundImageInput");
   const backgroundImage = document.getElementById("backgroundImage");
   const canvasWidthInput = document.getElementById("canvasWidthInput");
@@ -1558,7 +1551,6 @@
   const jpegPreviewImage = document.getElementById("jpegPreviewImage");
   const removeImageButton = document.getElementById("removeImageButton");
   const resetTextPositionButton = document.getElementById("resetTextPositionButton");
-  const copyBlurSymbolButton = document.getElementById("copyBlurSymbolButton");
   const uploadImgbbButton = document.getElementById("uploadImgbbButton");
   const copyPngButton = document.getElementById("copyPngButton");
   const downloadPngButton = document.getElementById("downloadPngButton");
@@ -2575,22 +2567,8 @@
   function getLineSegments(text, className, isCharacterKill) {
     if (!text) return [];
 
-    const showTimestamps = timestampToggle.checked;
     const segments = [];
-    let restText = text;
-
-    if (showTimestamps) {
-      const timestampMatch = text.match(TIMESTAMP_CAPTURE_REGEX);
-      if (timestampMatch) {
-        segments.push({
-          text: timestampMatch[1],
-          color: CHAT_COLORS.timestamp,
-          className: "timestamp",
-          isBlurred: false
-        });
-        restText = text.slice(timestampMatch[1].length);
-      }
-    }
+    const restText = text;
 
     if (isCharacterKill) {
       const parts = splitCharacterKillLine(restText);
@@ -2682,14 +2660,12 @@
   }
 
   function render() {
-    const showTimestamps = timestampToggle.checked;
-
     const lines = input.value.split("\n").map((rawLine) => {
       if (rawLine.trim() === "") {
         return `<span class="line blank-line">&nbsp;</span>`;
       }
 
-      const visibleLine = showTimestamps ? rawLine : stripTimestamp(rawLine);
+      const visibleLine = stripTimestamp(rawLine);
       const className = classifyLine(rawLine);
       const isCharacterKill = className === "characterkill";
 
@@ -2721,11 +2697,9 @@
   }
 
   function getVisibleLinesForCanvas() {
-    const showTimestamps = timestampToggle.checked;
-
     return input.value.split("\n").map(rawLine => {
       const isBlank = rawLine.trim() === "";
-      const visibleText = showTimestamps ? rawLine : stripTimestamp(rawLine);
+      const visibleText = stripTimestamp(rawLine);
       const className = classifyLine(rawLine);
       const isCharacterKill = className === "characterkill";
 
@@ -2959,37 +2933,15 @@
   }
 
   function drawLineWithTimestamp(ctx, text, classColor, x, y, lineHeight = 18) {
-    const timestampMatch = text.match(TIMESTAMP_CAPTURE_REGEX);
-
-    if (!timestampToggle.checked || !timestampMatch) {
-      drawTextWithStroke(ctx, text, x, y, classColor, false, lineHeight);
-      return;
-    }
-
-    const timestamp = timestampMatch[1];
-    const rest = text.slice(timestamp.length);
-    drawTextWithStroke(ctx, timestamp, x, y, CHAT_COLORS.timestamp, false, lineHeight);
-    const timestampWidth = ctx.measureText(timestamp).width;
-    drawTextWithStroke(ctx, rest, x + timestampWidth, y, classColor, false, lineHeight);
+    drawTextWithStroke(ctx, text, x, y, classColor, false, lineHeight);
   }
 
   function drawCharacterKillLine(ctx, text, x, y, lineHeight = 18) {
     let currentX = x;
-    let lineText = text;
-
-    const timestampMatch = lineText.match(TIMESTAMP_CAPTURE_REGEX);
-
-    if (timestampToggle.checked && timestampMatch) {
-      const timestamp = timestampMatch[1];
-      drawTextWithStroke(ctx, timestamp, currentX, y, CHAT_COLORS.timestamp, false, lineHeight);
-      currentX += ctx.measureText(timestamp).width;
-      lineText = lineText.slice(timestamp.length);
-    }
-
-    const parts = splitCharacterKillLine(lineText);
+    const parts = splitCharacterKillLine(text);
 
     if (!parts.tag) {
-      drawTextWithStroke(ctx, lineText, currentX, y, CHAT_COLORS.ckred, false, lineHeight);
+      drawTextWithStroke(ctx, text, currentX, y, CHAT_COLORS.ckred, false, lineHeight);
       return;
     }
 
@@ -3452,8 +3404,6 @@
     scheduleJpegPreview();
   });
 
-  timestampToggle.addEventListener("change", render);
-
   fontFamilySelect.addEventListener("change", updateFontFamily);
   outlineStyleSelect.addEventListener("change", updateOutlineSettings);
   strokeWidthInput.addEventListener("input", updateOutlineSettings);
@@ -3650,36 +3600,6 @@
     textOffsetX = DEFAULT_TEXT_OFFSET_X;
     textOffsetY = DEFAULT_TEXT_OFFSET_Y;
     updateTextPosition();
-  });
-
-  copyBlurSymbolButton.addEventListener("click", async () => {
-    try {
-      await navigator.clipboard.writeText("☘");
-      copyBlurSymbolButton.textContent = "Copied ☘!";
-      setTimeout(() => {
-        copyBlurSymbolButton.textContent = "Copy Blur ☘";
-      }, 1200);
-    } catch {
-      try {
-        const textarea = document.createElement("textarea");
-        textarea.value = "☘";
-        textarea.style.position = "fixed";
-        textarea.style.opacity = "0";
-        document.body.appendChild(textarea);
-        textarea.select();
-        document.execCommand("copy");
-        document.body.removeChild(textarea);
-        copyBlurSymbolButton.textContent = "Copied ☘!";
-        setTimeout(() => {
-          copyBlurSymbolButton.textContent = "Copy Blur ☘";
-        }, 1200);
-      } catch {
-        copyBlurSymbolButton.textContent = "Copy failed";
-        setTimeout(() => {
-          copyBlurSymbolButton.textContent = "Copy Blur ☘";
-        }, 1200);
-      }
-    }
   });
 
   input.addEventListener("input", render);
