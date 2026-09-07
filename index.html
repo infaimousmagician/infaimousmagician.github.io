@@ -4,12 +4,15 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>GTA RP Chatlog Magician</title>
-<meta name="description" content="GTA roleplay chatlog magician and preview tool with in-game styling, timestamps, character kill tags, canvas export, and background imagery." />
+<meta name="description" content="GTA roleplay chatlog magician and preview tool with server-accurate fonts, stroke & shadow styles, censor blur and redaction, clipboard image pasting, drag-and-drop screenshots, and canvas export." />
 <meta property="og:title" content="GTA RP Chatlog Magician" />
-<meta property="og:description" content="GTA roleplay chatlog magician and preview tool with in-game styling, timestamps, character kill tags, canvas export, and background imagery." />
+<meta property="og:description" content="GTA roleplay chatlog magician and preview tool with server-accurate fonts, stroke & shadow styles, censor blur and redaction, clipboard image pasting, drag-and-drop screenshots, and canvas export." />
 <link rel="icon" type="image/png" href="clover.png" />
 <link rel="shortcut icon" type="image/png" href="clover.png" />
 <link rel="apple-touch-icon" href="clover.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
 <style>
   :root {
     --page-bg: #181818;
@@ -84,9 +87,25 @@
     accent-color: var(--accent);
   }
 
+  .control select {
+    padding: 6px 8px;
+    border-radius: 5px;
+    border: 1px solid var(--border);
+    background: #151515;
+    color: var(--text);
+    font-weight: 700;
+    cursor: pointer;
+  }
+
+  .control select:focus {
+    outline: none;
+    border-color: var(--accent);
+  }
+
   .font-size-input,
   .canvas-size-input,
-  .text-panel-width-input {
+  .text-panel-width-input,
+  .stroke-width-input {
     width: 86px;
     padding: 6px 8px;
     border-radius: 5px;
@@ -96,24 +115,110 @@
     font-weight: 700;
   }
 
+  .stroke-width-input {
+    width: 65px;
+  }
+
   input[type="file"] {
     color: var(--muted);
     max-width: 230px;
   }
 
   button {
-    background: var(--accent);
-    color: #ffffff;
-    border: none;
-    padding: 8px 12px;
-    border-radius: 5px;
+    font-family: inherit;
+    font-size: 13px;
     font-weight: 700;
+    border-radius: 5px;
     cursor: pointer;
-    transition: filter 0.15s ease;
+    transition: all 0.15s ease;
   }
 
-  button:hover {
-    filter: brightness(1.12);
+  .btn {
+    border: 1px solid transparent;
+    padding: 7px 12px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    line-height: 1.25;
+  }
+
+  .btn-neutral {
+    background: #272727;
+    border-color: #3e3e3e;
+    color: #f0f0f0;
+  }
+
+  .btn-neutral:hover {
+    background: #333333;
+    border-color: #555555;
+    color: #ffffff;
+  }
+
+  .btn-accent {
+    background: var(--accent);
+    color: #ffffff;
+    border-color: rgba(255, 255, 255, 0.15);
+  }
+
+  .btn-accent:hover {
+    filter: brightness(1.15);
+  }
+
+  .btn-danger {
+    background: #261919;
+    border-color: #4a2424;
+    color: #ff9b9b;
+  }
+
+  .btn-danger:hover {
+    background: #361f1f;
+    border-color: #6d2f2f;
+    color: #ffb5b5;
+  }
+
+  .btn-export {
+    background: #194622;
+    border-color: #276b35;
+    color: #d8fcd8;
+  }
+
+  .btn-export:hover {
+    background: #215a2c;
+    border-color: #358f47;
+    color: #ffffff;
+    filter: brightness(1.1);
+  }
+
+  .bottom-actions-panel {
+    padding: 12px 18px;
+    border-top: 1px solid var(--border);
+    background: #161616;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .actions-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: #1f1f1f;
+    padding: 7px 12px;
+    border-radius: 7px;
+    border: 1px solid #333333;
+    flex-wrap: wrap;
+  }
+
+  .actions-group-label {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #999999;
+    margin-right: 4px;
+    user-select: none;
   }
 
   .workspace {
@@ -183,6 +288,11 @@
     cursor: grabbing;
   }
 
+  .canvas-stage.drag-over {
+    outline: 2px dashed var(--accent);
+    outline-offset: -3px;
+  }
+
   .background-layer {
     position: absolute;
     inset: 0;
@@ -219,7 +329,7 @@
     width: var(--text-panel-width);
     max-width: var(--text-panel-width);
     min-height: 260px;
-    font-family: Arial, Helvetica, sans-serif;
+    font-family: var(--chat-font-family, Arial, Helvetica, sans-serif);
     font-size: var(--chat-font-size);
     line-height: 1.25;
     white-space: pre-wrap;
@@ -244,11 +354,11 @@
     background: rgba(0, 0, 0, 0.84);
     box-decoration-break: clone;
     -webkit-box-decoration-break: clone;
-    text-shadow:
+    text-shadow: var(--chat-text-shadow,
       -1px -1px 0 rgba(0,0,0,0.6),
        1px -1px 0 rgba(0,0,0,0.6),
       -1px  1px 0 rgba(0,0,0,0.6),
-       1px  1px 0 rgba(0,0,0,0.6);
+       1px  1px 0 rgba(0,0,0,0.6));
   }
 
   .no-text-background .text-bg {
@@ -258,11 +368,24 @@
   }
 
   .blurred-text {
-    filter: blur(0.28em);
+    filter: blur(var(--blur-radius, 4px));
     display: inline-block;
     vertical-align: baseline;
     user-select: none;
     -webkit-user-select: none;
+  }
+
+  .preview-box.censor-redact .blurred-text {
+    filter: none;
+    background: #000000 !important;
+    color: transparent !important;
+    border-radius: 2px;
+    box-shadow: 0 0 0 1px #000000;
+  }
+
+  .preview-box.censor-redact .blurred-text * {
+    color: transparent !important;
+    visibility: hidden;
   }
 
   .timestamp {
@@ -392,6 +515,16 @@
     .preview-outer {
       min-height: 360px;
     }
+
+    .bottom-actions-panel {
+      justify-content: stretch;
+      gap: 10px;
+    }
+
+    .actions-group {
+      width: 100%;
+      justify-content: flex-start;
+    }
   }
 </style>
 </head>
@@ -406,9 +539,52 @@
 
   <div class="toolbar">
     <label class="control">
+      Font:
+      <select id="fontFamilySelect">
+        <option value="Arial, Helvetica, sans-serif" selected>Arial (Classic SA-MP)</option>
+        <option value="Tahoma, Geneva, sans-serif">Tahoma (GTA World / LSRP)</option>
+        <option value="Verdana, Geneva, sans-serif">Verdana</option>
+        <option value="'Roboto', sans-serif">Roboto (FiveM / GTA V)</option>
+        <option value="'Trebuchet MS', sans-serif">Trebuchet MS</option>
+        <option value="Georgia, serif">Georgia</option>
+        <option value="Impact, Charcoal, sans-serif">Impact</option>
+      </select>
+    </label>
+
+    <label class="control">
       Font size:
       <input id="fontSize" class="font-size-input" type="number" min="8" max="72" value="14" />
       px
+    </label>
+
+    <label class="control">
+      Outline style:
+      <select id="outlineStyleSelect">
+        <option value="stroke" selected>Outline (Classic SA-MP)</option>
+        <option value="shadow">Drop Shadow (GTA V / FiveM)</option>
+        <option value="both">Outline & Shadow</option>
+        <option value="none">None</option>
+      </select>
+    </label>
+
+    <label class="control" id="strokeWidthControl">
+      Outline thickness:
+      <input id="strokeWidthInput" class="stroke-width-input" type="number" min="0.5" max="6" step="0.5" value="1.5" />
+      px
+    </label>
+
+    <label class="control">
+      Censor style:
+      <select id="censorStyleSelect">
+        <option value="blur" selected>Gaussian Blur</option>
+        <option value="redact">Redacted Black Bar</option>
+      </select>
+    </label>
+
+    <label class="control" id="blurStrengthControl">
+      Blur strength:
+      <input id="blurStrengthInput" type="range" min="1" max="10" step="1" value="4" style="width: 80px;" />
+      <span id="blurStrengthValue">4px</span>
     </label>
 
     <label class="control">
@@ -449,14 +625,6 @@
       <input id="jpegQualityInput" type="range" min="0.05" max="1" step="0.01" value="0.9" style="width: 90px;" />
       <span id="jpegQualityValue">90%</span>
     </label>
-
-    <button id="removeImageButton">Remove Image</button>
-    <button id="clearButton">Clear Text</button>
-    <button id="resetTextPositionButton">Reset Text Position</button>
-    <button id="copyBlurSymbolButton">Copy Blur ☘</button>
-    <button id="copyPngButton">Copy PNG</button>
-    <button id="downloadPngButton">Download PNG</button>
-    <button id="downloadJpegButton">Download JPEG</button>
   </div>
 
   <main class="workspace">
@@ -487,8 +655,30 @@
     </section>
   </main>
 
+  <div class="bottom-actions-panel" id="actionsPanel">
+    <div class="actions-group">
+      <span class="actions-group-label">Text & Censor</span>
+      <button id="blurSelectionButton" class="btn btn-accent" title="Wrap selection with ☘ (Shortcut: Ctrl+B)">Blur Selection ☘ (Ctrl+B)</button>
+      <button id="copyBlurSymbolButton" class="btn btn-neutral">Copy Blur ☘</button>
+      <button id="clearButton" class="btn btn-danger">Clear Text</button>
+    </div>
+
+    <div class="actions-group">
+      <span class="actions-group-label">Canvas & View</span>
+      <button id="resetTextPositionButton" class="btn btn-neutral">Reset Text Position</button>
+      <button id="removeImageButton" class="btn btn-danger">Remove Image</button>
+    </div>
+
+    <div class="actions-group">
+      <span class="actions-group-label">Export Image</span>
+      <button id="copyPngButton" class="btn btn-export">Copy PNG</button>
+      <button id="downloadPngButton" class="btn btn-export">Download PNG</button>
+      <button id="downloadJpegButton" class="btn btn-export">Download JPEG</button>
+    </div>
+  </div>
+
   <div class="footer-note">
-    Tip: Set the canvas size, control the text panel width, then drag the background image or the chat text to move them. PNG exports use the same text width, wrapping, canvas, text position, image position, and zoom.
+    Tip: Paste screenshots directly with Ctrl+V or drag and drop an image onto the canvas. Select text and press Ctrl+B or click "Blur Selection ☘" to blur/redact words. Drag background or text to reposition.
   </div>
 </div>
 
@@ -497,7 +687,16 @@
   const preview = document.getElementById("preview");
   const previewOuter = document.getElementById("previewOuter");
   const canvasStage = document.getElementById("canvasStage");
+  const fontFamilySelect = document.getElementById("fontFamilySelect");
   const fontSize = document.getElementById("fontSize");
+  const outlineStyleSelect = document.getElementById("outlineStyleSelect");
+  const strokeWidthInput = document.getElementById("strokeWidthInput");
+  const strokeWidthControl = document.getElementById("strokeWidthControl");
+  const censorStyleSelect = document.getElementById("censorStyleSelect");
+  const blurStrengthInput = document.getElementById("blurStrengthInput");
+  const blurStrengthValue = document.getElementById("blurStrengthValue");
+  const blurStrengthControl = document.getElementById("blurStrengthControl");
+  const blurSelectionButton = document.getElementById("blurSelectionButton");
   const textPanelWidthInput = document.getElementById("textPanelWidthInput");
   const backgroundToggle = document.getElementById("backgroundToggle");
   const timestampToggle = document.getElementById("timestampToggle");
@@ -586,6 +785,136 @@
     const value = Number(textPanelWidthInput.value);
     if (Number.isNaN(value) || value < 50) return 500;
     return Math.min(value, 4000);
+  }
+
+  function getFontFamily() {
+    return fontFamilySelect ? fontFamilySelect.value : "Arial, Helvetica, sans-serif";
+  }
+
+  function updateFontFamily() {
+    preview.style.setProperty("--chat-font-family", getFontFamily());
+    render();
+  }
+
+  function getOutlineSettings() {
+    const style = outlineStyleSelect ? outlineStyleSelect.value : "stroke";
+    const thickness = parseFloat(strokeWidthInput ? strokeWidthInput.value : "1.5") || 1.5;
+    return { style, thickness: Math.max(0.5, Math.min(thickness, 10)) };
+  }
+
+  function updateOutlineSettings() {
+    const { style, thickness } = getOutlineSettings();
+    const t = thickness.toFixed(1) + "px";
+    const negT = (-thickness).toFixed(1) + "px";
+
+    if (style === "none") {
+      strokeWidthControl.style.display = "none";
+      preview.style.setProperty("--chat-text-shadow", "none");
+    } else {
+      strokeWidthControl.style.display = "flex";
+      if (style === "stroke") {
+        preview.style.setProperty("--chat-text-shadow", `
+          ${negT} ${negT} 0 rgba(0,0,0,0.88),
+          ${t} ${negT} 0 rgba(0,0,0,0.88),
+          ${negT} ${t} 0 rgba(0,0,0,0.88),
+          ${t} ${t} 0 rgba(0,0,0,0.88)
+        `);
+      } else if (style === "shadow") {
+        const shadowOffset = Math.max(1, thickness).toFixed(1) + "px";
+        const shadowBlur = Math.max(2, thickness * 1.6).toFixed(1) + "px";
+        preview.style.setProperty("--chat-text-shadow", `${shadowOffset} ${shadowOffset} ${shadowBlur} rgba(0,0,0,0.95)`);
+      } else if (style === "both") {
+        const shadowOffset = (thickness * 1.4).toFixed(1) + "px";
+        const shadowBlur = (thickness * 2).toFixed(1) + "px";
+        preview.style.setProperty("--chat-text-shadow", `
+          ${negT} ${negT} 0 rgba(0,0,0,0.88),
+          ${t} ${negT} 0 rgba(0,0,0,0.88),
+          ${negT} ${t} 0 rgba(0,0,0,0.88),
+          ${t} ${t} 0 rgba(0,0,0,0.88),
+          ${shadowOffset} ${shadowOffset} ${shadowBlur} rgba(0,0,0,0.95)
+        `);
+      }
+    }
+    render();
+  }
+
+  function getCensorSettings() {
+    const mode = censorStyleSelect ? censorStyleSelect.value : "blur";
+    const blurStrength = parseInt(blurStrengthInput ? blurStrengthInput.value : "4", 10) || 4;
+    return { mode, blurStrength: Math.max(1, Math.min(blurStrength, 20)) };
+  }
+
+  function updateCensorSettings() {
+    const { mode, blurStrength } = getCensorSettings();
+    blurStrengthValue.textContent = `${blurStrength}px`;
+
+    if (mode === "redact") {
+      blurStrengthControl.style.display = "none";
+      preview.classList.add("censor-redact");
+    } else {
+      blurStrengthControl.style.display = "flex";
+      preview.classList.remove("censor-redact");
+      preview.style.setProperty("--blur-radius", `${blurStrength}px`);
+    }
+    render();
+  }
+
+  function blurSelectedTextInInput() {
+    const start = input.selectionStart;
+    const end = input.selectionEnd;
+    const val = input.value;
+
+    if (start === end) {
+      const before = val.slice(0, start);
+      const after = val.slice(end);
+      input.value = before + "☘☘" + after;
+      input.selectionStart = start + 1;
+      input.selectionEnd = start + 1;
+    } else {
+      const selected = val.slice(start, end);
+      if (selected.startsWith("☘") && selected.endsWith("☘") && selected.length >= 2) {
+        const unwrapped = selected.slice(1, -1);
+        input.value = val.slice(0, start) + unwrapped + val.slice(end);
+        input.selectionStart = start;
+        input.selectionEnd = start + unwrapped.length;
+      } else {
+        const wrapped = `☘${selected}☘`;
+        input.value = val.slice(0, start) + wrapped + val.slice(end);
+        input.selectionStart = start;
+        input.selectionEnd = start + wrapped.length;
+      }
+    }
+    input.focus();
+    render();
+  }
+
+  function loadBackgroundImageFile(file) {
+    if (!file || !file.type.startsWith("image/")) {
+      return;
+    }
+
+    const reader = new FileReader();
+
+    reader.onload = () => {
+      bgImageDataUrl = reader.result;
+      backgroundImage.src = bgImageDataUrl;
+
+      bgImageObject = new Image();
+      bgImageObject.onload = () => {
+        bgX = 0;
+        bgY = 0;
+        bgScale = Math.max(
+          getCanvasWidth() / bgImageObject.naturalWidth,
+          getCanvasHeight() / bgImageObject.naturalHeight
+        );
+
+        updateBackgroundTransform();
+      };
+
+      bgImageObject.src = bgImageDataUrl;
+    };
+
+    reader.readAsDataURL(file);
   }
 
   function updateCanvasStageSize() {
@@ -1215,7 +1544,7 @@
 
     const measuringCanvas = document.createElement("canvas");
     const ctx = measuringCanvas.getContext("2d");
-    ctx.font = `700 ${fontPx}px Arial, Helvetica, sans-serif`;
+    ctx.font = `700 ${fontPx}px ${getFontFamily()}`;
 
     const sourceLines = getVisibleLinesForCanvas();
 
@@ -1255,42 +1584,58 @@
     );
   }
 
-  function drawTextWithStroke(ctx, text, x, y, fillStyle, isBlurred = false) {
-    if (isBlurred) {
+  function drawTextWithStroke(ctx, text, x, y, fillStyle, isBlurred = false, lineHeight = 18) {
+    const censor = getCensorSettings();
+    const outline = getOutlineSettings();
+
+    if (isBlurred && censor.mode === "redact") {
+      const textWidth = Math.ceil(ctx.measureText(text).width);
       ctx.save();
-      const blurAmount = Math.max(2, Math.round(getFontSize() * 0.28));
-      ctx.filter = `blur(${blurAmount}px)`;
-      ctx.lineWidth = 1.5;
-      ctx.strokeStyle = "rgba(0,0,0,0.83)";
-      ctx.strokeText(text, x, y);
-      ctx.fillStyle = fillStyle;
-      ctx.fillText(text, x, y);
+      ctx.fillStyle = "#000000";
+      ctx.fillRect(x - 1, y, textWidth + 2, lineHeight);
       ctx.restore();
-    } else {
-      ctx.lineWidth = 1.5;
-      ctx.strokeStyle = "rgba(0,0,0,0.83)";
-      ctx.strokeText(text, x, y);
-      ctx.fillStyle = fillStyle;
-      ctx.fillText(text, x, y);
+      return;
     }
+
+    ctx.save();
+    if (isBlurred) {
+      ctx.filter = `blur(${censor.blurStrength}px)`;
+    }
+
+    if (outline.style === "stroke" || outline.style === "both") {
+      ctx.lineWidth = outline.thickness;
+      ctx.strokeStyle = "rgba(0,0,0,0.88)";
+      ctx.strokeText(text, x, y);
+    }
+
+    if (outline.style === "shadow" || outline.style === "both") {
+      ctx.shadowColor = "rgba(0,0,0,0.95)";
+      ctx.shadowOffsetX = outline.thickness;
+      ctx.shadowOffsetY = outline.thickness;
+      ctx.shadowBlur = Math.max(2, outline.thickness * 1.6);
+    }
+
+    ctx.fillStyle = fillStyle;
+    ctx.fillText(text, x, y);
+    ctx.restore();
   }
 
-  function drawLineWithTimestamp(ctx, text, classColor, x, y) {
+  function drawLineWithTimestamp(ctx, text, classColor, x, y, lineHeight = 18) {
     const timestampMatch = text.match(TIMESTAMP_CAPTURE_REGEX);
 
     if (!timestampToggle.checked || !timestampMatch) {
-      drawTextWithStroke(ctx, text, x, y, classColor);
+      drawTextWithStroke(ctx, text, x, y, classColor, false, lineHeight);
       return;
     }
 
     const timestamp = timestampMatch[1];
     const rest = text.slice(timestamp.length);
-    drawTextWithStroke(ctx, timestamp, x, y, CHAT_COLORS.timestamp);
+    drawTextWithStroke(ctx, timestamp, x, y, CHAT_COLORS.timestamp, false, lineHeight);
     const timestampWidth = ctx.measureText(timestamp).width;
-    drawTextWithStroke(ctx, rest, x + timestampWidth, y, classColor);
+    drawTextWithStroke(ctx, rest, x + timestampWidth, y, classColor, false, lineHeight);
   }
 
-  function drawCharacterKillLine(ctx, text, x, y) {
+  function drawCharacterKillLine(ctx, text, x, y, lineHeight = 18) {
     let currentX = x;
     let lineText = text;
 
@@ -1298,7 +1643,7 @@
 
     if (timestampToggle.checked && timestampMatch) {
       const timestamp = timestampMatch[1];
-      drawTextWithStroke(ctx, timestamp, currentX, y, CHAT_COLORS.timestamp);
+      drawTextWithStroke(ctx, timestamp, currentX, y, CHAT_COLORS.timestamp, false, lineHeight);
       currentX += ctx.measureText(timestamp).width;
       lineText = lineText.slice(timestamp.length);
     }
@@ -1306,17 +1651,17 @@
     const parts = splitCharacterKillLine(lineText);
 
     if (!parts.tag) {
-      drawTextWithStroke(ctx, lineText, currentX, y, CHAT_COLORS.ckred);
+      drawTextWithStroke(ctx, lineText, currentX, y, CHAT_COLORS.ckred, false, lineHeight);
       return;
     }
 
-    drawTextWithStroke(ctx, parts.tag, currentX, y, CHAT_COLORS.ckblue);
+    drawTextWithStroke(ctx, parts.tag, currentX, y, CHAT_COLORS.ckblue, false, lineHeight);
     currentX += ctx.measureText(parts.tag).width;
 
-    drawTextWithStroke(ctx, parts.spacing, currentX, y, CHAT_COLORS.ckred);
+    drawTextWithStroke(ctx, parts.spacing, currentX, y, CHAT_COLORS.ckred, false, lineHeight);
     currentX += ctx.measureText(parts.spacing).width;
 
-    drawTextWithStroke(ctx, parts.rest, currentX, y, CHAT_COLORS.ckred);
+    drawTextWithStroke(ctx, parts.rest, currentX, y, CHAT_COLORS.ckred, false, lineHeight);
   }
 
   function roundedRect(ctx, x, y, width, height, radius) {
@@ -1422,7 +1767,7 @@
   function createChatCanvas(targetCanvas = null) {
     const scale = 1;
     const fontPx = getFontSize();
-    const fontFamily = "Arial, Helvetica, sans-serif";
+    const fontFamily = getFontFamily();
     const lineHeight = Math.round(fontPx * 1.25);
     const xPadding = 4;
     const yPadding = 2;
@@ -1488,7 +1833,7 @@
       if (row.segments && row.segments.length > 0) {
         let currentX = textOffsetX + xPadding;
         row.segments.forEach(seg => {
-          drawTextWithStroke(ctx, seg.text, currentX, y, seg.color, seg.isBlurred);
+          drawTextWithStroke(ctx, seg.text, currentX, y, seg.color, seg.isBlurred, lineHeight);
           currentX += ctx.measureText(seg.text).width;
         });
       } else if (row.isCharacterKill) {
@@ -1496,7 +1841,8 @@
           ctx,
           row.text,
           textOffsetX + xPadding,
-          y
+          y,
+          lineHeight
         );
       } else {
         drawLineWithTimestamp(
@@ -1504,7 +1850,8 @@
           row.text,
           row.color,
           textOffsetX + xPadding,
-          y
+          y,
+          lineHeight
         );
       }
     });
@@ -1690,6 +2037,84 @@
 
   timestampToggle.addEventListener("change", render);
 
+  fontFamilySelect.addEventListener("change", updateFontFamily);
+  outlineStyleSelect.addEventListener("change", updateOutlineSettings);
+  strokeWidthInput.addEventListener("input", updateOutlineSettings);
+  strokeWidthInput.addEventListener("change", updateOutlineSettings);
+  censorStyleSelect.addEventListener("change", updateCensorSettings);
+  blurStrengthInput.addEventListener("input", updateCensorSettings);
+
+  blurSelectionButton.addEventListener("click", blurSelectedTextInInput);
+
+  input.addEventListener("keydown", event => {
+    if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "b") {
+      event.preventDefault();
+      blurSelectedTextInInput();
+    }
+  });
+
+  // Global Clipboard Paste (Ctrl+V) for screenshots and images
+  window.addEventListener("paste", event => {
+    const clipboardData = event.clipboardData;
+    if (!clipboardData) return;
+
+    let imageFile = null;
+
+    if (clipboardData.items) {
+      for (const item of clipboardData.items) {
+        if (item.type && item.type.startsWith("image/")) {
+          imageFile = item.getAsFile();
+          break;
+        }
+      }
+    }
+
+    if (!imageFile && clipboardData.files && clipboardData.files.length > 0) {
+      for (const file of clipboardData.files) {
+        if (file.type && file.type.startsWith("image/")) {
+          imageFile = file;
+          break;
+        }
+      }
+    }
+
+    if (imageFile) {
+      event.preventDefault();
+      loadBackgroundImageFile(imageFile);
+    }
+  });
+
+  // Drag and drop image file onto canvas stage
+  ["dragenter", "dragover"].forEach(eventName => {
+    canvasStage.addEventListener(eventName, event => {
+      event.preventDefault();
+      event.stopPropagation();
+      canvasStage.classList.add("drag-over");
+    });
+  });
+
+  ["dragleave", "dragend"].forEach(eventName => {
+    canvasStage.addEventListener(eventName, event => {
+      event.preventDefault();
+      event.stopPropagation();
+      canvasStage.classList.remove("drag-over");
+    });
+  });
+
+  canvasStage.addEventListener("drop", event => {
+    event.preventDefault();
+    event.stopPropagation();
+    canvasStage.classList.remove("drag-over");
+
+    const files = event.dataTransfer && event.dataTransfer.files;
+    if (files && files.length > 0) {
+      const file = Array.from(files).find(f => f.type && f.type.startsWith("image/"));
+      if (file) {
+        loadBackgroundImageFile(file);
+      }
+    }
+  });
+
   canvasWidthInput.addEventListener("input", updateCanvasStageSize);
   canvasWidthInput.addEventListener("blur", normalizeCanvasWidthOnBlur);
   canvasWidthInput.addEventListener("change", normalizeCanvasWidthOnBlur);
@@ -1699,33 +2124,9 @@
 
   backgroundImageInput.addEventListener("change", event => {
     const file = event.target.files && event.target.files[0];
-
-    if (!file) {
-      return;
+    if (file) {
+      loadBackgroundImageFile(file);
     }
-
-    const reader = new FileReader();
-
-    reader.onload = () => {
-      bgImageDataUrl = reader.result;
-      backgroundImage.src = bgImageDataUrl;
-
-      bgImageObject = new Image();
-      bgImageObject.onload = () => {
-        bgX = 0;
-        bgY = 0;
-        bgScale = Math.max(
-          getCanvasWidth() / bgImageObject.naturalWidth,
-          getCanvasHeight() / bgImageObject.naturalHeight
-        );
-
-        updateBackgroundTransform();
-      };
-
-      bgImageObject.src = bgImageDataUrl;
-    };
-
-    reader.readAsDataURL(file);
   });
 
   removeImageButton.addEventListener("click", () => {
@@ -1812,6 +2213,9 @@
   updateCanvasStageSize();
   updateBackgroundTransform();
   updateTextPosition();
+  updateFontFamily();
+  updateOutlineSettings();
+  updateCensorSettings();
   render();
 
   if (document.fonts && document.fonts.ready) {
