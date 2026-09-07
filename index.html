@@ -78,34 +78,74 @@
   }
 
   .toolbar {
-    padding: 12px 18px;
+    padding: 8px 14px;
     border-bottom: 1px solid var(--border);
-    background: var(--panel-bg);
+    background: #121212;
+    display: flex;
+    align-items: stretch;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .toolbar-group {
     display: flex;
     align-items: center;
-    gap: 16px;
+    gap: 8px;
+    background: #1c1c1c;
+    padding: 6px 11px;
+    border-radius: 7px;
+    border: 1px solid #2d2d2d;
     flex-wrap: wrap;
+  }
+
+  .toolbar-group-label {
+    font-size: 10.5px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: #9ae6b4;
+    user-select: none;
+    padding-right: 4px;
+    border-right: 1px solid #333333;
+    white-space: nowrap;
+  }
+
+  .toolbar-divider {
+    width: 1px;
+    height: 16px;
+    background: #333333;
+    margin: 0 4px;
+    flex-shrink: 0;
+  }
+
+  .dim-separator {
+    color: var(--muted);
+    font-size: 13px;
+    user-select: none;
+    padding: 0 1px;
   }
 
   .control {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 6px;
     color: var(--muted);
-    font-size: 14px;
+    font-size: 13px;
   }
 
   .control input[type="checkbox"] {
     accent-color: var(--accent);
+    cursor: pointer;
   }
 
   .control select {
-    padding: 6px 8px;
+    padding: 5px 8px;
     border-radius: 5px;
     border: 1px solid var(--border);
     background: #151515;
     color: var(--text);
-    font-weight: 700;
+    font-weight: 600;
+    font-size: 13px;
     cursor: pointer;
   }
 
@@ -118,22 +158,47 @@
   .canvas-size-input,
   .text-panel-width-input,
   .stroke-width-input {
-    width: 86px;
-    padding: 6px 8px;
+    width: 68px;
+    padding: 5px 7px;
     border-radius: 5px;
     border: 1px solid var(--border);
     background: #151515;
     color: var(--text);
     font-weight: 700;
+    font-size: 13px;
+  }
+
+  .font-size-input {
+    width: 54px;
   }
 
   .stroke-width-input {
-    width: 65px;
+    width: 54px;
   }
 
   input[type="file"] {
     color: var(--muted);
-    max-width: 230px;
+    font-size: 12px;
+    max-width: 195px;
+  }
+
+  input[type="file"]::file-selector-button {
+    background: #252525;
+    border: 1px solid #3d3d3d;
+    color: #e5e5e5;
+    padding: 3px 8px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 11px;
+    font-weight: 600;
+    margin-right: 6px;
+    transition: all 0.15s ease;
+  }
+
+  input[type="file"]::file-selector-button:hover {
+    background: #333333;
+    border-color: #555555;
+    color: #ffffff;
   }
 
   button {
@@ -552,7 +617,7 @@
   .workspace {
     flex: 1;
     display: grid;
-    grid-template-columns: 30% 20% 50%;
+    grid-template-columns: minmax(360px, 37%) minmax(190px, 18%) 1fr;
     min-height: 520px;
     align-items: stretch;
   }
@@ -1020,11 +1085,12 @@
   }
 
   .blurred-text {
-    filter: blur(var(--blur-radius, 4px));
+    filter: blur(var(--blur-radius, 3px));
     display: inline-block;
     vertical-align: baseline;
     user-select: none;
     -webkit-user-select: none;
+    border-radius: 2px;
   }
 
   .preview-box.censor-redact .blurred-text {
@@ -1041,14 +1107,10 @@
   }
 
   .preview-box.censor-mosaic .blurred-text {
-    filter: blur(calc(var(--mosaic-size, 4px) * 0.45));
+    filter: blur(calc(var(--mosaic-size, 3px) * 0.35)) contrast(160%);
     position: relative;
-    background-image:
-      linear-gradient(to right, rgba(0, 0, 0, 0.45) 1px, transparent 1px),
-      linear-gradient(to bottom, rgba(0, 0, 0, 0.45) 1px, transparent 1px);
-    background-size: var(--mosaic-size, 4px) var(--mosaic-size, 4px);
     border-radius: 2px;
-    box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.5);
+    background: rgba(255, 255, 255, 0.08);
   }
 
   .timestamp {
@@ -1279,89 +1341,109 @@
   </header>
 
   <div class="toolbar">
-    <label class="control">
-      Font:
-      <select id="fontFamilySelect">
-        <option value="Arial, Helvetica, sans-serif" selected>Arial (Classic SA-MP)</option>
-        <option value="Tahoma, Geneva, sans-serif">Tahoma (GTA World / LSRP)</option>
-        <option value="Verdana, Geneva, sans-serif">Verdana</option>
-        <option value="'Roboto', sans-serif">Roboto (FiveM / GTA V)</option>
-        <option value="'Trebuchet MS', sans-serif">Trebuchet MS</option>
-        <option value="Georgia, serif">Georgia</option>
-        <option value="Impact, Charcoal, sans-serif">Impact</option>
-      </select>
-    </label>
+    <div class="toolbar-group">
+      <span class="toolbar-group-label">Typography</span>
+      <label class="control" title="Font family">
+        Font:
+        <select id="fontFamilySelect">
+          <option value="Arial, Helvetica, sans-serif" selected>Arial (Classic SA-MP)</option>
+          <option value="Tahoma, Geneva, sans-serif">Tahoma (GTA World / LSRP)</option>
+          <option value="Verdana, Geneva, sans-serif">Verdana</option>
+          <option value="'Roboto', sans-serif">Roboto (FiveM / GTA V)</option>
+          <option value="'Trebuchet MS', sans-serif">Trebuchet MS</option>
+          <option value="Georgia, serif">Georgia</option>
+          <option value="Impact, Charcoal, sans-serif">Impact</option>
+        </select>
+      </label>
 
-    <label class="control">
-      Font size:
-      <input id="fontSize" class="font-size-input" type="number" min="8" max="72" value="14" />
-      px
-    </label>
+      <div class="toolbar-divider"></div>
 
-    <label class="control">
-      Outline style:
-      <select id="outlineStyleSelect">
-        <option value="stroke" selected>Outline (Classic SA-MP)</option>
-        <option value="shadow">Drop Shadow (GTA V / FiveM)</option>
-        <option value="both">Outline & Shadow</option>
-        <option value="none">None</option>
-      </select>
-    </label>
+      <label class="control" title="Font size in pixels">
+        Size:
+        <input id="fontSize" class="font-size-input" type="number" min="8" max="72" value="14" />
+        <span>px</span>
+      </label>
 
-    <label class="control" id="strokeWidthControl">
-      Outline thickness:
-      <input id="strokeWidthInput" class="stroke-width-input" type="number" min="0.5" max="6" step="0.5" value="1.5" />
-      px
-    </label>
+      <div class="toolbar-divider"></div>
 
-    <label class="control">
-      Censor style:
-      <select id="censorStyleSelect">
-        <option value="blur" selected>Gaussian Blur</option>
-        <option value="mosaic">Mosaic Blur</option>
-        <option value="redact">Redacted Black Bar</option>
-      </select>
-    </label>
+      <label class="control" title="Wrap width (in pixels) — controls the maximum line width before text wraps to the next line to prevent overflowing the canvas">
+        Wrap width:
+        <input id="textPanelWidthInput" class="text-panel-width-input" type="number" min="50" max="4000" value="500" />
+        <span>px</span>
+      </label>
+    </div>
 
-    <label class="control" id="blurStrengthControl">
-      <span id="blurStrengthLabel">Blur strength:</span>
-      <input id="blurStrengthInput" type="range" min="1" max="10" step="1" value="4" style="width: 80px;" />
-      <span id="blurStrengthValue">4px</span>
-    </label>
+    <div class="toolbar-group">
+      <span class="toolbar-group-label">Outline & BG</span>
+      <label class="control" title="Outline / shadow styling">
+        Outline:
+        <select id="outlineStyleSelect">
+          <option value="stroke" selected>Outline (Classic SA-MP)</option>
+          <option value="shadow">Drop Shadow (GTA V / FiveM)</option>
+          <option value="both">Outline & Shadow</option>
+          <option value="none">None</option>
+        </select>
+      </label>
 
-    <label class="control">
-      <input id="backgroundToggle" type="checkbox" checked />
-      Black background under text
-    </label>
+      <label class="control" id="strokeWidthControl" title="Outline stroke thickness in pixels">
+        <div class="toolbar-divider"></div>
+        Thickness:
+        <input id="strokeWidthInput" class="stroke-width-input" type="number" min="0.5" max="6" step="0.5" value="1.5" />
+        <span>px</span>
+      </label>
 
-    <label class="control">
-      Background image
-      <input id="backgroundImageInput" type="file" accept="image/*" />
-    </label>
+      <div class="toolbar-divider"></div>
 
-    <label class="control">
-      Text panel width:
-      <input id="textPanelWidthInput" class="text-panel-width-input" type="number" min="50" max="4000" value="500" />
-      px
-    </label>
+      <label class="control" title="Toggle dark background behind chat text">
+        <input id="backgroundToggle" type="checkbox" checked />
+        Dark text background
+      </label>
+    </div>
 
-    <label class="control">
-      Canvas width:
-      <input id="canvasWidthInput" class="canvas-size-input" type="number" min="100" max="4000" value="600" />
-      px
-    </label>
+    <div class="toolbar-group">
+      <span class="toolbar-group-label">Censorship</span>
+      <label class="control" title="Censorship effect for ☘blurred☘ text">
+        Style:
+        <select id="censorStyleSelect">
+          <option value="blur" selected>Gaussian Blur</option>
+          <option value="mosaic">Mosaic Blur</option>
+          <option value="redact">Redacted Black Bar</option>
+        </select>
+      </label>
 
-    <label class="control">
-      Canvas height:
-      <input id="canvasHeightInput" class="canvas-size-input" type="number" min="100" max="4000" value="600" />
-      px
-    </label>
+      <label class="control" id="blurStrengthControl" title="Blur intensity or mosaic block size">
+        <div class="toolbar-divider"></div>
+        <span id="blurStrengthLabel">Blur strength:</span>
+        <input id="blurStrengthInput" type="range" min="1" max="10" step="1" value="3" style="width: 75px;" />
+        <span id="blurStrengthValue">3px</span>
+      </label>
+    </div>
 
-    <label class="control">
-      JPEG Quality:
-      <input id="jpegQualityInput" type="range" min="0.05" max="1" step="0.01" value="0.9" style="width: 90px;" />
-      <span id="jpegQualityValue">90%</span>
-    </label>
+    <div class="toolbar-group">
+      <span class="toolbar-group-label">Canvas & Frame</span>
+      <div class="control" title="Canvas dimensions in pixels (Width × Height)">
+        <span>Canvas:</span>
+        <input id="canvasWidthInput" class="canvas-size-input" type="number" min="100" max="4000" value="600" title="Canvas Width (px)" />
+        <span class="dim-separator">×</span>
+        <input id="canvasHeightInput" class="canvas-size-input" type="number" min="100" max="4000" value="600" title="Canvas Height (px)" />
+        <span>px</span>
+      </div>
+
+      <div class="toolbar-divider"></div>
+
+      <label class="control" title="Upload background screenshot">
+        <span>BG:</span>
+        <input id="backgroundImageInput" type="file" accept="image/*" />
+      </label>
+
+      <div class="toolbar-divider"></div>
+
+      <label class="control" title="JPEG export quality">
+        <span>JPEG:</span>
+        <input id="jpegQualityInput" type="range" min="0.05" max="1" step="0.01" value="1" style="width: 75px;" />
+        <span id="jpegQualityValue">100%</span>
+      </label>
+    </div>
   </div>
 
   <main class="workspace">
@@ -1740,7 +1822,7 @@
 
   function getCensorSettings() {
     const mode = censorStyleSelect ? censorStyleSelect.value : "blur";
-    const blurStrength = parseInt(blurStrengthInput ? blurStrengthInput.value : "4", 10) || 4;
+    const blurStrength = parseInt(blurStrengthInput ? blurStrengthInput.value : "3", 10) || 3;
     return { mode, blurStrength: Math.max(1, Math.min(blurStrength, 20)) };
   }
 
@@ -2741,30 +2823,44 @@
 
   function wrapText(ctx, text, maxWidth) {
     if (!text) return [""];
+    if (maxWidth <= 0) return [text];
 
     const words = text.split(/(\s+)/);
     const lines = [];
     let current = "";
 
     for (const token of words) {
+      if (!token) continue;
       const test = current + token;
 
-      if (ctx.measureText(test).width <= maxWidth || current === "") {
+      if (ctx.measureText(test).width <= maxWidth) {
         current = test;
       } else {
-        lines.push(current.trimEnd());
+        if (current.trimEnd()) {
+          lines.push(current.trimEnd());
+        }
         current = token.trimStart();
 
         if (ctx.measureText(current).width > maxWidth) {
           const broken = breakLongToken(ctx, current, maxWidth);
-          lines.push(...broken.slice(0, -1));
+          for (let i = 0; i < broken.length - 1; i++) {
+            lines.push(broken[i]);
+          }
           current = broken[broken.length - 1] || "";
         }
       }
     }
 
-    if (current) lines.push(current.trimEnd());
-    return lines;
+    if (current && current.trimEnd()) {
+      if (ctx.measureText(current.trimEnd()).width > maxWidth) {
+        const broken = breakLongToken(ctx, current.trimEnd(), maxWidth);
+        lines.push(...broken);
+      } else {
+        lines.push(current.trimEnd());
+      }
+    }
+
+    return lines.length > 0 ? lines : [""];
   }
 
   function breakLongToken(ctx, token, maxWidth) {
@@ -2866,76 +2962,91 @@
     }
   }
 
-  function pixelateCanvasRect(ctx, rx, ry, rw, rh, blockSize) {
-    const startX = Math.max(0, Math.floor(rx));
-    const startY = Math.max(0, Math.floor(ry));
-    const endX = Math.min(ctx.canvas.width, Math.ceil(rx + rw));
-    const endY = Math.min(ctx.canvas.height, Math.ceil(ry + rh));
-    const width = endX - startX;
-    const height = endY - startY;
+  function drawGaussianCensoredText(ctx, text, x, y, fillStyle, lineHeight, blurStrength, outline) {
+    const textWidth = Math.ceil(ctx.measureText(text).width);
+    if (textWidth <= 0 || lineHeight <= 0) return;
 
-    if (width <= 0 || height <= 0) return;
+    const blur = Math.max(1, Math.min(Math.round(blurStrength), 20));
+    const pad = Math.ceil(blur * 1.5) + 4;
+    const w = textWidth + pad * 2;
+    const h = lineHeight + pad * 2;
 
-    const size = Math.max(2, Math.round(blockSize || 4));
-    const imgData = ctx.getImageData(startX, startY, width, height);
-    const data = imgData.data;
+    const offscreen = document.createElement("canvas");
+    offscreen.width = w;
+    offscreen.height = h;
+    const octx = offscreen.getContext("2d");
 
-    for (let by = 0; by < height; by += size) {
-      for (let bx = 0; bx < width; bx += size) {
-        const blockW = Math.min(size, width - bx);
-        const blockH = Math.min(size, height - by);
+    octx.font = ctx.font;
+    octx.textBaseline = "top";
+    octx.lineJoin = "round";
 
-        let totalR = 0;
-        let totalG = 0;
-        let totalB = 0;
-        let totalA = 0;
-        let count = 0;
+    // Smooth Gaussian blur filter on isolated buffer
+    octx.filter = `blur(${blur}px)`;
 
-        for (let py = 0; py < blockH; py++) {
-          for (let px = 0; px < blockW; px++) {
-            const idx = ((by + py) * width + (bx + px)) * 4;
-            totalR += data[idx];
-            totalG += data[idx + 1];
-            totalB += data[idx + 2];
-            totalA += data[idx + 3];
-            count++;
-          }
-        }
+    // Drop shadow for contrast and depth
+    octx.shadowColor = "rgba(0,0,0,0.85)";
+    octx.shadowOffsetX = 1;
+    octx.shadowOffsetY = 1;
+    octx.shadowBlur = Math.max(1, Math.round(blur * 0.4));
 
-        if (count > 0) {
-          const avgR = Math.round(totalR / count);
-          const avgG = Math.round(totalG / count);
-          const avgB = Math.round(totalB / count);
-          const avgA = Math.round(totalA / count);
+    // Fill with true chat color so it glows softly without muddy black strokes
+    octx.fillStyle = fillStyle;
+    octx.fillText(text, pad, pad);
+    octx.fillText(text, pad, pad);
 
-          for (let py = 0; py < blockH; py++) {
-            for (let px = 0; px < blockW; px++) {
-              const idx = ((by + py) * width + (bx + px)) * 4;
-              data[idx] = avgR;
-              data[idx + 1] = avgG;
-              data[idx + 2] = avgB;
-              data[idx + 3] = avgA;
-            }
-          }
-        }
-      }
+    // Strictly clip on destination canvas to keep adjacent text clean and unblurred
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(x - 1, y - 1, textWidth + 2, lineHeight + 2);
+    ctx.clip();
+    ctx.drawImage(offscreen, x - pad, y - pad);
+    ctx.restore();
+  }
+
+  function drawMosaicCensoredText(ctx, text, x, y, fillStyle, lineHeight, blockSize, outline) {
+    const textWidth = Math.ceil(ctx.measureText(text).width);
+    if (textWidth <= 0 || lineHeight <= 0) return;
+
+    const block = Math.max(3, Math.min(Math.round(blockSize), 20));
+
+    // First render the text normally on canvas so stroke, color, and background integrate seamlessly
+    ctx.save();
+    if (outline.style === "stroke" || outline.style === "both") {
+      ctx.lineWidth = outline.thickness;
+      ctx.strokeStyle = "rgba(0,0,0,0.88)";
+      ctx.strokeText(text, x, y);
     }
+    if (outline.style === "shadow" || outline.style === "both") {
+      ctx.shadowColor = "rgba(0,0,0,0.95)";
+      ctx.shadowOffsetX = outline.thickness;
+      ctx.shadowOffsetY = outline.thickness;
+      ctx.shadowBlur = Math.max(2, outline.thickness * 1.6);
+    }
+    ctx.fillStyle = fillStyle;
+    ctx.fillText(text, x, y);
+    ctx.restore();
 
-    ctx.putImageData(imgData, startX, startY);
+    // Downscale and upscale with nearest-neighbor to produce true, crisp mosaic pixel blocks
+    const sx = Math.max(0, Math.floor(x - 1));
+    const sy = Math.max(0, Math.floor(y - 1));
+    const sw = Math.min(ctx.canvas.width - sx, Math.ceil(textWidth + 2));
+    const sh = Math.min(ctx.canvas.height - sy, Math.ceil(lineHeight + 2));
+
+    if (sw <= 0 || sh <= 0) return;
+
+    const downW = Math.max(1, Math.round(sw / block));
+    const downH = Math.max(1, Math.round(sh / block));
+
+    const downCanvas = document.createElement("canvas");
+    downCanvas.width = downW;
+    downCanvas.height = downH;
+    const dctx = downCanvas.getContext("2d");
+
+    dctx.drawImage(ctx.canvas, sx, sy, sw, sh, 0, 0, downW, downH);
 
     ctx.save();
-    ctx.strokeStyle = "rgba(0, 0, 0, 0.22)";
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    for (let by = size; by < height; by += size) {
-      ctx.moveTo(startX, startY + by);
-      ctx.lineTo(startX + width, startY + by);
-    }
-    for (let bx = size; bx < width; bx += size) {
-      ctx.moveTo(startX + bx, startY);
-      ctx.lineTo(startX + bx, startY + height);
-    }
-    ctx.stroke();
+    ctx.imageSmoothingEnabled = false;
+    ctx.drawImage(downCanvas, 0, 0, downW, downH, sx, sy, sw, sh);
     ctx.restore();
   }
 
@@ -2943,20 +3054,28 @@
     const censor = getCensorSettings();
     const outline = getOutlineSettings();
 
-    if (isBlurred && censor.mode === "redact") {
-      const textWidth = Math.ceil(ctx.measureText(text).width);
-      ctx.save();
-      ctx.fillStyle = "#000000";
-      ctx.fillRect(x - 1, y, textWidth + 2, lineHeight);
-      ctx.restore();
-      return;
+    if (isBlurred) {
+      if (censor.mode === "redact") {
+        const textWidth = Math.ceil(ctx.measureText(text).width);
+        ctx.save();
+        ctx.fillStyle = "#000000";
+        ctx.fillRect(x - 1, y, textWidth + 2, lineHeight);
+        ctx.restore();
+        return;
+      }
+
+      if (censor.mode === "mosaic") {
+        drawMosaicCensoredText(ctx, text, x, y, fillStyle, lineHeight, censor.blurStrength, outline);
+        return;
+      }
+
+      if (censor.mode === "blur") {
+        drawGaussianCensoredText(ctx, text, x, y, fillStyle, lineHeight, censor.blurStrength, outline);
+        return;
+      }
     }
 
     ctx.save();
-    if (isBlurred && censor.mode === "blur") {
-      ctx.filter = `blur(${censor.blurStrength}px)`;
-    }
-
     if (outline.style === "stroke" || outline.style === "both") {
       ctx.lineWidth = outline.thickness;
       ctx.strokeStyle = "rgba(0,0,0,0.88)";
@@ -2973,12 +3092,6 @@
     ctx.fillStyle = fillStyle;
     ctx.fillText(text, x, y);
     ctx.restore();
-
-    if (isBlurred && censor.mode === "mosaic") {
-      const textWidth = Math.ceil(ctx.measureText(text).width);
-      const blockSize = Math.max(2, censor.blurStrength);
-      pixelateCanvasRect(ctx, x - 1, y, textWidth + 2, lineHeight, blockSize);
-    }
   }
 
   function drawLineWithTimestamp(ctx, text, classColor, x, y, lineHeight = 18) {
@@ -3082,7 +3195,7 @@
 
   function getJpegQuality() {
     const value = Number(jpegQualityInput.value);
-    if (Number.isNaN(value) || value <= 0) return 0.9;
+    if (Number.isNaN(value) || value <= 0) return 1;
     return Math.min(Math.max(value, 0.01), 1);
   }
 
@@ -3995,7 +4108,7 @@
   });
 
   document.documentElement.style.setProperty("--chat-font-size", "14px");
-  document.documentElement.style.setProperty("--text-panel-width", "500px");
+  updateTextPanelWidth();
   preview.classList.toggle("no-text-background", !backgroundToggle.checked);
   updateCanvasStageSize();
   updateBackgroundTransform();
