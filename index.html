@@ -388,6 +388,17 @@
     visibility: hidden;
   }
 
+  .preview-box.censor-mosaic .blurred-text {
+    filter: blur(calc(var(--mosaic-size, 4px) * 0.45));
+    position: relative;
+    background-image:
+      linear-gradient(to right, rgba(0, 0, 0, 0.45) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(0, 0, 0, 0.45) 1px, transparent 1px);
+    background-size: var(--mosaic-size, 4px) var(--mosaic-size, 4px);
+    border-radius: 2px;
+    box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.5);
+  }
+
   .timestamp {
     color: #d8d8d8;
   }
@@ -577,12 +588,13 @@
       Censor style:
       <select id="censorStyleSelect">
         <option value="blur" selected>Gaussian Blur</option>
+        <option value="mosaic">Mosaic Blur</option>
         <option value="redact">Redacted Black Bar</option>
       </select>
     </label>
 
     <label class="control" id="blurStrengthControl">
-      Blur strength:
+      <span id="blurStrengthLabel">Blur strength:</span>
       <input id="blurStrengthInput" type="range" min="1" max="10" step="1" value="4" style="width: 80px;" />
       <span id="blurStrengthValue">4px</span>
     </label>
@@ -678,7 +690,7 @@
   </div>
 
   <div class="footer-note">
-    Tip: Paste screenshots directly with Ctrl+V or drag and drop an image onto the canvas. Select text and press Ctrl+B or click "Blur Selection ☘" to blur/redact words. Drag background or text to reposition.
+    Tip: Paste screenshots directly with Ctrl+V or drag and drop an image onto the canvas. Select text and press Ctrl+B or click "Blur Selection ☘" to censor words with Gaussian blur, mosaic blur, or black bars. Drag background or text to reposition.
   </div>
 </div>
 
@@ -696,6 +708,7 @@
   const blurStrengthInput = document.getElementById("blurStrengthInput");
   const blurStrengthValue = document.getElementById("blurStrengthValue");
   const blurStrengthControl = document.getElementById("blurStrengthControl");
+  const blurStrengthLabel = document.getElementById("blurStrengthLabel");
   const blurSelectionButton = document.getElementById("blurSelectionButton");
   const textPanelWidthInput = document.getElementById("textPanelWidthInput");
   const backgroundToggle = document.getElementById("backgroundToggle");
@@ -848,12 +861,19 @@
     const { mode, blurStrength } = getCensorSettings();
     blurStrengthValue.textContent = `${blurStrength}px`;
 
+    preview.classList.remove("censor-redact", "censor-mosaic");
+
     if (mode === "redact") {
       blurStrengthControl.style.display = "none";
       preview.classList.add("censor-redact");
+    } else if (mode === "mosaic") {
+      blurStrengthControl.style.display = "flex";
+      if (blurStrengthLabel) blurStrengthLabel.textContent = "Mosaic size:";
+      preview.classList.add("censor-mosaic");
+      preview.style.setProperty("--mosaic-size", `${blurStrength}px`);
     } else {
       blurStrengthControl.style.display = "flex";
-      preview.classList.remove("censor-redact");
+      if (blurStrengthLabel) blurStrengthLabel.textContent = "Blur strength:";
       preview.style.setProperty("--blur-radius", `${blurStrength}px`);
     }
     render();
@@ -1584,6 +1604,79 @@
     );
   }
 
+  function pixelateCanvasRect(ctx, rx, ry, rw, rh, blockSize) {
+    const startX = Math.max(0, Math.floor(rx));
+    const startY = Math.max(0, Math.floor(ry));
+    const endX = Math.min(ctx.canvas.width, Math.ceil(rx + rw));
+    const endY = Math.min(ctx.canvas.height, Math.ceil(ry + rh));
+    const width = endX - startX;
+    const height = endY - startY;
+
+    if (width <= 0 || height <= 0) return;
+
+    const size = Math.max(2, Math.round(blockSize || 4));
+    const imgData = ctx.getImageData(startX, startY, width, height);
+    const data = imgData.data;
+
+    for (let by = 0; by < height; by += size) {
+      for (let bx = 0; bx < width; bx += size) {
+        const blockW = Math.min(size, width - bx);
+        const blockH = Math.min(size, height - by);
+
+        let totalR = 0;
+        let totalG = 0;
+        let totalB = 0;
+        let totalA = 0;
+        let count = 0;
+
+        for (let py = 0; py < blockH; py++) {
+          for (let px = 0; px < blockW; px++) {
+            const idx = ((by + py) * width + (bx + px)) * 4;
+            totalR += data[idx];
+            totalG += data[idx + 1];
+            totalB += data[idx + 2];
+            totalA += data[idx + 3];
+            count++;
+          }
+        }
+
+        if (count > 0) {
+          const avgR = Math.round(totalR / count);
+          const avgG = Math.round(totalG / count);
+          const avgB = Math.round(totalB / count);
+          const avgA = Math.round(totalA / count);
+
+          for (let py = 0; py < blockH; py++) {
+            for (let px = 0; px < blockW; px++) {
+              const idx = ((by + py) * width + (bx + px)) * 4;
+              data[idx] = avgR;
+              data[idx + 1] = avgG;
+              data[idx + 2] = avgB;
+              data[idx + 3] = avgA;
+            }
+          }
+        }
+      }
+    }
+
+    ctx.putImageData(imgData, startX, startY);
+
+    ctx.save();
+    ctx.strokeStyle = "rgba(0, 0, 0, 0.22)";
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    for (let by = size; by < height; by += size) {
+      ctx.moveTo(startX, startY + by);
+      ctx.lineTo(startX + width, startY + by);
+    }
+    for (let bx = size; bx < width; bx += size) {
+      ctx.moveTo(startX + bx, startY);
+      ctx.lineTo(startX + bx, startY + height);
+    }
+    ctx.stroke();
+    ctx.restore();
+  }
+
   function drawTextWithStroke(ctx, text, x, y, fillStyle, isBlurred = false, lineHeight = 18) {
     const censor = getCensorSettings();
     const outline = getOutlineSettings();
@@ -1598,7 +1691,7 @@
     }
 
     ctx.save();
-    if (isBlurred) {
+    if (isBlurred && censor.mode === "blur") {
       ctx.filter = `blur(${censor.blurStrength}px)`;
     }
 
@@ -1618,6 +1711,12 @@
     ctx.fillStyle = fillStyle;
     ctx.fillText(text, x, y);
     ctx.restore();
+
+    if (isBlurred && censor.mode === "mosaic") {
+      const textWidth = Math.ceil(ctx.measureText(text).width);
+      const blockSize = Math.max(2, censor.blurStrength);
+      pixelateCanvasRect(ctx, x - 1, y, textWidth + 2, lineHeight, blockSize);
+    }
   }
 
   function drawLineWithTimestamp(ctx, text, classColor, x, y, lineHeight = 18) {
