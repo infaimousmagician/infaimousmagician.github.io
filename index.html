@@ -1701,6 +1701,16 @@
         <input id="textPanelWidthInput" class="text-panel-width-input" type="number" min="50" max="4000" value="500" />
         <span>px</span>
       </label>
+
+      <div class="toolbar-divider"></div>
+
+      <label class="control" title="Chatlog starting position (Top Left or Bottom Left). You can still drag the text freely anytime.">
+        Position:
+        <select id="textPositionSelect">
+          <option value="top-left" selected>Top Left</option>
+          <option value="bottom-left">Bottom Left</option>
+        </select>
+      </label>
     </div>
 
     <div class="toolbar-group">
@@ -1952,6 +1962,13 @@
 
     <div class="actions-group">
       <span class="actions-group-label">Canvas & View</span>
+      <label class="control" style="font-size: 12px; color: var(--muted); display: inline-flex; align-items: center; gap: 5px;" title="Starting position for chatlog text. You can still drag the text freely anytime.">
+        <span>Position:</span>
+        <select id="textPositionSelectBottom" style="padding: 4px 8px; font-size: 12px; background: #222; border: 1px solid #3d3d3d; border-radius: 4px; color: #fff;">
+          <option value="top-left" selected>Top Left</option>
+          <option value="bottom-left">Bottom Left</option>
+        </select>
+      </label>
       <button id="resetTextPositionButton" class="btn btn-neutral">Reset Text Position</button>
       <button id="removeImageButton" class="btn btn-danger">Remove Background</button>
     </div>
@@ -2067,6 +2084,26 @@
           </div>
         </div>
 
+        <!-- Section: Chatlog Position -->
+        <div class="settings-section">
+          <div class="settings-section-title">
+            <span>📍</span>
+            <span>Chatlog Text Position</span>
+          </div>
+          <div class="settings-field-group">
+            <label for="modalTextPositionSelect" class="settings-label">
+              <span>Position:</span>
+            </label>
+            <select id="modalTextPositionSelect" class="modal-input" style="font-family: inherit; font-size: 14px;">
+              <option value="top-left" selected>Top Left (Default)</option>
+              <option value="bottom-left">Bottom Left</option>
+            </select>
+            <div class="settings-help-text">
+              Choose the starting corner for your chatlog text (Top Left or Bottom Left). In Bottom Left mode, text lines anchor to the bottom and expand upward. You can still drag the text freely anywhere on the canvas at any time.
+            </div>
+          </div>
+        </div>
+
         <!-- Section: Reset & Defaults -->
         <div class="settings-danger-section">
           <div class="settings-danger-title">
@@ -2140,6 +2177,9 @@
   const jpegPreviewImage = document.getElementById("jpegPreviewImage");
   const removeImageButton = document.getElementById("removeImageButton");
   const resetTextPositionButton = document.getElementById("resetTextPositionButton");
+  const textPositionSelect = document.getElementById("textPositionSelect");
+  const textPositionSelectBottom = document.getElementById("textPositionSelectBottom");
+  const modalTextPositionSelect = document.getElementById("modalTextPositionSelect");
   const uploadImgbbButton = document.getElementById("uploadImgbbButton");
   const copyPngButton = document.getElementById("copyPngButton");
   const downloadPngButton = document.getElementById("downloadPngButton");
@@ -2314,6 +2354,8 @@
   const DEFAULT_TEXT_OFFSET_X = 15;
   const DEFAULT_TEXT_OFFSET_Y = 15;
 
+  let textPositionMode = "top-left";
+  let userHasCustomDraggedText = false;
   let textOffsetX = DEFAULT_TEXT_OFFSET_X;
   let textOffsetY = DEFAULT_TEXT_OFFSET_Y;
 
@@ -2331,6 +2373,7 @@
 
   const DEFAULT_SETTINGS = {
     characterName: "",
+    textPosition: "top-left",
     fontFamily: "Arial, Helvetica, sans-serif",
     fontSize: 14,
     textPanelWidth: 500,
@@ -2352,6 +2395,45 @@
 
   let saveSettingsTimer = null;
 
+  function getBottomLeftOffsetY(customHeight) {
+    const ch = getCanvasHeight();
+    const bounds = getTextBounds();
+    const h = typeof customHeight === "number" ? customHeight : bounds.height;
+    return Math.max(DEFAULT_TEXT_OFFSET_Y, Math.round(ch - h - DEFAULT_TEXT_OFFSET_Y));
+  }
+
+  function setTextPosition(mode, skipSave = false, keepCustomDrag = false) {
+    if (mode !== "top-left" && mode !== "bottom-left") {
+      mode = "top-left";
+    }
+    textPositionMode = mode;
+    if (textPositionSelect && textPositionSelect.value !== mode) {
+      textPositionSelect.value = mode;
+    }
+    if (textPositionSelectBottom && textPositionSelectBottom.value !== mode) {
+      textPositionSelectBottom.value = mode;
+    }
+    if (modalTextPositionSelect && modalTextPositionSelect.value !== mode) {
+      modalTextPositionSelect.value = mode;
+    }
+
+    if (!keepCustomDrag) {
+      userHasCustomDraggedText = false;
+      if (mode === "bottom-left") {
+        textOffsetX = DEFAULT_TEXT_OFFSET_X;
+        textOffsetY = getBottomLeftOffsetY();
+      } else {
+        textOffsetX = DEFAULT_TEXT_OFFSET_X;
+        textOffsetY = DEFAULT_TEXT_OFFSET_Y;
+      }
+      updateTextPosition();
+    }
+
+    if (!skipSave) {
+      saveCurrentSettingsDebounced();
+    }
+  }
+
   function getCharacterName() {
     return characterNameInput ? characterNameInput.value.trim() : (characterName || "");
   }
@@ -2369,6 +2451,9 @@
     if (characterNameInput) {
       characterNameInput.value = characterName || "";
     }
+    if (modalTextPositionSelect) {
+      modalTextPositionSelect.value = textPositionMode || "top-left";
+    }
     settingsModal.style.display = "flex";
   }
 
@@ -2381,6 +2466,7 @@
     try {
       const current = {
         characterName: characterNameInput ? characterNameInput.value.trim() : (characterName || DEFAULT_SETTINGS.characterName),
+        textPosition: textPositionMode || DEFAULT_SETTINGS.textPosition,
         fontFamily: fontFamilySelect ? fontFamilySelect.value : DEFAULT_SETTINGS.fontFamily,
         fontSize: Number(fontSize.value) || DEFAULT_SETTINGS.fontSize,
         textPanelWidth: Number(textPanelWidthInput.value) || DEFAULT_SETTINGS.textPanelWidth,
@@ -2434,6 +2520,11 @@
         if (characterNameInput) {
           characterNameInput.value = s.characterName;
         }
+      }
+      if (typeof s.textPosition === "string" && (s.textPosition === "top-left" || s.textPosition === "bottom-left")) {
+        setTextPosition(s.textPosition, true, false);
+      } else {
+        setTextPosition("top-left", true, false);
       }
       if (fontFamilySelect && typeof s.fontFamily === "string") {
         fontFamilySelect.value = s.fontFamily;
@@ -2520,6 +2611,7 @@
     characterName = DEFAULT_SETTINGS.characterName;
     if (characterNameInput) characterNameInput.value = DEFAULT_SETTINGS.characterName;
     if (characterNameStatus) characterNameStatus.textContent = "";
+    setTextPosition(DEFAULT_SETTINGS.textPosition || "top-left", true, false);
     if (fontFamilySelect) fontFamilySelect.value = DEFAULT_SETTINGS.fontFamily;
     if (fontSize) fontSize.value = DEFAULT_SETTINGS.fontSize;
     if (textPanelWidthInput) textPanelWidthInput.value = DEFAULT_SETTINGS.textPanelWidth;
@@ -3200,6 +3292,10 @@
     const height = getCanvasHeight();
     canvasStage.style.width = width + "px";
     canvasStage.style.height = height + "px";
+    if (textPositionMode === "bottom-left" && !userHasCustomDraggedText) {
+      textOffsetY = getBottomLeftOffsetY();
+      updateTextPosition();
+    }
     scheduleJpegPreview();
   }
 
@@ -3535,8 +3631,14 @@
     const ch = getCanvasHeight();
 
     if (layer.type === "text") {
-      textOffsetX = DEFAULT_TEXT_OFFSET_X;
-      textOffsetY = DEFAULT_TEXT_OFFSET_Y;
+      userHasCustomDraggedText = false;
+      if (textPositionMode === "bottom-left") {
+        textOffsetX = DEFAULT_TEXT_OFFSET_X;
+        textOffsetY = getBottomLeftOffsetY();
+      } else {
+        textOffsetX = DEFAULT_TEXT_OFFSET_X;
+        textOffsetY = DEFAULT_TEXT_OFFSET_Y;
+      }
       updateTextPosition();
     } else if (layer.type === "image" && layer.img) {
       const w = layer.img.naturalWidth * (layer.scale || 1);
@@ -4451,6 +4553,9 @@
     });
 
     preview.innerHTML = lines.join("");
+    if (textPositionMode === "bottom-left" && !userHasCustomDraggedText) {
+      textOffsetY = getBottomLeftOffsetY();
+    }
     updateTextPosition();
   }
 
@@ -5243,6 +5348,7 @@
     if (dragMode === "text") {
       textOffsetX = originalTextX + dx;
       textOffsetY = originalTextY + dy;
+      userHasCustomDraggedText = true;
       updateTextPosition();
     } else if (dragMode === "image") {
       const layer = layers.find(l => l.id === draggingLayerId);
@@ -5775,10 +5881,37 @@
   });
 
   resetTextPositionButton.addEventListener("click", () => {
-    textOffsetX = DEFAULT_TEXT_OFFSET_X;
-    textOffsetY = DEFAULT_TEXT_OFFSET_Y;
+    userHasCustomDraggedText = false;
+    if (textPositionMode === "bottom-left") {
+      textOffsetX = DEFAULT_TEXT_OFFSET_X;
+      textOffsetY = getBottomLeftOffsetY();
+    } else {
+      textOffsetX = DEFAULT_TEXT_OFFSET_X;
+      textOffsetY = DEFAULT_TEXT_OFFSET_Y;
+    }
     updateTextPosition();
+    showToast("info", "Position Reset", `Chat text reset to ${textPositionMode === "bottom-left" ? "bottom left" : "top left"}.`);
   });
+
+  if (textPositionSelect) {
+    textPositionSelect.addEventListener("change", () => {
+      setTextPosition(textPositionSelect.value);
+      showToast("info", textPositionSelect.value === "bottom-left" ? "Position: Bottom Left" : "Position: Top Left", `Chatlog positioned at ${textPositionSelect.value === "bottom-left" ? "bottom left" : "top left"}. Drag freely anytime.`);
+    });
+  }
+
+  if (textPositionSelectBottom) {
+    textPositionSelectBottom.addEventListener("change", () => {
+      setTextPosition(textPositionSelectBottom.value);
+      showToast("info", textPositionSelectBottom.value === "bottom-left" ? "Position: Bottom Left" : "Position: Top Left", `Chatlog positioned at ${textPositionSelectBottom.value === "bottom-left" ? "bottom left" : "top left"}. Drag freely anytime.`);
+    });
+  }
+
+  if (modalTextPositionSelect) {
+    modalTextPositionSelect.addEventListener("change", () => {
+      setTextPosition(modalTextPositionSelect.value);
+    });
+  }
 
   input.addEventListener("input", render);
 
@@ -6182,7 +6315,7 @@
     "Press <strong>Ctrl+V</strong> anywhere to instantly paste screenshots or copied images directly onto the canvas as new layers.",
     "Drag and drop image files directly from your computer onto the canvas stage to add them as background or overlay graphics.",
     "Reorder layer depth with the <strong>▲</strong> and <strong>▼</strong> buttons in the Layers pane, toggle visibility with the eye icon, and adjust layer opacity.",
-    "Click and drag the chatlog text anywhere on the canvas to reposition it freely. Click <strong>Reset Text Position</strong> to restore default placement.",
+    "Click and drag the chatlog text anywhere on the canvas to reposition it freely. You can also toggle between <strong>Top Left</strong> (default) and <strong>Bottom Left</strong> position presets or click <strong>Reset Text Position</strong> anytime.",
     "Custom canvas sizing: Type any width and height into <strong>Canvas width / height</strong> to match 1080p, 1440p, 4K, or custom screenshot aspect ratios.",
     "Fine-tune the chat aesthetic with <strong>Outline style</strong> (Classic outline, Drop shadow, Both, or None) and adjust outline stroke thickness.",
     " When no background image is added, <strong>Copy PNG</strong> and <strong>Download PNG</strong> export with a transparent canvas so you can extrapolate text directly onto your screenshots in Photoshop or photo editors. The preview displays on black for convenience while typing.",
