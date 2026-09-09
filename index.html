@@ -2062,7 +2062,7 @@
               style="font-family: inherit; font-size: 14px;"
             />
             <div class="settings-help-text">
-              Store your character's in-game name. Used for phone conversations: when your character speaks on the phone, speech appears in natural vocal tones (white for say, gray for low, orange for whisper), while the other caller appears in phone yellow.
+              Store your character's in-game name. When your character is speaking, all lows and lowers appear white (matching your in-game perspective), while speech from other characters appears in muted tones. In phone conversations, your character speaks in natural tones while the other caller appears in phone yellow.
             </div>
           </div>
         </div>
@@ -2216,8 +2216,9 @@
   let originalLayerX = 0;
   let originalLayerY = 0;
 
-  const TIMESTAMP_REGEX = /^\s*\[\d{2}:\d{2}:\d{2}\]\s*/;
-  const TIMESTAMP_CAPTURE_REGEX = /^(\s*\[\d{2}:\d{2}:\d{2}\]\s*)/;
+  const TIMESTAMP_REGEX = /^\s*(?:\[|\()\s*\d{2}:\d{2}(?::\d{2})?\s*(?:\]|\))\s*/;
+  const TIMESTAMP_CAPTURE_REGEX = /^(\s*(?:\[|\()\s*\d{2}:\d{2}(?::\d{2})?\s*(?:\]|\))\s*)/;
+  const TIMESTAMP_PREFIX_WITH_TAGS_REGEX = /^(\s*(?:(?:\{#?[0-9a-fA-F]{3,6}\}|\{[a-zA-Z]+\}|☘)\s*)*)(?:\[|\()\s*\d{2}:\d{2}(?::\d{2})?\s*(?:\]|\))(\s*(?:☘|\{\/(?:#|[0-9a-fA-F]{3,6}|[a-zA-Z]+)?\})*\s*)/i;
 
   const CHAT_COLORS = {
     timestamp: "#d8d8d8",
@@ -2959,13 +2960,13 @@
     });
   }
 
-  function extractColorWraps(rawText) {
-    if (!rawText) return { cleanText: "", colorMap: [] };
+  function extractColorWraps(rawText, initialColor = null) {
+    if (!rawText) return { cleanText: "", colorMap: [], finalColor: initialColor };
 
     const TAG_REGEX = /\{(#?[0-9a-fA-F]{3,6}|[a-zA-Z]+)\}|\{\/(?:#|[0-9a-fA-F]{3,6}|[a-zA-Z]+)?\}/g;
     let cleanText = "";
     const colorMap = [];
-    let currentColor = null;
+    let currentColor = initialColor;
     let lastIndex = 0;
     let match;
 
@@ -2999,7 +3000,7 @@
       colorMap.push(currentColor);
     }
 
-    return { cleanText, colorMap };
+    return { cleanText, colorMap, finalColor: currentColor };
   }
 
   function applyColorWrapToSelection(rawColor) {
@@ -3043,6 +3044,15 @@
           input.selectionStart = start;
           input.selectionEnd = start + wrapped.length;
         }
+      } else if (selected.includes("\n")) {
+        // If selection spans multiple lines, cleanly wrap each non-blank line
+        const lines = selected.split("\n");
+        const wrapped = lines
+          .map(line => line.length > 0 ? `{${resolved}}${line}{/}` : "")
+          .join("\n");
+        input.value = val.slice(0, start) + wrapped + val.slice(end);
+        input.selectionStart = start;
+        input.selectionEnd = start + wrapped.length;
       } else {
         const wrapped = `{${resolved}}${selected}{/}`;
         input.value = val.slice(0, start) + wrapped + val.slice(end);
@@ -3609,12 +3619,56 @@
     scheduleJpegPreview();
   }
 
-  function getTimestampStrippedLine(line) {
-    return line.replace(TIMESTAMP_REGEX, "");
+  function stripTimestamp(line) {
+    if (!line) return "";
+
+    // Check if line begins with an optionally tagged / blurred timestamp
+    const match = line.match(TIMESTAMP_PREFIX_WITH_TAGS_REGEX);
+    if (!match) {
+      // Fallback to simple timestamp regex
+      return line.replace(TIMESTAMP_REGEX, "");
+    }
+
+    const prefix = match[1]; // content before timestamp (leading whitespace, opening color tags, blur markers)
+    const suffix = match[2]; // content immediately following timestamp (closing tags, blur markers, whitespace)
+    const fullMatch = match[0];
+    const restOfLine = line.slice(fullMatch.length);
+
+    const COLOR_OPEN = /\{(#?[0-9a-fA-F]{3,6}|[a-zA-Z]+)\}/gi;
+    const COLOR_CLOSE = /\{\/(?:#|[0-9a-fA-F]{3,6}|[a-zA-Z]+)?\}/gi;
+
+    const prefixColorOpens = prefix.match(COLOR_OPEN) || [];
+    const suffixColorCloses = suffix.match(COLOR_CLOSE) || [];
+    const prefixBlurs = (prefix.match(/☘/g) || []).length;
+    const suffixBlurs = (suffix.match(/☘/g) || []).length;
+
+    let newPrefix = "";
+    // If color tags were opened in prefix and NOT closed immediately after the timestamp,
+    // preserve the opening color tag so that the wrapped text retains its custom color
+    if (prefixColorOpens.length > suffixColorCloses.length) {
+      const needed = prefixColorOpens.length - suffixColorCloses.length;
+      newPrefix += prefixColorOpens.slice(prefixColorOpens.length - needed).join("");
+    }
+
+    // If blur was opened in prefix and NOT closed in suffix, keep blur marker
+    if (prefixBlurs > suffixBlurs) {
+      newPrefix += "☘".repeat(prefixBlurs - suffixBlurs);
+    }
+
+    let newSuffix = "";
+    // If suffix has extra closing tags not opened in prefix, keep them
+    if (suffixColorCloses.length > prefixColorOpens.length) {
+      newSuffix += suffixColorCloses.slice(0, suffixColorCloses.length - prefixColorOpens.length).join("");
+    }
+    if (suffixBlurs > prefixBlurs) {
+      newSuffix += "☘".repeat(suffixBlurs - prefixBlurs);
+    }
+
+    return (newPrefix + newSuffix + restOfLine.trimStart()).trimStart();
   }
 
-  function stripTimestamp(line) {
-    return line.replace(TIMESTAMP_REGEX, "");
+  function getTimestampStrippedLine(line) {
+    return stripTimestamp(line);
   }
 
   function splitCharacterKillLine(line) {
@@ -3773,7 +3827,7 @@
       .replace(/^[\[\(](?:phone|cellphone|call|phone\s*call|ifruit[^\)\]]*)[\]\)]\s*/i, "")
       .trim();
 
-    const match = stripped.match(/^([A-Za-z0-9_'\.\-\s]+?)(?:\s*\[\d+\])?(?:\s+(?:says|whispers|shouts|yells|screams|murmurs|mutters|advertises|calls)\b|:)/i);
+    const match = stripped.match(/^([A-Za-z0-9_'\.\-\s]+?)(?:\s*\[\d+\])?(?:\s*\(phone\))?(?:\s+(?:says|whispers|shouts|yells|screams|murmurs|mutters|advertises|calls)\b|:)/i);
     if (match) {
       return match[1].trim();
     }
@@ -3833,18 +3887,17 @@
 
       if (isCharSpeaking) {
         // Character is speaking on the phone:
-        // Vocal modes appear in their natural roleplay tones
-        if (lowerWithoutTimestamp.includes("says [lower]") || lowerWithoutTimestamp.includes("[lower]")) {
-          return "lower";
-        }
+        // All lows and lowers appear white if your character is speaking
         if (
+          lowerWithoutTimestamp.includes("says [lower]") ||
+          lowerWithoutTimestamp.includes("[lower]") ||
           lowerWithoutTimestamp.includes("says [low]") ||
           lowerWithoutTimestamp.includes("[low]") ||
           lowerWithoutTimestamp.includes("says quietly") ||
           lowerWithoutTimestamp.includes("murmurs") ||
           lowerWithoutTimestamp.includes("mutters")
         ) {
-          return "low";
+          return "say";
         }
         if (lowerWithoutTimestamp.includes("whispers")) {
           return "whisper";
@@ -3994,17 +4047,35 @@
     }
 
     if (
-      lowerText.includes(" says [lower]:")
+      lowerWithoutTimestamp.includes(" says [lower]:") ||
+      lowerWithoutTimestamp.includes(" says [lower]") ||
+      lowerWithoutTimestamp.includes(" [lower]:") ||
+      lowerWithoutTimestamp.startsWith("says [lower]:")
     ) {
+      const speaker = extractSpeakerName(withoutTimestamp);
+      const charName = getCharacterName();
+      if (charName && matchesCharacterName(speaker, charName)) {
+        return "say";
+      }
       return "lower";
     }
 
     if (
-      lowerText.includes(" says [low]:") ||
-      lowerText.includes(" says quietly:") ||
-      lowerText.includes(" murmurs:") ||
-      lowerText.includes(" mutters:")
+      lowerWithoutTimestamp.includes(" says [low]:") ||
+      lowerWithoutTimestamp.includes(" says [low]") ||
+      lowerWithoutTimestamp.includes(" [low]:") ||
+      lowerWithoutTimestamp.startsWith("says [low]:") ||
+      lowerWithoutTimestamp.includes(" says quietly:") ||
+      lowerWithoutTimestamp.includes(" murmurs:") ||
+      lowerWithoutTimestamp.includes(" mutters:") ||
+      lowerWithoutTimestamp.startsWith("murmurs:") ||
+      lowerWithoutTimestamp.startsWith("mutters:")
     ) {
+      const speaker = extractSpeakerName(withoutTimestamp);
+      const charName = getCharacterName();
+      if (charName && matchesCharacterName(speaker, charName)) {
+        return "say";
+      }
       return "low";
     }
 
@@ -4153,18 +4224,28 @@
     return segments.concat(parseBlurInSegments(midSegments));
   }
 
-  function getLineSegments(text, className, isCharacterKill) {
-    if (!text) return [];
+  function getLineSegments(text, className, isCharacterKill, initialColor = null) {
+    if (!text) {
+      const empty = [];
+      empty.finalColor = initialColor;
+      return empty;
+    }
 
-    const { cleanText, colorMap } = extractColorWraps(text);
-    if (!cleanText) return [];
+    const { cleanText, colorMap, finalColor } = extractColorWraps(text, initialColor);
+    if (!cleanText) {
+      const empty = [];
+      empty.finalColor = finalColor;
+      return empty;
+    }
 
     const baseColor = CHAT_COLORS[className] || CHAT_COLORS.default;
     const hasCustomColor = colorMap.some(c => c !== null);
 
     // If no custom color was wrapped in this line, execute the magician's standard parsing
     if (!hasCustomColor) {
-      return parseStandardSegments(cleanText, className, isCharacterKill, baseColor);
+      const standardSegments = parseStandardSegments(cleanText, className, isCharacterKill, baseColor);
+      standardSegments.finalColor = finalColor;
+      return standardSegments;
     }
 
     // Line contains custom color wraps!
@@ -4294,6 +4375,7 @@
       });
     }
 
+    segments.finalColor = finalColor;
     return segments;
   }
 
@@ -4330,6 +4412,7 @@
   }
 
   function render() {
+    let carriedColor = null;
     const lines = input.value.split("\n").map((rawLine) => {
       if (rawLine.trim() === "") {
         return `<span class="line blank-line">&nbsp;</span>`;
@@ -4339,7 +4422,8 @@
       const className = classifyLine(rawLine);
       const isCharacterKill = className === "characterkill";
 
-      const segments = getLineSegments(visibleLine, className, isCharacterKill);
+      const segments = getLineSegments(visibleLine, className, isCharacterKill, carriedColor);
+      carriedColor = segments.finalColor || null;
       const innerHtml = segments.map(seg => {
         const escaped = escapeHtml(seg.text);
         let content = escaped;
@@ -4371,13 +4455,15 @@
   }
 
   function getVisibleLinesForCanvas() {
+    let carriedColor = null;
     return input.value.split("\n").map(rawLine => {
       const isBlank = rawLine.trim() === "";
       const visibleText = stripTimestamp(rawLine);
       const className = classifyLine(rawLine);
       const isCharacterKill = className === "characterkill";
 
-      const segments = getLineSegments(visibleText, className, isCharacterKill);
+      const segments = getLineSegments(visibleText, className, isCharacterKill, carriedColor);
+      carriedColor = segments.finalColor || null;
       const displayText = segments.length > 0 ? segments.map(seg => seg.text).join("") : visibleText;
 
       return {
