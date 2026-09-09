@@ -304,6 +304,234 @@
     display: inline-block;
   }
 
+  .btn-color {
+    background: var(--accent-dark);
+    border-color: var(--accent);
+    color: #d4fced;
+    position: relative;
+  }
+
+  .btn-color:hover {
+    background: var(--accent-dark-hover);
+    border-color: var(--accent-hover);
+    color: #ffffff;
+    filter: brightness(1.08);
+  }
+
+  .color-btn-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    display: inline-block;
+    flex-shrink: 0;
+    box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.6);
+  }
+
+  .color-btn-arrow {
+    font-size: 10px;
+    opacity: 0.75;
+    margin-left: 2px;
+  }
+
+  .color-picker-dropdown-wrapper {
+    position: relative;
+    display: inline-flex;
+  }
+
+  .color-chips-popover {
+    position: absolute;
+    bottom: calc(100% + 8px);
+    left: 0;
+    width: 320px;
+    max-width: calc(100vw - 36px);
+    background: #1a1a1a;
+    border: 1px solid #3d3d3d;
+    border-radius: 8px;
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(255, 255, 255, 0.06);
+    z-index: 1500;
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .color-chips-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #2e2e2e;
+    padding-bottom: 8px;
+  }
+
+  .color-chips-title {
+    font-size: 12.5px;
+    font-weight: 700;
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .color-chips-close-btn {
+    background: transparent;
+    border: none;
+    color: #888888;
+    font-size: 18px;
+    line-height: 1;
+    padding: 0 4px;
+    cursor: pointer;
+    border-radius: 4px;
+  }
+
+  .color-chips-close-btn:hover {
+    color: #ffffff;
+    background: #2a2a2a;
+  }
+
+  .color-chips-subtitle {
+    font-size: 11.5px;
+    color: #a0a0a0;
+    line-height: 1.35;
+  }
+
+  .color-chips-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 6px;
+    max-height: 230px;
+    overflow-y: auto;
+    padding-right: 2px;
+  }
+
+  .color-chip-btn {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 6px 9px;
+    background: #232323;
+    border: 1px solid #333333;
+    border-radius: 6px;
+    color: #e5e5e5;
+    font-size: 11.5px;
+    font-weight: 600;
+    cursor: pointer;
+    text-align: left;
+    transition: all 0.12s ease;
+    user-select: none;
+  }
+
+  .color-chip-btn:hover {
+    background: #2d2d2d;
+    border-color: #555555;
+    color: #ffffff;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+  }
+
+  .color-chip-swatch {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.7);
+  }
+
+  .color-chip-name {
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .color-chip-hex {
+    font-size: 10px;
+    font-family: monospace;
+    color: #888888;
+  }
+
+  .color-chip-btn:hover .color-chip-hex {
+    color: #cccccc;
+  }
+
+  .color-chips-footer {
+    border-top: 1px solid #2e2e2e;
+    padding-top: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .color-chips-custom-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .color-custom-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: #a0a0a0;
+  }
+
+  .color-picker-swatch {
+    width: 26px;
+    height: 24px;
+    border: 1px solid #3a3a3a;
+    border-radius: 4px;
+    padding: 0;
+    background: transparent;
+    cursor: pointer;
+  }
+
+  .color-hex-input {
+    flex: 1;
+    min-width: 60px;
+    padding: 3px 6px;
+    font-size: 11.5px;
+    font-family: monospace;
+    background: #141414;
+    border: 1px solid #3a3a3a;
+    border-radius: 4px;
+    color: #ffffff;
+    font-weight: 600;
+  }
+
+  .color-hex-input:focus {
+    outline: none;
+    border-color: var(--accent);
+  }
+
+  .color-chips-actions-row {
+    display: flex;
+    justify-content: flex-end;
+  }
+
+  .btn-remove-color {
+    font-size: 11px;
+    padding: 4px 8px;
+    color: #ff9b9b;
+    border-color: #4a2424;
+    background: #221818;
+  }
+
+  .btn-remove-color:hover {
+    background: #301f1f;
+    border-color: #6d2f2f;
+    color: #ffb5b5;
+  }
+
+  .btn-xs {
+    padding: 3px 8px;
+    font-size: 11px;
+  }
+
+  .custom-color-text {
+    font-weight: 700;
+  }
+  .text-bg .custom-color-text {
+    font-weight: 700;
+  }
+
   .toast-container {
     position: fixed;
     bottom: 58px;
@@ -589,6 +817,79 @@
     background: #2a2a2a;
     border-color: #555555;
     color: #ffffff;
+  }
+
+  /* Settings Modal Components */
+  .settings-section {
+    background: #141414;
+    border: 1px solid #292929;
+    border-radius: 8px;
+    padding: 14px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .settings-section-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+  }
+
+  .settings-field-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .settings-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #dddddd;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .settings-help-text {
+    font-size: 11px;
+    color: #888888;
+    line-height: 1.45;
+  }
+
+  .settings-danger-section {
+    background: rgba(240, 0, 0, 0.06);
+    border: 1px solid rgba(240, 0, 0, 0.25);
+    border-radius: 8px;
+    padding: 14px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .settings-danger-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: #ff6b6b;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+  }
+
+  .settings-footer-note {
+    font-size: 11px;
+    color: #777777;
+  }
+
+  .settings-status-badge {
+    font-size: 10px;
+    font-weight: 600;
+    color: #00d984;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
   }
 
   .bottom-actions-panel {
@@ -902,7 +1203,7 @@
   }
 
   .inspector-label {
-    width: 48px;
+    width: 52px;
     font-size: 11px;
     color: #999999;
   }
@@ -1515,9 +1816,8 @@
     </div>
 
     <div class="toolbar-group">
-      <span class="toolbar-group-label">Settings</span>
-      <button id="resetSettingsButton" type="button" class="btn btn-neutral btn-sm" title="Reset all settings to default values">
-        ↺ Reset Settings
+      <button id="openSettingsModalButton" type="button" class="btn btn-neutral btn-sm" title="Open Settings (Character Name, defaults, preferences)">
+        ⚙ Settings
       </button>
     </div>
   </div>
@@ -1578,6 +1878,11 @@
             <option value="invert">🔄 Inverse</option>
           </select>
         </div>
+        <div class="inspector-row" id="layerFilterIntensityRow" style="display: none;">
+          <span class="inspector-label">Intensity:</span>
+          <input type="range" id="layerFilterIntensityInput" min="0" max="1" step="0.01" value="1" class="inspector-slider" />
+          <span id="layerFilterIntensityValue" class="inspector-val">100%</span>
+        </div>
         <div class="inspector-actions">
           <button id="layerMoveUpBtn" class="btn btn-neutral btn-xs" title="Move layer forward (up)">▲ Forward</button>
           <button id="layerMoveDownBtn" class="btn btn-neutral btn-xs" title="Move layer backward (down)">▼ Backward</button>
@@ -1606,9 +1911,42 @@
   </main>
 
   <div class="bottom-actions-panel" id="actionsPanel">
-    <div class="actions-group">
+    <div class="actions-group text-censor-actions-group">
       <span class="actions-group-label">Text & Censor</span>
       <button id="blurSelectionButton" class="btn btn-accent" title="Wrap selection with ☘ (Shortcut: Ctrl+B)">Blur Selection ☘ (Ctrl+B)</button>
+      <div class="color-picker-dropdown-wrapper">
+        <button id="colorSelectionButton" class="btn btn-accent btn-color" type="button" title="Wrap selection with color (Click to choose color chip / Shortcut: Ctrl+K)">
+          <span class="color-btn-dot" id="colorBtnDot" style="background-color: #c2a3da;"></span>
+          <span>Color Text 🎨</span>
+          <span class="color-btn-arrow">▾</span>
+        </button>
+        <!-- Pre-determined Colors Popover -->
+        <div id="colorChipsPopup" class="color-chips-popover" style="display: none;" role="dialog" aria-label="Choose Text Color">
+          <div class="color-chips-header">
+            <div class="color-chips-title">
+              <span>🎨 Chat Colors</span>
+            </div>
+            <button type="button" id="closeColorChipsBtn" class="color-chips-close-btn" title="Close (Esc)">&times;</button>
+          </div>
+          <div class="color-chips-subtitle">
+            Select a color chip to wrap selected text in the input:
+          </div>
+          <div class="color-chips-grid" id="colorChipsGrid"></div>
+          <div class="color-chips-footer">
+            <div class="color-chips-custom-row">
+              <span class="color-custom-label">Custom:</span>
+              <input type="color" id="customColorPickerInput" value="#c2a3da" class="color-picker-swatch" title="Pick custom color" />
+              <input type="text" id="customColorHexInput" value="#c2a3da" maxlength="7" class="color-hex-input" placeholder="#HEX" spellcheck="false" />
+              <button type="button" id="applyCustomColorBtn" class="btn btn-neutral btn-xs">Apply</button>
+            </div>
+            <div class="color-chips-actions-row">
+              <button type="button" id="removeColorWrapBtn" class="btn btn-neutral btn-xs btn-remove-color" title="Strip color wrap from selected text">
+                ✕ Remove Color
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
       <button id="clearButton" class="btn btn-danger">Clear Text</button>
     </div>
 
@@ -1625,9 +1963,9 @@
         <span>Upload to ImgBB</span>
       </button>
       <button id="imgbbHelpButton" class="btn-icon-help" type="button" title="How to get free ImgBB API key">?</button>
-      <button id="copyPngButton" class="btn btn-export">Copy PNG</button>
-      <button id="downloadPngButton" class="btn btn-export">Download PNG</button>
-      <button id="downloadJpegButton" class="btn btn-export">Download JPEG</button>
+      <button id="copyPngButton" class="btn btn-export" title="Copy PNG to clipboard (transparent background if no background image is added)">Copy PNG</button>
+      <button id="downloadPngButton" class="btn btn-export" title="Download PNG (transparent background if no background image is added)">Download PNG</button>
+      <button id="downloadJpegButton" class="btn btn-export" title="Download JPEG">Download JPEG</button>
     </div>
   </div>
 
@@ -1692,6 +2030,66 @@
     </div>
   </div>
 
+  <!-- Settings & Preferences Modal -->
+  <div id="settingsModal" class="modal-backdrop" style="display: none;" role="dialog" aria-label="Application Settings">
+    <div class="modal-dialog" style="width: 520px;">
+      <div class="modal-header">
+        <div class="modal-title">
+          <span>⚙</span>
+          <span>Application Settings</span>
+        </div>
+        <button type="button" id="closeSettingsModalBtn" class="toast-close" title="Close modal (Esc)">&times;</button>
+      </div>
+      <div class="modal-body">
+        <!-- Section: Character Profile -->
+        <div class="settings-section">
+          <div class="settings-section-title">
+            <span>👤</span>
+            <span>Character Profile</span>
+          </div>
+          <div class="settings-field-group">
+            <label for="characterNameInput" class="settings-label">
+              <span>Character Name:</span>
+              <span id="characterNameStatus" class="settings-status-badge"></span>
+            </label>
+            <input
+              type="text"
+              id="characterNameInput"
+              class="modal-input"
+              placeholder="e.g., Carl Johnson"
+              spellcheck="false"
+              autocomplete="off"
+              style="font-family: inherit; font-size: 14px;"
+            />
+            <div class="settings-help-text">
+              Store your character's in-game name. Used for phone conversations: when your character speaks on the phone, speech appears in natural vocal tones (white for say, gray for low, orange for whisper), while the other caller appears in phone yellow.
+            </div>
+          </div>
+        </div>
+
+        <!-- Section: Reset & Defaults -->
+        <div class="settings-danger-section">
+          <div class="settings-danger-title">
+            <span>↺</span>
+            <span>Reset Settings</span>
+          </div>
+          <div class="settings-help-text" style="color: #c5a0a0;">
+            Restore all canvas sizing, typography, outline styles, background toggles, atmospheric filters, and censorship parameters back to their original defaults.
+          </div>
+          <div style="display: flex; justify-content: flex-start; margin-top: 4px;">
+            <button id="resetSettingsButton" type="button" class="btn btn-danger btn-sm" title="Reset all settings to default values">
+              ↺ Reset Settings to Default
+            </button>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <span class="settings-footer-note" id="settingsSavedNote">Changes are saved automatically</span>
+        <button type="button" id="closeSettingsModalFooterBtn" class="btn btn-primary btn-sm">Done</button>
+      </div>
+    </div>
+  </div>
+
   <div id="toastContainer" class="toast-container"></div>
 
   <div class="footer-note" id="footerNote">
@@ -1722,6 +2120,15 @@
   const blurStrengthControl = document.getElementById("blurStrengthControl");
   const blurStrengthLabel = document.getElementById("blurStrengthLabel");
   const blurSelectionButton = document.getElementById("blurSelectionButton");
+  const colorSelectionButton = document.getElementById("colorSelectionButton");
+  const colorChipsPopup = document.getElementById("colorChipsPopup");
+  const colorChipsGrid = document.getElementById("colorChipsGrid");
+  const closeColorChipsBtn = document.getElementById("closeColorChipsBtn");
+  const colorBtnDot = document.getElementById("colorBtnDot");
+  const customColorPickerInput = document.getElementById("customColorPickerInput");
+  const customColorHexInput = document.getElementById("customColorHexInput");
+  const applyCustomColorBtn = document.getElementById("applyCustomColorBtn");
+  const removeColorWrapBtn = document.getElementById("removeColorWrapBtn");
   const textPanelWidthInput = document.getElementById("textPanelWidthInput");
   const backgroundToggle = document.getElementById("backgroundToggle");
   const backgroundImageInput = document.getElementById("backgroundImageInput");
@@ -1739,6 +2146,12 @@
   const downloadJpegButton = document.getElementById("downloadJpegButton");
   const clearButton = document.getElementById("clearButton");
   const resetSettingsButton = document.getElementById("resetSettingsButton");
+  const openSettingsModalButton = document.getElementById("openSettingsModalButton");
+  const settingsModal = document.getElementById("settingsModal");
+  const closeSettingsModalBtn = document.getElementById("closeSettingsModalBtn");
+  const closeSettingsModalFooterBtn = document.getElementById("closeSettingsModalFooterBtn");
+  const characterNameInput = document.getElementById("characterNameInput");
+  const characterNameStatus = document.getElementById("characterNameStatus");
   const toastContainer = document.getElementById("toastContainer");
 
   const layersPane = document.getElementById("layersPane");
@@ -1775,6 +2188,9 @@
   const backgroundGrainOverlay = document.getElementById("backgroundGrainOverlay");
   const bgAtmosphereRow = document.getElementById("bgAtmosphereRow");
   const inspectorAtmosphereSelect = document.getElementById("inspectorAtmosphereSelect");
+  const layerFilterIntensityRow = document.getElementById("layerFilterIntensityRow");
+  const layerFilterIntensityInput = document.getElementById("layerFilterIntensityInput");
+  const layerFilterIntensityValue = document.getElementById("layerFilterIntensityValue");
 
   let layers = [
     {
@@ -1783,7 +2199,8 @@
       name: "Background Image",
       visible: true,
       opacity: 1,
-      filter: "none"
+      filter: "none",
+      filterIntensity: 1
     },
     {
       id: "layer-text",
@@ -1833,6 +2250,60 @@
     default: "#f1f1f1"
   };
 
+  const PRESET_COLOR_CHIPS = [
+    { name: "Me / Action", color: "#c2a3da", role: "Purple" },
+    { name: "Say / Speech", color: "#f1f1f1", role: "White" },
+    { name: "Whisper", color: "#eda841", role: "Orange" },
+    { name: "Radio", color: "#fee58f", role: "Amber" },
+    { name: "Phone / PM", color: "#fbf724", role: "Yellow" },
+    { name: "Money / Ad", color: "#56d64b", role: "Green" },
+    { name: "Admin / Error", color: "#f00000", role: "Red" },
+    { name: "Low Voice", color: "#d9d4d5", role: "Light Gray" },
+    { name: "Lower Voice", color: "#b8b4b5", role: "Dark Gray" },
+    { name: "System / Dice", color: "#ffff00", role: "Bright Yellow" }
+  ];
+
+  const COLOR_NAME_ALIASES = {
+    me: "#c2a3da",
+    action: "#c2a3da",
+    purple: "#c2a3da",
+    say: "#f1f1f1",
+    speech: "#f1f1f1",
+    white: "#f1f1f1",
+    whisper: "#eda841",
+    orange: "#eda841",
+    radio: "#fee58f",
+    amber: "#fee58f",
+    phone: "#fbf724",
+    phonecall: "#fbf724",
+    pm: "#fbf724",
+    yellow: "#fbf724",
+    money: "#56d64b",
+    green: "#56d64b",
+    ad: "#56d64b",
+    item: "#56d64b",
+    dep: "#3896f3",
+    department: "#3896f3",
+    helper: "#3896f3",
+    blue: "#3896f3",
+    admin: "#f00000",
+    error: "#f00000",
+    danger: "#f00000",
+    red: "#f00000",
+    low: "#d9d4d5",
+    quiet: "#d9d4d5",
+    lower: "#b8b4b5",
+    system: "#ffff00",
+    dice: "#ffff00",
+    inventory: "#ffff00",
+    timestamp: "#d8d8d8",
+    gray: "#d8d8d8",
+    grey: "#d8d8d8"
+  };
+
+  let activeWrapColor = "#c2a3da";
+  let savedInputSelection = { start: 0, end: 0 };
+
   let bgImageObject = null;
   let bgImageDataUrl = "";
   let bgX = 0;
@@ -1855,7 +2326,10 @@
 
   const SETTINGS_STORAGE_KEY = "gtarp_chatlog_magician_settings_v1";
 
+  let characterName = "";
+
   const DEFAULT_SETTINGS = {
+    characterName: "",
     fontFamily: "Arial, Helvetica, sans-serif",
     fontSize: 14,
     textPanelWidth: 500,
@@ -1868,6 +2342,7 @@
     canvasHeight: 600,
     jpegQuality: 1,
     atmospherePreset: "none",
+    filterIntensity: 1,
     vignette: false,
     vignetteStrength: 45,
     filmGrain: false,
@@ -1876,9 +2351,35 @@
 
   let saveSettingsTimer = null;
 
+  function getCharacterName() {
+    return characterNameInput ? characterNameInput.value.trim() : (characterName || "");
+  }
+
+  function setCharacterName(name) {
+    characterName = typeof name === "string" ? name.trim() : "";
+    if (characterNameInput) characterNameInput.value = characterName;
+    render();
+    scheduleJpegPreview();
+    saveCurrentSettingsDebounced();
+  }
+
+  function openSettingsModal() {
+    if (!settingsModal) return;
+    if (characterNameInput) {
+      characterNameInput.value = characterName || "";
+    }
+    settingsModal.style.display = "flex";
+  }
+
+  function closeSettingsModal() {
+    if (!settingsModal) return;
+    settingsModal.style.display = "none";
+  }
+
   function saveCurrentSettings() {
     try {
       const current = {
+        characterName: characterNameInput ? characterNameInput.value.trim() : (characterName || DEFAULT_SETTINGS.characterName),
         fontFamily: fontFamilySelect ? fontFamilySelect.value : DEFAULT_SETTINGS.fontFamily,
         fontSize: Number(fontSize.value) || DEFAULT_SETTINGS.fontSize,
         textPanelWidth: Number(textPanelWidthInput.value) || DEFAULT_SETTINGS.textPanelWidth,
@@ -1893,6 +2394,10 @@
         atmospherePreset: (() => {
           const bg = layers.find(l => l.type === "background");
           return bg && bg.filter ? bg.filter : (atmospherePresetSelect ? atmospherePresetSelect.value : DEFAULT_SETTINGS.atmospherePreset);
+        })(),
+        filterIntensity: (() => {
+          const bg = layers.find(l => l.type === "background");
+          return bg && typeof bg.filterIntensity === "number" ? bg.filterIntensity : DEFAULT_SETTINGS.filterIntensity;
         })(),
         vignette: vignetteToggle ? vignetteToggle.checked : DEFAULT_SETTINGS.vignette,
         vignetteStrength: Number(vignetteStrengthInput ? vignetteStrengthInput.value : DEFAULT_SETTINGS.vignetteStrength) || DEFAULT_SETTINGS.vignetteStrength,
@@ -1923,6 +2428,12 @@
       // and any deleted/obsolete setting from prior versions is safely ignored without breaking.
       const s = { ...DEFAULT_SETTINGS, ...parsed };
 
+      if (typeof s.characterName === "string") {
+        characterName = s.characterName;
+        if (characterNameInput) {
+          characterNameInput.value = s.characterName;
+        }
+      }
       if (fontFamilySelect && typeof s.fontFamily === "string") {
         fontFamilySelect.value = s.fontFamily;
       }
@@ -1967,6 +2478,10 @@
         if (atmospherePresetSelect) atmospherePresetSelect.value = mappedPreset;
         if (inspectorAtmosphereSelect) inspectorAtmosphereSelect.value = mappedPreset;
       }
+      if (typeof s.filterIntensity === "number" && !isNaN(s.filterIntensity)) {
+        const bgLayer = layers.find(l => l.type === "background");
+        if (bgLayer) bgLayer.filterIntensity = Math.max(0, Math.min(s.filterIntensity, 1));
+      }
       if (vignetteToggle && typeof s.vignette === "boolean") {
         vignetteToggle.checked = s.vignette;
         if (vignetteSliderContainer) {
@@ -1994,12 +2509,16 @@
   }
 
   function resetSettingsToDefault() {
+    clearTimeout(saveSettingsTimer);
     try {
       localStorage.removeItem(SETTINGS_STORAGE_KEY);
     } catch (err) {
       console.warn("Could not clear settings from localStorage:", err);
     }
 
+    characterName = DEFAULT_SETTINGS.characterName;
+    if (characterNameInput) characterNameInput.value = DEFAULT_SETTINGS.characterName;
+    if (characterNameStatus) characterNameStatus.textContent = "";
     if (fontFamilySelect) fontFamilySelect.value = DEFAULT_SETTINGS.fontFamily;
     if (fontSize) fontSize.value = DEFAULT_SETTINGS.fontSize;
     if (textPanelWidthInput) textPanelWidthInput.value = DEFAULT_SETTINGS.textPanelWidth;
@@ -2020,9 +2539,15 @@
     if (atmospherePresetSelect) atmospherePresetSelect.value = DEFAULT_SETTINGS.atmospherePreset;
     if (inspectorAtmosphereSelect) inspectorAtmosphereSelect.value = DEFAULT_SETTINGS.atmospherePreset;
     const bgLayer = layers.find(l => l.type === "background");
-    if (bgLayer) bgLayer.filter = DEFAULT_SETTINGS.atmospherePreset;
+    if (bgLayer) {
+      bgLayer.filter = DEFAULT_SETTINGS.atmospherePreset;
+      bgLayer.filterIntensity = DEFAULT_SETTINGS.filterIntensity;
+    }
     layers.forEach(l => {
-      if (l.type === "image") l.filter = "none";
+      if (l.type === "image") {
+        l.filter = "none";
+        l.filterIntensity = DEFAULT_SETTINGS.filterIntensity;
+      }
     });
     if (vignetteToggle) {
       vignetteToggle.checked = DEFAULT_SETTINGS.vignette;
@@ -2052,6 +2577,7 @@
     scheduleJpegPreview();
     render();
 
+    closeSettingsModal();
     showToast("success", "Settings Reset", "All settings have been restored to their original defaults.");
   }
 
@@ -2097,33 +2623,69 @@
     return filmGrainStrengthInput ? Number(filmGrainStrengthInput.value) || 25 : 25;
   }
 
-  function getCanvasFilterForPreset(preset) {
+  function getCanvasFilterForPreset(preset, intensity = 1) {
+    const t = Math.max(0, Math.min(Number(intensity) ?? 1, 1));
+    if (!preset || preset === "none" || t <= 0.001) return "none";
+
     switch (preset) {
-      case "noir":
-        return "grayscale(100%) contrast(1.4) brightness(0.92)";
-      case "sunset":
-        return "sepia(0.35) saturate(1.4) contrast(1.08) brightness(1.02)";
-      case "contrast":
-        return "contrast(1.35) saturate(1.3) brightness(0.98)";
+      case "noir": {
+        const gray = (t * 100).toFixed(1);
+        const cont = (1 + 0.4 * t).toFixed(3);
+        const bright = (1 - 0.08 * t).toFixed(3);
+        return `grayscale(${gray}%) contrast(${cont}) brightness(${bright})`;
+      }
+      case "sunset": {
+        const sep = (0.35 * t).toFixed(3);
+        const sat = (1 + 0.4 * t).toFixed(3);
+        const cont = (1 + 0.08 * t).toFixed(3);
+        const bright = (1 + 0.02 * t).toFixed(3);
+        return `sepia(${sep}) saturate(${sat}) contrast(${cont}) brightness(${bright})`;
+      }
+      case "contrast": {
+        const cont = (1 + 0.35 * t).toFixed(3);
+        const sat = (1 + 0.3 * t).toFixed(3);
+        const bright = (1 - 0.02 * t).toFixed(3);
+        return `contrast(${cont}) saturate(${sat}) brightness(${bright})`;
+      }
       case "invert":
-      case "cold":
-        return "invert(100%)";
+      case "cold": {
+        const inv = (t * 100).toFixed(1);
+        return `invert(${inv}%)`;
+      }
       default:
         return "none";
     }
   }
 
-  function getCssFilterForPreset(preset) {
+  function getCssFilterForPreset(preset, intensity = 1) {
+    const t = Math.max(0, Math.min(Number(intensity) ?? 1, 1));
+    if (!preset || preset === "none" || t <= 0.001) return "none";
+
     switch (preset) {
-      case "noir":
-        return "grayscale(100%) contrast(140%) brightness(92%)";
-      case "sunset":
-        return "sepia(35%) saturate(140%) contrast(108%) brightness(102%)";
-      case "contrast":
-        return "contrast(135%) saturate(130%) brightness(98%)";
+      case "noir": {
+        const gray = Math.round(t * 100);
+        const cont = Math.round(100 + 40 * t);
+        const bright = Math.round(100 - 8 * t);
+        return `grayscale(${gray}%) contrast(${cont}%) brightness(${bright}%)`;
+      }
+      case "sunset": {
+        const sep = Math.round(35 * t);
+        const sat = Math.round(100 + 40 * t);
+        const cont = Math.round(100 + 8 * t);
+        const bright = Math.round(100 + 2 * t);
+        return `sepia(${sep}%) saturate(${sat}%) contrast(${cont}%) brightness(${bright}%)`;
+      }
+      case "contrast": {
+        const cont = Math.round(100 + 35 * t);
+        const sat = Math.round(100 + 30 * t);
+        const bright = Math.round(100 - 2 * t);
+        return `contrast(${cont}%) saturate(${sat}%) brightness(${bright}%)`;
+      }
       case "invert":
-      case "cold":
-        return "invert(100%)";
+      case "cold": {
+        const inv = Math.round(t * 100);
+        return `invert(${inv}%)`;
+      }
       default:
         return "none";
     }
@@ -2193,7 +2755,8 @@
   function updateAtmosphereDom() {
     const bgLayer = layers.find(l => l.type === "background");
     const bgFilter = bgLayer ? (bgLayer.filter || "none") : "none";
-    const cssFilter = getCssFilterForPreset(bgFilter);
+    const bgIntensity = bgLayer && typeof bgLayer.filterIntensity === "number" ? bgLayer.filterIntensity : 1;
+    const cssFilter = getCssFilterForPreset(bgFilter, bgIntensity);
     if (backgroundImage) {
       backgroundImage.style.filter = cssFilter;
     }
@@ -2230,7 +2793,7 @@
         const layerId = el.getAttribute("data-layer-id");
         const lyr = layers.find(l => l.id === layerId);
         if (lyr) {
-          el.style.filter = getCssFilterForPreset(lyr.filter || "none");
+          el.style.filter = getCssFilterForPreset(lyr.filter || "none", typeof lyr.filterIntensity === "number" ? lyr.filterIntensity : 1);
         }
       });
     }
@@ -2362,6 +2925,235 @@
     render();
   }
 
+  function updateSavedInputSelection() {
+    if (input) {
+      savedInputSelection = {
+        start: input.selectionStart,
+        end: input.selectionEnd
+      };
+    }
+  }
+
+  function resolveColorCode(raw) {
+    if (!raw) return null;
+    const clean = String(raw).trim().toLowerCase();
+    if (COLOR_NAME_ALIASES[clean]) {
+      return COLOR_NAME_ALIASES[clean];
+    }
+    if (/^#?[0-9a-f]{6}$/i.test(clean)) {
+      return clean.startsWith("#") ? clean.toLowerCase() : `#${clean.toLowerCase()}`;
+    }
+    if (/^#?[0-9a-f]{3}$/i.test(clean)) {
+      const h = clean.startsWith("#") ? clean.slice(1) : clean;
+      return `#${h[0]}${h[0]}${h[1]}${h[1]}${h[2]}${h[2]}`.toLowerCase();
+    }
+    return null;
+  }
+
+  function stripColorTags(text) {
+    if (!text) return "";
+    return text.replace(/\{(#?[0-9a-fA-F]{3,6}|[a-zA-Z]+)\}|\{\/(?:#|[0-9a-fA-F]{3,6}|[a-zA-Z]+)?\}/g, (tag, code) => {
+      if (tag.startsWith("{/")) return "";
+      if (code && resolveColorCode(code)) return "";
+      return tag;
+    });
+  }
+
+  function extractColorWraps(rawText) {
+    if (!rawText) return { cleanText: "", colorMap: [] };
+
+    const TAG_REGEX = /\{(#?[0-9a-fA-F]{3,6}|[a-zA-Z]+)\}|\{\/(?:#|[0-9a-fA-F]{3,6}|[a-zA-Z]+)?\}/g;
+    let cleanText = "";
+    const colorMap = [];
+    let currentColor = null;
+    let lastIndex = 0;
+    let match;
+
+    while ((match = TAG_REGEX.exec(rawText)) !== null) {
+      const chunk = rawText.slice(lastIndex, match.index);
+      for (let i = 0; i < chunk.length; i++) {
+        cleanText += chunk[i];
+        colorMap.push(currentColor);
+      }
+
+      const tag = match[0];
+      if (tag.startsWith("{/")) {
+        currentColor = null;
+      } else {
+        const resolved = resolveColorCode(match[1]);
+        if (resolved) {
+          currentColor = resolved;
+        } else {
+          for (let i = 0; i < tag.length; i++) {
+            cleanText += tag[i];
+            colorMap.push(currentColor);
+          }
+        }
+      }
+      lastIndex = match.index + tag.length;
+    }
+
+    const tail = rawText.slice(lastIndex);
+    for (let i = 0; i < tail.length; i++) {
+      cleanText += tail[i];
+      colorMap.push(currentColor);
+    }
+
+    return { cleanText, colorMap };
+  }
+
+  function applyColorWrapToSelection(rawColor) {
+    const resolved = resolveColorCode(rawColor) || "#c2a3da";
+    let start = input.selectionStart;
+    let end = input.selectionEnd;
+    const val = input.value;
+
+    // Use saved selection if textarea temporarily lost focus when clicking UI
+    if (start === end && savedInputSelection && savedInputSelection.start !== savedInputSelection.end) {
+      start = savedInputSelection.start;
+      end = savedInputSelection.end;
+    }
+
+    if (start === end) {
+      const tagOpen = `{${resolved}}`;
+      const tagClose = `{/}`;
+      const before = val.slice(0, start);
+      const after = val.slice(end);
+      input.value = before + tagOpen + tagClose + after;
+      const newCursor = start + tagOpen.length;
+      input.selectionStart = newCursor;
+      input.selectionEnd = newCursor;
+    } else {
+      const selected = val.slice(start, end);
+      const COLOR_WRAP_EXACT = /^\{(#?[0-9a-fA-F]{3,6}|[a-zA-Z]+)\}([\s\S]*?)\{\/(?:#|[0-9a-fA-F]{3,6}|[a-zA-Z]+)?\}$/;
+      const match = selected.match(COLOR_WRAP_EXACT);
+
+      if (match) {
+        const innerText = match[2];
+        const currentResolved = resolveColorCode(match[1]);
+        if (currentResolved && currentResolved.toLowerCase() === resolved.toLowerCase()) {
+          // Toggle unwrap if clicked with the exact same color
+          input.value = val.slice(0, start) + innerText + val.slice(end);
+          input.selectionStart = start;
+          input.selectionEnd = start + innerText.length;
+        } else {
+          // Change wrap to the new color
+          const wrapped = `{${resolved}}${innerText}{/}`;
+          input.value = val.slice(0, start) + wrapped + val.slice(end);
+          input.selectionStart = start;
+          input.selectionEnd = start + wrapped.length;
+        }
+      } else {
+        const wrapped = `{${resolved}}${selected}{/}`;
+        input.value = val.slice(0, start) + wrapped + val.slice(end);
+        input.selectionStart = start;
+        input.selectionEnd = start + wrapped.length;
+      }
+    }
+
+    activeWrapColor = resolved;
+    if (colorBtnDot) {
+      colorBtnDot.style.backgroundColor = resolved;
+    }
+    if (customColorPickerInput) {
+      customColorPickerInput.value = resolved;
+    }
+    if (customColorHexInput) {
+      customColorHexInput.value = resolved;
+    }
+
+    hideColorChipsPopup();
+    input.focus();
+    render();
+    saveCurrentSettingsDebounced();
+    scheduleJpegPreview();
+  }
+
+  function removeColorWrapFromSelection() {
+    let start = input.selectionStart;
+    let end = input.selectionEnd;
+    const val = input.value;
+
+    if (start === end && savedInputSelection && savedInputSelection.start !== savedInputSelection.end) {
+      start = savedInputSelection.start;
+      end = savedInputSelection.end;
+    }
+
+    if (start === end) {
+      showToast("Highlight text with color tags to remove color.", "warning");
+      return;
+    }
+
+    const selected = val.slice(start, end);
+    const unwrapped = stripColorTags(selected);
+    input.value = val.slice(0, start) + unwrapped + val.slice(end);
+    input.selectionStart = start;
+    input.selectionEnd = start + unwrapped.length;
+
+    hideColorChipsPopup();
+    input.focus();
+    render();
+    saveCurrentSettingsDebounced();
+    scheduleJpegPreview();
+    showToast("Removed color wrap from selection", "info");
+  }
+
+  function renderColorChips() {
+    if (!colorChipsGrid) return;
+    colorChipsGrid.innerHTML = "";
+
+    PRESET_COLOR_CHIPS.forEach(chip => {
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "color-chip-btn";
+      btn.setAttribute("data-color", chip.color);
+      btn.title = `${chip.name} (${chip.color}) - Click to color text`;
+
+      const swatch = document.createElement("span");
+      swatch.className = "color-chip-swatch";
+      swatch.style.backgroundColor = chip.color;
+
+      const nameSpan = document.createElement("span");
+      nameSpan.className = "color-chip-name";
+      nameSpan.textContent = chip.name;
+
+      const hexSpan = document.createElement("span");
+      hexSpan.className = "color-chip-hex";
+      hexSpan.textContent = chip.color;
+
+      btn.appendChild(swatch);
+      btn.appendChild(nameSpan);
+      btn.appendChild(hexSpan);
+
+      btn.addEventListener("click", (e) => {
+        e.preventDefault();
+        applyColorWrapToSelection(chip.color);
+      });
+
+      colorChipsGrid.appendChild(btn);
+    });
+  }
+
+  function showColorChipsPopup() {
+    if (!colorChipsPopup) return;
+    updateSavedInputSelection();
+    colorChipsPopup.style.display = "flex";
+  }
+
+  function hideColorChipsPopup() {
+    if (!colorChipsPopup) return;
+    colorChipsPopup.style.display = "none";
+  }
+
+  function toggleColorChipsPopup() {
+    if (!colorChipsPopup) return;
+    if (colorChipsPopup.style.display === "none" || !colorChipsPopup.style.display) {
+      showColorChipsPopup();
+    } else {
+      hideColorChipsPopup();
+    }
+  }
+
   function loadBackgroundImageFile(file) {
     if (!file || !file.type.startsWith("image/")) {
       return;
@@ -2461,7 +3253,8 @@
           dataUrl: dataUrl,
           width: img.naturalWidth,
           height: img.naturalHeight,
-          filter: "none"
+          filter: "none",
+          filterIntensity: 1
         };
 
         layers.push(newLayer);
@@ -2546,7 +3339,10 @@
       const metaSpan = document.createElement("span");
       metaSpan.className = "layer-meta";
       const opPercent = Math.round((typeof layer.opacity === "number" ? layer.opacity : 1) * 100);
-      const filterTag = (layer.filter && layer.filter !== "none") ? ` • [${getFilterDisplayName(layer.filter)}]` : "";
+      const intensityPercent = typeof layer.filterIntensity === "number" ? Math.round(layer.filterIntensity * 100) : 100;
+      const filterTag = (layer.filter && layer.filter !== "none")
+        ? ` • [${getFilterDisplayName(layer.filter)}${intensityPercent < 100 ? ` ${intensityPercent}%` : ""}]`
+        : "";
       metaSpan.textContent = `${layer.type.toUpperCase()} • ${opPercent}%${filterTag}`;
 
       info.appendChild(nameSpan);
@@ -2636,6 +3432,17 @@
           inspectorAtmosphereSelect.value = layer.filter || "none";
         }
       }
+      if (layerFilterIntensityRow) {
+        const hasFilter = Boolean(layer.filter && layer.filter !== "none");
+        layerFilterIntensityRow.style.display = hasFilter ? "flex" : "none";
+        const intensity = typeof layer.filterIntensity === "number" ? layer.filterIntensity : 1;
+        if (layerFilterIntensityInput) {
+          layerFilterIntensityInput.value = intensity;
+        }
+        if (layerFilterIntensityValue) {
+          layerFilterIntensityValue.textContent = Math.round(intensity * 100) + "%";
+        }
+      }
       if (atmospherePresetSelect) {
         atmospherePresetSelect.value = layer.filter || "none";
         atmospherePresetSelect.disabled = false;
@@ -2659,6 +3466,7 @@
     } else {
       if (layerScaleRow) layerScaleRow.style.display = "none";
       if (bgAtmosphereRow) bgAtmosphereRow.style.display = "none";
+      if (layerFilterIntensityRow) layerFilterIntensityRow.style.display = "none";
       if (atmospherePresetSelect) {
         const bgLayer = layers.find(l => l.type === "background");
         atmospherePresetSelect.value = (bgLayer && bgLayer.filter) ? bgLayer.filter : "none";
@@ -2750,7 +3558,9 @@
       backgroundLayerDom.style.display = (bgLayer && bgLayer.visible !== false) ? "block" : "none";
       backgroundLayerDom.style.opacity = bgLayer && typeof bgLayer.opacity === "number" ? bgLayer.opacity : 1;
       if (backgroundImage) {
-        backgroundImage.style.filter = getCssFilterForPreset(bgLayer ? (bgLayer.filter || "none") : "none");
+        const bgFilter = bgLayer ? (bgLayer.filter || "none") : "none";
+        const bgIntensity = bgLayer && typeof bgLayer.filterIntensity === "number" ? bgLayer.filterIntensity : 1;
+        backgroundImage.style.filter = getCssFilterForPreset(bgFilter, bgIntensity);
       }
     }
 
@@ -2772,7 +3582,7 @@
       imgEl.style.zIndex = index + 1;
       imgEl.style.opacity = typeof layer.opacity === "number" ? layer.opacity : 1;
       imgEl.style.transform = `translate(${layer.x}px, ${layer.y}px) scale(${layer.scale || 1})`;
-      imgEl.style.filter = getCssFilterForPreset(layer.filter || "none");
+      imgEl.style.filter = getCssFilterForPreset(layer.filter || "none", typeof layer.filterIntensity === "number" ? layer.filterIntensity : 1);
       imgEl.setAttribute("data-layer-id", layer.id);
 
       overlayLayersContainer.appendChild(imgEl);
@@ -2941,9 +3751,67 @@
       .replaceAll("'", "&#039;");
   }
 
+  function isPhoneConversationLine(cleanText) {
+    const lower = cleanText.toLowerCase();
+    return (
+      lower.includes("(phone)") ||
+      lower.includes("[phone]") ||
+      lower.includes("(cellphone)") ||
+      lower.includes("[cellphone]") ||
+      lower.includes("(phone call)") ||
+      lower.includes("[phone call]") ||
+      lower.includes("[call]") ||
+      lower.includes("(call)") ||
+      (lower.includes("(ifruit") && (lower.includes("call") || lower.includes("message"))) ||
+      /\b(?:says|whispers|shouts|yells|screams)\s*(?:\[[^\]]+\]\s*)?\(phone\)\s*:/i.test(cleanText) ||
+      /^[\[\(](?:phone|cellphone|call|phone\s*call)/i.test(getTimestampStrippedLine(cleanText).trimStart())
+    );
+  }
+
+  function extractSpeakerName(lineWithoutTimestamp) {
+    const stripped = lineWithoutTimestamp
+      .replace(/^[\[\(](?:phone|cellphone|call|phone\s*call|ifruit[^\)\]]*)[\]\)]\s*/i, "")
+      .trim();
+
+    const match = stripped.match(/^([A-Za-z0-9_'\.\-\s]+?)(?:\s*\[\d+\])?(?:\s+(?:says|whispers|shouts|yells|screams|murmurs|mutters|advertises|calls)\b|:)/i);
+    if (match) {
+      return match[1].trim();
+    }
+
+    const colonIndex = stripped.indexOf(":");
+    if (colonIndex > 0 && colonIndex < 40) {
+      const candidate = stripped.slice(0, colonIndex).trim();
+      if (!candidate.includes(" ") || candidate.split(" ").length <= 4) {
+        return candidate.replace(/\s*\(phone\)$/i, "").trim();
+      }
+    }
+
+    return "";
+  }
+
+  function matchesCharacterName(extractedSpeaker, charName) {
+    if (!extractedSpeaker || !charName) return false;
+
+    const s = extractedSpeaker.trim().toLowerCase();
+    const c = charName.trim().toLowerCase();
+
+    if (s === c) return true;
+
+    const sNorm = s.replace(/_/g, " ");
+    const cNorm = c.replace(/_/g, " ");
+    if (sNorm === cNorm) return true;
+
+    if (sNorm.endsWith(" " + cNorm) || cNorm.endsWith(" " + sNorm)) {
+      return true;
+    }
+
+    return false;
+  }
+
   function classifyLine(line) {
-    const text = line.trim();
-    const withoutTimestamp = getTimestampStrippedLine(line).trimStart();
+    const cleanRaw = stripColorTags(line);
+    const text = cleanRaw.trim();
+    const withoutTimestamp = getTimestampStrippedLine(cleanRaw).trimStart();
     const lowerText = text.toLowerCase();
     const lowerWithoutTimestamp = withoutTimestamp.toLowerCase();
 
@@ -2957,11 +3825,58 @@
       return "characterkill";
     }
 
-    if (lowerText.includes("(ifruit") && lowerText.includes("call")) {
-      return "phone";
-    }
+    // Phone conversation detection with Character Name awareness
+    if (isPhoneConversationLine(cleanRaw)) {
+      const speaker = extractSpeakerName(withoutTimestamp);
+      const charName = getCharacterName();
+      const isCharSpeaking = charName ? matchesCharacterName(speaker, charName) : false;
 
-    if (lowerText.includes("(ifruit") && lowerText.includes("message")) {
+      if (isCharSpeaking) {
+        // Character is speaking on the phone:
+        // Vocal modes appear in their natural roleplay tones
+        if (lowerWithoutTimestamp.includes("says [lower]") || lowerWithoutTimestamp.includes("[lower]")) {
+          return "lower";
+        }
+        if (
+          lowerWithoutTimestamp.includes("says [low]") ||
+          lowerWithoutTimestamp.includes("[low]") ||
+          lowerWithoutTimestamp.includes("says quietly") ||
+          lowerWithoutTimestamp.includes("murmurs") ||
+          lowerWithoutTimestamp.includes("mutters")
+        ) {
+          return "low";
+        }
+        if (lowerWithoutTimestamp.includes("whispers")) {
+          return "whisper";
+        }
+        if (
+          lowerWithoutTimestamp.includes("shouts") ||
+          lowerWithoutTimestamp.includes("yells") ||
+          lowerWithoutTimestamp.includes("screams")
+        ) {
+          return "shout";
+        }
+        // Normal speech appears white like say
+        return "say";
+      }
+
+      // If character name is not configured yet, still honor explicit vocal modifier tags
+      if (!charName) {
+        if (lowerWithoutTimestamp.includes("says [lower]") || lowerWithoutTimestamp.includes("[lower]")) {
+          return "lower";
+        }
+        if (lowerWithoutTimestamp.includes("says [low]") || lowerWithoutTimestamp.includes("[low]")) {
+          return "low";
+        }
+        if (lowerWithoutTimestamp.includes("whispers")) {
+          return "whisper";
+        }
+        if (lowerWithoutTimestamp.includes("shouts") || lowerWithoutTimestamp.includes("yells")) {
+          return "shout";
+        }
+      }
+
+      // The person on the other line (or incoming phone call) appears in normal phone yellow
       return "phone";
     }
 
@@ -3178,11 +4093,8 @@
     return result;
   }
 
-  function getLineSegments(text, className, isCharacterKill) {
-    if (!text) return [];
-
+  function parseStandardSegments(restText, className, isCharacterKill, baseColor) {
     const segments = [];
-    const restText = text;
 
     if (isCharacterKill) {
       const parts = splitCharacterKillLine(restText);
@@ -3201,7 +4113,6 @@
       return segments.concat(parseBlurInSegments(ckSegments));
     }
 
-    const baseColor = CHAT_COLORS[className] || CHAT_COLORS.default;
     const midSegments = [];
 
     if (className === "me" || className === "ame" || className === "do") {
@@ -3242,6 +4153,150 @@
     return segments.concat(parseBlurInSegments(midSegments));
   }
 
+  function getLineSegments(text, className, isCharacterKill) {
+    if (!text) return [];
+
+    const { cleanText, colorMap } = extractColorWraps(text);
+    if (!cleanText) return [];
+
+    const baseColor = CHAT_COLORS[className] || CHAT_COLORS.default;
+    const hasCustomColor = colorMap.some(c => c !== null);
+
+    // If no custom color was wrapped in this line, execute the magician's standard parsing
+    if (!hasCustomColor) {
+      return parseStandardSegments(cleanText, className, isCharacterKill, baseColor);
+    }
+
+    // Line contains custom color wraps!
+    // Initialize character array from cleanText
+    const chars = [];
+    for (let i = 0; i < cleanText.length; i++) {
+      chars.push({
+        char: cleanText[i],
+        forcedColor: colorMap[i],
+        className: className,
+        defaultColor: baseColor,
+        isBlurred: false,
+        keep: true
+      });
+    }
+
+    // Magician step 1: Character kill
+    if (isCharacterKill) {
+      const parts = splitCharacterKillLine(cleanText);
+      if (parts.tag) {
+        const tagLen = parts.tag.length;
+        const spacingLen = parts.spacing.length;
+        for (let i = 0; i < tagLen && i < chars.length; i++) {
+          chars[i].className = "ck-blue";
+          chars[i].defaultColor = CHAT_COLORS.ckblue;
+        }
+        for (let i = tagLen; i < tagLen + spacingLen && i < chars.length; i++) {
+          chars[i].className = "ck-red";
+          chars[i].defaultColor = CHAT_COLORS.ckred;
+        }
+        for (let i = tagLen + spacingLen; i < chars.length; i++) {
+          chars[i].className = "ck-red";
+          chars[i].defaultColor = CHAT_COLORS.ckred;
+        }
+      } else {
+        for (let i = 0; i < chars.length; i++) {
+          chars[i].className = "ck-red";
+          chars[i].defaultColor = CHAT_COLORS.ckred;
+        }
+      }
+    } else if (className === "me" || className === "ame" || className === "do") {
+      // /me lines: all characters default to me purple
+      for (let i = 0; i < chars.length; i++) {
+        chars[i].className = "me";
+        chars[i].defaultColor = CHAT_COLORS.me;
+      }
+    } else {
+      // Magician step 2: Asterisk actions *...*
+      const ASTERISK_REGEX = /\*([^*\r\n]+)\*/g;
+      let match;
+      while ((match = ASTERISK_REGEX.exec(cleanText)) !== null) {
+        const start = match.index;
+        const end = start + match[0].length - 1;
+        chars[start].keep = false;
+        chars[end].keep = false;
+        for (let i = start + 1; i < end; i++) {
+          chars[i].className = "me";
+          chars[i].defaultColor = CHAT_COLORS.me;
+        }
+      }
+    }
+
+    // Magician step 3: Blur parsing ☘...☘
+    const BLUR_REGEX = /☘([^☘\r\n]+)☘/g;
+    let bMatch;
+    while ((bMatch = BLUR_REGEX.exec(cleanText)) !== null) {
+      const bStart = bMatch.index;
+      const bEnd = bStart + bMatch[0].length - 1;
+      chars[bStart].keep = false;
+      chars[bEnd].keep = false;
+      for (let i = bStart + 1; i < bEnd; i++) {
+        chars[i].isBlurred = true;
+      }
+    }
+
+    // Step 4: Assemble into final segments, prioritizing forcedColor over defaultColor
+    const segments = [];
+    let curText = "";
+    let curColor = null;
+    let curClass = "";
+    let curBlurred = false;
+    let curIsCustom = false;
+
+    for (let i = 0; i < chars.length; i++) {
+      const c = chars[i];
+      if (!c.keep) continue;
+
+      const effectiveColor = c.forcedColor !== null ? c.forcedColor : c.defaultColor;
+      const isCustom = c.forcedColor !== null;
+
+      if (!curText) {
+        curText = c.char;
+        curColor = effectiveColor;
+        curClass = c.className;
+        curBlurred = c.isBlurred;
+        curIsCustom = isCustom;
+      } else if (
+        effectiveColor === curColor &&
+        c.className === curClass &&
+        c.isBlurred === curBlurred &&
+        isCustom === curIsCustom
+      ) {
+        curText += c.char;
+      } else {
+        segments.push({
+          text: curText,
+          color: curColor,
+          className: curClass,
+          isBlurred: curBlurred,
+          isCustomColor: curIsCustom
+        });
+        curText = c.char;
+        curColor = effectiveColor;
+        curClass = c.className;
+        curBlurred = c.isBlurred;
+        curIsCustom = isCustom;
+      }
+    }
+
+    if (curText) {
+      segments.push({
+        text: curText,
+        color: curColor,
+        className: curClass,
+        isBlurred: curBlurred,
+        isCustomColor: curIsCustom
+      });
+    }
+
+    return segments;
+  }
+
   function sliceSegments(segments, startIndex, length) {
     const result = [];
     let currentPos = 0;
@@ -3265,7 +4320,8 @@
           text: textSlice,
           color: seg.color,
           className: seg.className,
-          isBlurred: Boolean(seg.isBlurred)
+          isBlurred: Boolean(seg.isBlurred),
+          isCustomColor: Boolean(seg.isCustomColor)
         });
       }
     }
@@ -3295,6 +4351,10 @@
           content = `<span class="ck-blue">${escaped}</span>`;
         } else if (seg.className === "ck-red") {
           content = `<span class="ck-red">${escaped}</span>`;
+        }
+
+        if (seg.isCustomColor) {
+          content = `<span class="custom-color-text" style="color: ${seg.color} !important;">${content}</span>`;
         }
 
         if (seg.isBlurred) {
@@ -3785,7 +4845,18 @@
     });
   }
 
-  function createChatCanvas(targetCanvas = null) {
+  function hasVisibleBackgroundImage() {
+    const bgLayer = Array.isArray(layers) ? layers.find(l => l.type === "background") : null;
+    if (bgLayer && bgLayer.visible !== false && bgImageObject && bgImageObject.complete && bgImageObject.naturalWidth > 0) {
+      return true;
+    }
+    if (Array.isArray(layers) && layers.some(l => l.type === "image" && l.visible !== false && l.img && l.img.complete && l.img.naturalWidth > 0)) {
+      return true;
+    }
+    return false;
+  }
+
+  function createChatCanvas(targetCanvas = null, { isExport = false, forceBlackBg = false } = {}) {
     const scale = 1;
     const fontPx = getFontSize();
     const fontFamily = getFontFamily();
@@ -3810,8 +4881,13 @@
     ctx.scale(scale, scale);
     ctx.clearRect(0, 0, canvasWidth, canvasHeight);
 
-    ctx.fillStyle = "#000";
-    ctx.fillRect(0, 0, canvasWidth, canvasHeight);
+    const hasImage = hasVisibleBackgroundImage();
+    const isTransparent = isExport && !hasImage && !forceBlackBg;
+
+    if (!isTransparent) {
+      ctx.fillStyle = "#000";
+      ctx.fillRect(0, 0, canvasWidth, canvasHeight);
+    }
 
     layers.forEach(layer => {
       if (!layer.visible) return;
@@ -3822,7 +4898,8 @@
       if (layer.type === "background") {
         if (bgImageObject && bgImageObject.complete && bgImageObject.naturalWidth > 0) {
           const bgPreset = layer.filter || "none";
-          const filterStr = getCanvasFilterForPreset(bgPreset);
+          const bgIntensity = typeof layer.filterIntensity === "number" ? layer.filterIntensity : 1;
+          const filterStr = getCanvasFilterForPreset(bgPreset, bgIntensity);
 
           if (filterStr && filterStr !== "none") {
             ctx.filter = filterStr;
@@ -3841,7 +4918,7 @@
           if (bgPreset === "sunset") {
             ctx.save();
             ctx.globalCompositeOperation = "overlay";
-            ctx.fillStyle = "rgba(255, 140, 20, 0.16)";
+            ctx.fillStyle = `rgba(255, 140, 20, ${0.16 * bgIntensity})`;
             ctx.fillRect(
               bgX,
               bgY,
@@ -3858,7 +4935,7 @@
           if (isFilmGrainEnabled()) {
             drawFilmGrain(ctx, canvasWidth, canvasHeight, getFilmGrainStrength());
           }
-        } else {
+        } else if (!isTransparent) {
           if (isVignetteEnabled()) {
             drawVignette(ctx, canvasWidth, canvasHeight, getVignetteStrength());
           }
@@ -3869,7 +4946,8 @@
       } else if (layer.type === "image") {
         if (layer.img && layer.img.complete && layer.img.naturalWidth > 0) {
           const imgPreset = layer.filter || "none";
-          const imgFilterStr = getCanvasFilterForPreset(imgPreset);
+          const imgIntensity = typeof layer.filterIntensity === "number" ? layer.filterIntensity : 1;
+          const imgFilterStr = getCanvasFilterForPreset(imgPreset, imgIntensity);
           if (imgFilterStr && imgFilterStr !== "none") {
             ctx.filter = imgFilterStr;
           }
@@ -3890,7 +4968,7 @@
           if (imgPreset === "sunset") {
             ctx.save();
             ctx.globalCompositeOperation = "overlay";
-            ctx.fillStyle = "rgba(255, 140, 20, 0.16)";
+            ctx.fillStyle = `rgba(255, 140, 20, ${0.16 * imgIntensity})`;
             ctx.fillRect(
               layer.x,
               layer.y,
@@ -3911,7 +4989,15 @@
   }
 
   async function getExportCanvas() {
-    const canvas = createChatCanvas();
+    const hasImage = hasVisibleBackgroundImage();
+    const canvas = createChatCanvas(null, { isExport: true });
+
+    // When no background image is added, export directly with a transparent canvas
+    // (JPEG compression does not support alpha transparency and would convert it to opaque black)
+    if (!hasImage) {
+      return canvas;
+    }
+
     const quality = getJpegQuality();
     if (quality >= 0.98) {
       return canvas;
@@ -3950,10 +5036,18 @@
   async function downloadCanvasAsPng() {
     try {
       const canvas = await getExportCanvas();
+      const isTransparent = !hasVisibleBackgroundImage();
       const link = document.createElement("a");
       link.download = "gta-rp-chatlog.png";
       link.href = canvas.toDataURL("image/png");
       link.click();
+      showToast(
+        "info",
+        isTransparent ? "Downloaded Transparent PNG" : "Downloaded PNG",
+        isTransparent
+          ? "Chatlog saved with a transparent background for easy extrapolation into image editors."
+          : "Saved PNG screenshot."
+      );
     } catch (err) {
       console.error("Failed to download PNG:", err);
       showToast("error", "Download Failed", err?.message || "Could not generate PNG for download.");
@@ -3962,7 +5056,7 @@
 
   function downloadCanvasAsJpeg() {
     try {
-      const canvas = createChatCanvas();
+      const canvas = createChatCanvas(null, { isExport: true, forceBlackBg: true });
       const quality = getJpegQuality();
       const link = document.createElement("a");
       link.download = "gta-rp-chatlog.jpeg";
@@ -4217,10 +5311,95 @@
 
   blurSelectionButton.addEventListener("click", blurSelectedTextInInput);
 
+  if (colorSelectionButton) {
+    colorSelectionButton.addEventListener("click", (e) => {
+      e.stopPropagation();
+      toggleColorChipsPopup();
+    });
+  }
+
+  if (closeColorChipsBtn) {
+    closeColorChipsBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      hideColorChipsPopup();
+    });
+  }
+
+  if (colorChipsPopup) {
+    colorChipsPopup.addEventListener("mousedown", (e) => {
+      // Don't prevent default on input elements so user can type/pick hex
+      if (e.target.tagName !== "INPUT") {
+        e.preventDefault();
+      }
+    });
+  }
+
+  if (applyCustomColorBtn) {
+    applyCustomColorBtn.addEventListener("click", (e) => {
+      e.preventDefault();
+      const val = (customColorHexInput ? customColorHexInput.value : "") || (customColorPickerInput ? customColorPickerInput.value : "");
+      applyColorWrapToSelection(val);
+    });
+  }
+
+  if (customColorPickerInput) {
+    customColorPickerInput.addEventListener("input", () => {
+      if (customColorHexInput) {
+        customColorHexInput.value = customColorPickerInput.value;
+      }
+    });
+  }
+
+  if (customColorHexInput) {
+    customColorHexInput.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        applyColorWrapToSelection(customColorHexInput.value);
+      }
+    });
+    customColorHexInput.addEventListener("input", () => {
+      const resolved = resolveColorCode(customColorHexInput.value);
+      if (resolved && customColorPickerInput) {
+        customColorPickerInput.value = resolved;
+      }
+    });
+  }
+
+  if (removeColorWrapBtn) {
+    removeColorWrapBtn.addEventListener("click", (e) => {
+      e.preventDefault();
+      removeColorWrapFromSelection();
+    });
+  }
+
+  // Track selection inside textarea
+  input.addEventListener("select", updateSavedInputSelection);
+  input.addEventListener("mouseup", updateSavedInputSelection);
+  input.addEventListener("keyup", updateSavedInputSelection);
+
+  // Close color popover when clicking outside
+  document.addEventListener("click", (e) => {
+    if (colorChipsPopup && colorChipsPopup.style.display !== "none") {
+      if (!colorChipsPopup.contains(e.target) && !colorSelectionButton.contains(e.target)) {
+        hideColorChipsPopup();
+      }
+    }
+  });
+
+  // Close color popover on Escape
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && colorChipsPopup && colorChipsPopup.style.display !== "none") {
+      hideColorChipsPopup();
+    }
+  });
+
   input.addEventListener("keydown", event => {
     if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "b") {
       event.preventDefault();
       blurSelectedTextInInput();
+    } else if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "k") {
+      event.preventDefault();
+      toggleColorChipsPopup();
     }
   });
 
@@ -4401,6 +5580,9 @@
     if (!targetLayer) return;
 
     targetLayer.filter = newPreset;
+    if (typeof targetLayer.filterIntensity !== "number") {
+      targetLayer.filterIntensity = 1;
+    }
 
     if (atmospherePresetSelect) {
       atmospherePresetSelect.value = newPreset;
@@ -4409,7 +5591,19 @@
       inspectorAtmosphereSelect.value = newPreset;
     }
 
+    if (layerFilterIntensityRow) {
+      const hasFilter = Boolean(newPreset && newPreset !== "none");
+      layerFilterIntensityRow.style.display = hasFilter ? "flex" : "none";
+      if (layerFilterIntensityInput) {
+        layerFilterIntensityInput.value = targetLayer.filterIntensity;
+      }
+      if (layerFilterIntensityValue) {
+        layerFilterIntensityValue.textContent = Math.round(targetLayer.filterIntensity * 100) + "%";
+      }
+    }
+
     renderLayersUI();
+    updateAtmosphereDom();
     updateDomLayers();
     scheduleJpegPreview();
     saveCurrentSettingsDebounced();
@@ -4425,6 +5619,25 @@
     inspectorAtmosphereSelect.addEventListener("change", () => {
       applyAtmosphereFilterChange(inspectorAtmosphereSelect.value);
     });
+  }
+
+  if (layerFilterIntensityInput) {
+    const handleIntensityChange = () => {
+      const targetLayer = getSelectedImageOrBackgroundLayer();
+      if (!targetLayer) return;
+      const val = parseFloat(layerFilterIntensityInput.value);
+      targetLayer.filterIntensity = Math.max(0, Math.min(val, 1));
+      if (layerFilterIntensityValue) {
+        layerFilterIntensityValue.textContent = Math.round(targetLayer.filterIntensity * 100) + "%";
+      }
+      renderLayersUI();
+      updateAtmosphereDom();
+      updateDomLayers();
+      scheduleJpegPreview();
+      saveCurrentSettingsDebounced();
+    };
+    layerFilterIntensityInput.addEventListener("input", handleIntensityChange);
+    layerFilterIntensityInput.addEventListener("change", handleIntensityChange);
   }
 
   if (vignetteToggle) {
@@ -4775,10 +5988,18 @@
   copyPngButton.addEventListener("click", async () => {
     try {
       await copyCanvasAsPng();
-      copyPngButton.textContent = "PNG Copied!";
+      const isTransparent = !hasVisibleBackgroundImage();
+      copyPngButton.textContent = isTransparent ? "Transparent PNG Copied!" : "PNG Copied!";
+      showToast(
+        "success",
+        isTransparent ? "Copied Transparent PNG" : "Copied PNG",
+        isTransparent
+          ? "Copied chatlog with transparent background to clipboard! Perfect for extrapolating into Photoshop or image editors."
+          : "Copied image composite to clipboard!"
+      );
       setTimeout(() => {
         copyPngButton.textContent = "Copy PNG";
-      }, 1200);
+      }, 1500);
     } catch (error) {
       copyPngButton.textContent = "Copy failed";
       showToast("error", "Clipboard Copy Failed", error?.message || "Direct image clipboard access was blocked. Use 'Download PNG' or 'Upload to ImgBB' instead.");
@@ -4802,8 +6023,48 @@
     render();
   });
 
+  if (openSettingsModalButton) {
+    openSettingsModalButton.addEventListener("click", openSettingsModal);
+  }
+
+  if (closeSettingsModalBtn) {
+    closeSettingsModalBtn.addEventListener("click", closeSettingsModal);
+  }
+
+  if (closeSettingsModalFooterBtn) {
+    closeSettingsModalFooterBtn.addEventListener("click", closeSettingsModal);
+  }
+
+  if (characterNameInput) {
+    characterNameInput.addEventListener("input", () => {
+      characterName = characterNameInput.value.trim();
+      if (characterNameStatus) {
+        characterNameStatus.textContent = characterName ? "Saved" : "";
+      }
+      render();
+      scheduleJpegPreview();
+      saveCurrentSettingsDebounced();
+    });
+  }
+
+  if (settingsModal) {
+    settingsModal.addEventListener("click", (e) => {
+      if (e.target === settingsModal) {
+        closeSettingsModal();
+      }
+    });
+  }
+
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && settingsModal && settingsModal.style.display !== "none") {
+      closeSettingsModal();
+    }
+  });
+
   if (resetSettingsButton) {
-    resetSettingsButton.addEventListener("click", resetSettingsToDefault);
+    resetSettingsButton.addEventListener("click", () => {
+      resetSettingsToDefault();
+    });
   }
 
   loadAndApplySavedSettings();
@@ -4818,12 +6079,15 @@
   updateFontFamily();
   updateOutlineSettings();
   updateCensorSettings();
+  renderColorChips();
   render();
   renderLayersUI();
   updateDomLayers();
 
   // Tip Rotation Carousel
   const siteTips = [
+    "Character Name: Go to <a href='#' data-action='open-settings' style='color: var(--accent); font-weight: 700; text-decoration: underline; cursor: pointer;'>⚙ Settings</a> to save your character name. This enables smart phone formatting: your character's phone speech appears in natural vocal tones (white for say, gray for low, orange for whisper), while the other caller appears in phone yellow.",
+    "Color Text: Highlight any word and click <strong>Color Text 🎨</strong> (or press <strong>Ctrl+K</strong>) to choose from pre-determined chat colors (Purple, Whisper Orange, Radio Amber, Money Green, etc.) or custom hex values to color specific words.",
     "Atmosphere & Cinematic Filters: Try the <strong>Mood presets</strong> (Warm Sunset, Noir / B&W, High Contrast, Cold Night) along with <strong>Vignette</strong> and <strong>Film Grain</strong> in the top toolbar to give your RP screenshot cinematic immersion.",
     "Your customized canvas dimensions, fonts, outline styles, and censorship settings are automatically saved and remembered across visits.",
     "Add images on top of the canvas via the Layers box or <strong>+ Add Image Layer</strong>. Drag on the canvas to move any layer, or use the mouse wheel to scale.",
@@ -4835,7 +6099,8 @@
     "Click and drag the chatlog text anywhere on the canvas to reposition it freely. Click <strong>Reset Text Position</strong> to restore default placement.",
     "Custom canvas sizing: Type any width and height into <strong>Canvas width / height</strong> to match 1080p, 1440p, 4K, or custom screenshot aspect ratios.",
     "Fine-tune the chat aesthetic with <strong>Outline style</strong> (Classic outline, Drop shadow, Both, or None) and adjust outline stroke thickness.",
-    "Click <strong>Copy PNG</strong> to copy the rendered screenshot directly to your clipboard for instant pasting into Discord, forums, or editors.",
+    "Transparent Output: When no background image is added, <strong>Copy PNG</strong> and <strong>Download PNG</strong> export with a transparent canvas so you can extrapolate text directly onto your screenshots in Photoshop or photo editors. The preview displays on black for convenience while typing.",
+    "Click <strong>Copy PNG</strong> to copy the rendered chatlog directly to your clipboard for instant pasting into Discord, forums, or image editing software.",
     "Click <strong>Upload to ImgBB</strong> to upload your chatlog directly to ImgBB and automatically copy the link to your clipboard (Ctrl+V)."
   ];
 
@@ -4881,6 +6146,16 @@
     tipNextBtn.addEventListener("click", () => {
       showTip(currentTipIndex + 1);
       startTipRotation();
+    });
+  }
+
+  if (tipTextEl) {
+    tipTextEl.addEventListener("click", (e) => {
+      const target = e.target.closest("[data-action='open-settings']");
+      if (target) {
+        e.preventDefault();
+        openSettingsModal();
+      }
     });
   }
 
