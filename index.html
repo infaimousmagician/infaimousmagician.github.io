@@ -1962,13 +1962,6 @@
 
     <div class="actions-group">
       <span class="actions-group-label">Canvas & View</span>
-      <label class="control" style="font-size: 12px; color: var(--muted); display: inline-flex; align-items: center; gap: 5px;" title="Starting position for chatlog text. You can still drag the text freely anytime.">
-        <span>Position:</span>
-        <select id="textPositionSelectBottom" style="padding: 4px 8px; font-size: 12px; background: #222; border: 1px solid #3d3d3d; border-radius: 4px; color: #fff;">
-          <option value="top-left" selected>Top Left</option>
-          <option value="bottom-left">Bottom Left</option>
-        </select>
-      </label>
       <button id="resetTextPositionButton" class="btn btn-neutral">Reset Text Position</button>
       <button id="removeImageButton" class="btn btn-danger">Remove Background</button>
     </div>
@@ -2084,26 +2077,6 @@
           </div>
         </div>
 
-        <!-- Section: Chatlog Position -->
-        <div class="settings-section">
-          <div class="settings-section-title">
-            <span>📍</span>
-            <span>Chatlog Text Position</span>
-          </div>
-          <div class="settings-field-group">
-            <label for="modalTextPositionSelect" class="settings-label">
-              <span>Position:</span>
-            </label>
-            <select id="modalTextPositionSelect" class="modal-input" style="font-family: inherit; font-size: 14px;">
-              <option value="top-left" selected>Top Left (Default)</option>
-              <option value="bottom-left">Bottom Left</option>
-            </select>
-            <div class="settings-help-text">
-              Choose the starting corner for your chatlog text (Top Left or Bottom Left). In Bottom Left mode, text lines anchor to the bottom and expand upward. You can still drag the text freely anywhere on the canvas at any time.
-            </div>
-          </div>
-        </div>
-
         <!-- Section: Reset & Defaults -->
         <div class="settings-danger-section">
           <div class="settings-danger-title">
@@ -2178,8 +2151,6 @@
   const removeImageButton = document.getElementById("removeImageButton");
   const resetTextPositionButton = document.getElementById("resetTextPositionButton");
   const textPositionSelect = document.getElementById("textPositionSelect");
-  const textPositionSelectBottom = document.getElementById("textPositionSelectBottom");
-  const modalTextPositionSelect = document.getElementById("modalTextPositionSelect");
   const uploadImgbbButton = document.getElementById("uploadImgbbButton");
   const copyPngButton = document.getElementById("copyPngButton");
   const downloadPngButton = document.getElementById("downloadPngButton");
@@ -2410,12 +2381,6 @@
     if (textPositionSelect && textPositionSelect.value !== mode) {
       textPositionSelect.value = mode;
     }
-    if (textPositionSelectBottom && textPositionSelectBottom.value !== mode) {
-      textPositionSelectBottom.value = mode;
-    }
-    if (modalTextPositionSelect && modalTextPositionSelect.value !== mode) {
-      modalTextPositionSelect.value = mode;
-    }
 
     if (!keepCustomDrag) {
       userHasCustomDraggedText = false;
@@ -2450,9 +2415,6 @@
     if (!settingsModal) return;
     if (characterNameInput) {
       characterNameInput.value = characterName || "";
-    }
-    if (modalTextPositionSelect) {
-      modalTextPositionSelect.value = textPositionMode || "top-left";
     }
     settingsModal.style.display = "flex";
   }
@@ -5897,19 +5859,6 @@
     textPositionSelect.addEventListener("change", () => {
       setTextPosition(textPositionSelect.value);
       showToast("info", textPositionSelect.value === "bottom-left" ? "Position: Bottom Left" : "Position: Top Left", `Chatlog positioned at ${textPositionSelect.value === "bottom-left" ? "bottom left" : "top left"}. Drag freely anytime.`);
-    });
-  }
-
-  if (textPositionSelectBottom) {
-    textPositionSelectBottom.addEventListener("change", () => {
-      setTextPosition(textPositionSelectBottom.value);
-      showToast("info", textPositionSelectBottom.value === "bottom-left" ? "Position: Bottom Left" : "Position: Top Left", `Chatlog positioned at ${textPositionSelectBottom.value === "bottom-left" ? "bottom left" : "top left"}. Drag freely anytime.`);
-    });
-  }
-
-  if (modalTextPositionSelect) {
-    modalTextPositionSelect.addEventListener("change", () => {
-      setTextPosition(modalTextPositionSelect.value);
     });
   }
 
