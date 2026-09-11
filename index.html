@@ -1730,6 +1730,153 @@
       box-shadow: 0 0 18px rgba(0, 217, 132, 0.95);
     }
   }
+
+  /* Floating Mini Music Player Widget */
+  .yt-music-widget {
+    position: fixed;
+    bottom: 24px;
+    right: 20px;
+    width: 264px;
+    background: #181818;
+    border: 1px solid #383838;
+    border-radius: 8px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7);
+    z-index: 10000;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    font-family: inherit;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transform: translateY(12px);
+    transition: opacity 0.25s ease, transform 0.25s ease, visibility 0.25s;
+  }
+
+  .yt-music-widget.is-visible {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    transform: translateY(0);
+  }
+
+  .yt-music-header {
+    background: #202020;
+    padding: 6px 10px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid #2e2e2e;
+    user-select: none;
+  }
+
+  .yt-music-header-title {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    min-width: 0;
+    flex: 1;
+  }
+
+  .yt-music-icon {
+    font-size: 13px;
+    color: #00d984;
+    flex-shrink: 0;
+  }
+
+  .yt-music-title-text {
+    font-size: 11.5px;
+    font-weight: 600;
+    color: #ffffff;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .yt-music-header-btns {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-left: 6px;
+  }
+
+  .yt-music-ctrl-btn {
+    background: transparent;
+    border: none;
+    color: #888888;
+    cursor: pointer;
+    font-size: 12px;
+    padding: 2px 6px;
+    border-radius: 4px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+  }
+
+  .yt-music-ctrl-btn:hover {
+    background: #333333;
+    color: #ffffff;
+  }
+
+  .yt-music-body {
+    display: flex;
+    flex-direction: column;
+    background: #141414;
+    position: relative;
+  }
+
+  .yt-music-video-frame {
+    width: 264px;
+    height: 148px;
+    background: #000000;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .yt-music-video-frame iframe {
+    width: 100% !important;
+    height: 100% !important;
+    border: none;
+    display: block;
+  }
+
+  .yt-music-controls-row {
+    padding: 8px 10px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    border-top: 1px solid #282828;
+    background: #1a1a1a;
+  }
+
+  .yt-music-vol-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    flex: 1;
+    min-width: 0;
+  }
+
+  .yt-music-volume-range {
+    width: 100%;
+    accent-color: #00d984;
+    cursor: pointer;
+    height: 4px;
+  }
+
+  /* Minimized state */
+  .yt-music-widget.is-minimized .yt-music-video-frame {
+    position: absolute;
+    width: 200px;
+    height: 113px;
+    bottom: 0;
+    right: 0;
+    opacity: 0.001;
+    pointer-events: none;
+    z-index: -1;
+  }
 </style>
 </head>
 <body>
@@ -7011,14 +7158,48 @@
   let ytMusicPendingPlay = false;
 
   const musicPlayButton = document.getElementById("musicPlayButton");
+  const ytMusicWidget = document.getElementById("ytMusicWidget");
+  const ytMusicTrackName = document.getElementById("ytMusicTrackName");
+  const ytMusicMinimizeBtn = document.getElementById("ytMusicMinimizeBtn");
+  const ytMusicCloseBtn = document.getElementById("ytMusicCloseBtn");
+  const ytMusicPlayToggleBtn = document.getElementById("ytMusicPlayToggleBtn");
+  const ytMusicVolumeSlider = document.getElementById("ytMusicVolumeSlider");
+  const ytMusicVolumeText = document.getElementById("ytMusicVolumeText");
+  const ytMusicSettingsShortcutBtn = document.getElementById("ytMusicSettingsShortcutBtn");
+
+  function getTrackDisplayName() {
+    return (currentMusicVideoId === DEFAULT_MUSIC_VIDEO_ID)
+      ? "Matty Boy - I'm Known For That"
+      : `Custom Track (${currentMusicVideoId})`;
+  }
+
+  function showMusicWidget() {
+    if (ytMusicWidget) {
+      ytMusicWidget.classList.add("is-visible");
+    }
+  }
+
+  function hideMusicWidget() {
+    if (ytMusicWidget) {
+      ytMusicWidget.classList.remove("is-visible");
+    }
+  }
 
   function setMusicPlayingUI(isPlaying) {
+    const trackName = getTrackDisplayName();
     if (musicPlayButton) {
       musicPlayButton.classList.toggle("is-playing", isPlaying);
-      const isDefault = (currentMusicVideoId === DEFAULT_MUSIC_VIDEO_ID);
       musicPlayButton.title = isPlaying
-        ? (isDefault ? "Pause 'Matty Boy - I'm Known For That' (Looping)" : "Pause custom YouTube music (Looping)")
-        : (isDefault ? "Play 'Matty Boy - I'm Known For That' (Looping)" : "Play custom YouTube music (Looping)");
+        ? `Pause '${trackName}' (Looping)`
+        : `Play '${trackName}' (Looping)`;
+    }
+    if (ytMusicPlayToggleBtn) {
+      ytMusicPlayToggleBtn.textContent = isPlaying ? "Pause" : "Play";
+      ytMusicPlayToggleBtn.className = isPlaying ? "btn btn-neutral btn-xs" : "btn btn-accent btn-xs";
+    }
+    if (ytMusicTrackName) {
+      ytMusicTrackName.textContent = trackName;
+      ytMusicTrackName.title = trackName;
     }
   }
 
@@ -7073,6 +7254,12 @@
         customMusicUrlStatus.textContent = (parsedId === DEFAULT_MUSIC_VIDEO_ID) ? "Default Track" : "Saved ✓";
         customMusicUrlStatus.style.color = "#00d984";
       }
+    }
+
+    if (ytMusicTrackName) {
+      const name = getTrackDisplayName();
+      ytMusicTrackName.textContent = name;
+      ytMusicTrackName.title = name;
     }
 
     // Switch video on running YouTube player
@@ -7140,9 +7327,10 @@
 
   window.onYouTubeIframeAPIReady = function() {
     try {
+      const originVal = (window.location.origin && window.location.origin !== "null") ? window.location.origin : undefined;
       ytMusicPlayer = new YT.Player("ytMusicPlayer", {
-        height: "180",
-        width: "320",
+        height: "148",
+        width: "264",
         videoId: currentMusicVideoId,
         playerVars: {
           autoplay: 0,
@@ -7152,16 +7340,20 @@
           rel: 0,
           playsinline: 1,
           loop: 1,
-          playlist: currentMusicVideoId
+          playlist: currentMusicVideoId,
+          enablejsapi: 1,
+          origin: originVal
         },
         events: {
           onReady: function() {
             ytMusicReady = true;
             try {
-              ytMusicPlayer.setVolume(75);
+              const currentVol = ytMusicVolumeSlider ? parseInt(ytMusicVolumeSlider.value, 10) : 75;
+              ytMusicPlayer.setVolume(currentVol || 75);
             } catch (e) {}
             if (ytMusicPendingPlay) {
               ytMusicPendingPlay = false;
+              showMusicWidget();
               ytMusicPlayer.playVideo();
               setMusicPlayingUI(true);
             }
@@ -7169,6 +7361,7 @@
           onStateChange: function(event) {
             // YT.PlayerState: PLAYING = 1, PAUSED = 2, ENDED = 0, BUFFERING = 3
             if (event.data === 1) {
+              showMusicWidget();
               setMusicPlayingUI(true);
             } else if (event.data === 2) {
               setMusicPlayingUI(false);
@@ -7187,12 +7380,16 @@
             console.warn("YouTube player error:", err);
             ytMusicPendingPlay = false;
             setMusicPlayingUI(false);
-            showToast("error", "Audio Notice", "Unable to stream song directly. Click to listen on YouTube.");
-            if (musicPlayButton) {
-              musicPlayButton.onclick = () => {
-                window.open("https://www.youtube.com/watch?v=" + currentMusicVideoId, "_blank");
-              };
+            const errCode = (err && typeof err.data === "number") ? err.data : null;
+            let msg = "Could not stream YouTube track.";
+            if (errCode === 150 || errCode === 101) {
+              msg = "This YouTube video has embedding restricted by its owner. Please try another song in Settings.";
+            } else if (errCode === 100) {
+              msg = "The YouTube video was not found or is set to private.";
+            } else if (errCode === 2) {
+              msg = "Invalid YouTube video link or ID.";
             }
+            showToast("error", "Audio Notice", msg);
           }
         }
       });
@@ -7215,31 +7412,119 @@
     }
   })();
 
+  function toggleMusicPlayback() {
+    if (!ytMusicReady || !ytMusicPlayer) {
+      ytMusicPendingPlay = true;
+      showMusicWidget();
+      showToast("info", "Loading Music", "Starting playback (looping)...");
+      return;
+    }
+
+    try {
+      const state = ytMusicPlayer.getPlayerState();
+      if (state === 1) { // Currently playing -> pause
+        ytMusicPlayer.pauseVideo();
+        setMusicPlayingUI(false);
+      } else { // Paused or unstarted -> play
+        showMusicWidget();
+        ytMusicPlayer.playVideo();
+        setMusicPlayingUI(true);
+      }
+    } catch (err) {
+      console.error("Playback error:", err);
+    }
+  }
+
+  // Header 🎵 button
   if (musicPlayButton) {
     musicPlayButton.addEventListener("click", () => {
-      if (!ytMusicReady || !ytMusicPlayer) {
-        ytMusicPendingPlay = true;
-        showToast("info", "Loading Music", "Starting playback (looping)...");
-        return;
-      }
+      toggleMusicPlayback();
+    });
+  }
 
-      try {
-        const state = ytMusicPlayer.getPlayerState();
-        if (state === 1) { // Currently playing -> pause
+  // Mini player controls
+  if (ytMusicPlayToggleBtn) {
+    ytMusicPlayToggleBtn.addEventListener("click", () => {
+      toggleMusicPlayback();
+    });
+  }
+
+  if (ytMusicMinimizeBtn) {
+    ytMusicMinimizeBtn.addEventListener("click", () => {
+      if (!ytMusicWidget) return;
+      const isMin = ytMusicWidget.classList.toggle("is-minimized");
+      ytMusicMinimizeBtn.textContent = isMin ? "▢" : "−";
+      ytMusicMinimizeBtn.title = isMin ? "Expand Player Video" : "Minimize Player Video";
+    });
+  }
+
+  if (ytMusicCloseBtn) {
+    ytMusicCloseBtn.addEventListener("click", () => {
+      if (ytMusicPlayer && ytMusicReady) {
+        try {
           ytMusicPlayer.pauseVideo();
-          setMusicPlayingUI(false);
-        } else { // Paused or unstarted -> play
-          ytMusicPlayer.playVideo();
-          setMusicPlayingUI(true);
+        } catch (e) {}
+      }
+      setMusicPlayingUI(false);
+      hideMusicWidget();
+    });
+  }
+
+  if (ytMusicVolumeSlider) {
+    ytMusicVolumeSlider.addEventListener("input", () => {
+      const vol = parseInt(ytMusicVolumeSlider.value, 10) || 0;
+      if (ytMusicVolumeText) ytMusicVolumeText.textContent = `${vol}%`;
+      if (ytMusicPlayer && ytMusicReady) {
+        try {
+          ytMusicPlayer.setVolume(vol);
+        } catch (e) {}
+      }
+    });
+  }
+
+  if (ytMusicSettingsShortcutBtn) {
+    ytMusicSettingsShortcutBtn.addEventListener("click", () => {
+      if (typeof openSettingsModal === "function") {
+        openSettingsModal();
+        if (customMusicUrlInput) {
+          setTimeout(() => {
+            customMusicUrlInput.focus();
+            customMusicUrlInput.select();
+          }, 150);
         }
-      } catch (err) {
-        console.error("Playback error:", err);
       }
     });
   }
 </script>
-<div id="ytMusicContainer" style="position: fixed; right: -9999px; bottom: -9999px; width: 320px; height: 180px; opacity: 0.001; pointer-events: none; z-index: -9999;" aria-hidden="true">
-  <div id="ytMusicPlayer"></div>
+<div id="ytMusicWidget" class="yt-music-widget" role="region" aria-label="Background Music Player">
+  <div class="yt-music-header">
+    <div class="yt-music-header-title">
+      <span class="yt-music-icon">🎵</span>
+      <span id="ytMusicTrackName" class="yt-music-title-text" title="Matty Boy - I'm Known For That">Matty Boy - I'm Known For That</span>
+    </div>
+    <div class="yt-music-header-btns">
+      <button type="button" id="ytMusicMinimizeBtn" class="yt-music-ctrl-btn" title="Minimize Player Video" aria-label="Minimize or Expand">−</button>
+      <button type="button" id="ytMusicCloseBtn" class="yt-music-ctrl-btn" title="Close and Stop Music" aria-label="Close Music">✕</button>
+    </div>
+  </div>
+  <div id="ytMusicBody" class="yt-music-body">
+    <div id="ytMusicPlayerContainer" class="yt-music-video-frame">
+      <div id="ytMusicPlayer"></div>
+    </div>
+    <div class="yt-music-controls-row">
+      <button type="button" id="ytMusicPlayToggleBtn" class="btn btn-accent btn-xs" style="padding: 4px 10px; font-weight: 700; white-space: nowrap;">
+        Play
+      </button>
+      <div class="yt-music-vol-wrapper">
+        <span style="font-size: 11px; color: #888;">Vol:</span>
+        <input type="range" id="ytMusicVolumeSlider" min="0" max="100" value="75" class="yt-music-volume-range" aria-label="Volume" />
+        <span id="ytMusicVolumeText" style="font-size: 11px; color: #bbb; min-width: 28px; text-align: right;">75%</span>
+      </div>
+      <button type="button" id="ytMusicSettingsShortcutBtn" class="btn btn-neutral btn-xs" title="Change YouTube track in Settings" style="padding: 4px 8px; font-size: 11px;">
+        ⚙
+      </button>
+    </div>
+  </div>
 </div>
 </body>
 </html>
