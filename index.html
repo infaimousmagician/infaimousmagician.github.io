@@ -4,9 +4,9 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>GTA RP Chatlog Magician</title>
-<meta name="description" content="GTA roleplay chatlog magician and preview tool with multi-layer canvas support, multiple chatlog text layer blocks (secondary chatbox), atmosphere and cinematic filters (warm sunset, noir, contrast, vignette, film grain), server-accurate fonts, stroke & shadow styles, censor blur and redaction, clipboard image pasting, drag-and-drop screenshots, canvas export, and direct ImgBB image uploading with automatic link copying." />
+<meta name="description" content="GTA roleplay chatlog magician and preview tool with multi-layer canvas support, multiple chatlog text layer blocks (secondary chatbox), atmosphere and cinematic filters (warm sunset, noir, contrast, vignette, film grain), server-accurate fonts, customizable starting text offset margins, stroke & shadow styles, censor blur and redaction, clipboard image pasting, drag-and-drop screenshots, canvas export, and direct ImgBB image uploading with automatic link copying." />
 <meta property="og:title" content="GTA RP Chatlog Magician" />
-<meta property="og:description" content="GTA roleplay chatlog magician and preview tool with multi-layer canvas support, multiple chatlog text layer blocks (secondary chatbox), atmosphere and cinematic filters (warm sunset, noir, contrast, vignette, film grain), server-accurate fonts, stroke & shadow styles, censor blur and redaction, clipboard image pasting, drag-and-drop screenshots, canvas export, and direct ImgBB image uploading with automatic link copying." />
+<meta property="og:description" content="GTA roleplay chatlog magician and preview tool with multi-layer canvas support, multiple chatlog text layer blocks (secondary chatbox), atmosphere and cinematic filters (warm sunset, noir, contrast, vignette, film grain), server-accurate fonts, customizable starting text offset margins, stroke & shadow styles, censor blur and redaction, clipboard image pasting, drag-and-drop screenshots, canvas export, and direct ImgBB image uploading with automatic link copying." />
 <link rel="icon" type="image/svg+xml" href="clover.svg" />
 <link rel="icon" type="image/png" sizes="64x64" href="clover.png" />
 <link rel="shortcut icon" href="clover.png" />
@@ -164,7 +164,8 @@
   .font-size-input,
   .canvas-size-input,
   .text-panel-width-input,
-  .stroke-width-input {
+  .stroke-width-input,
+  .text-offset-input {
     width: 68px;
     padding: 5px 7px;
     border-radius: 5px;
@@ -176,6 +177,10 @@
   }
 
   .font-size-input {
+    width: 54px;
+  }
+
+  .text-offset-input {
     width: 54px;
   }
 
@@ -1934,6 +1939,14 @@
           <option value="bottom-left">Bottom Left</option>
         </select>
       </label>
+
+      <div class="toolbar-divider"></div>
+
+      <label class="control" title="Chatlog starting offset / margin from canvas edges in pixels (default 15px). Increase or decrease freely.">
+        Offset:
+        <input id="textOffsetInput" class="text-offset-input" type="number" min="0" max="500" step="1" value="15" />
+        <span>px</span>
+      </label>
     </div>
 
     <div class="toolbar-group" id="outlineBgToolbarGroup">
@@ -2393,6 +2406,7 @@
   const removeImageButton = document.getElementById("removeImageButton");
   const resetTextPositionButton = document.getElementById("resetTextPositionButton");
   const textPositionSelect = document.getElementById("textPositionSelect");
+  const textOffsetInput = document.getElementById("textOffsetInput");
   const uploadImgbbButton = document.getElementById("uploadImgbbButton");
   const copyPngButton = document.getElementById("copyPngButton");
   const downloadPngButton = document.getElementById("downloadPngButton");
@@ -2479,6 +2493,7 @@
       text: "",
       textOffsetX: 15,
       textOffsetY: 15,
+      textOffset: 15,
       textPositionMode: "top-left",
       userHasCustomDraggedText: false,
       textPanelWidth: 500
@@ -2587,11 +2602,13 @@
 
   const DEFAULT_TEXT_OFFSET_X = 15;
   const DEFAULT_TEXT_OFFSET_Y = 15;
+  const DEFAULT_TEXT_OFFSET = 15;
+  let currentTextOffset = DEFAULT_TEXT_OFFSET;
 
   let textPositionMode = "top-left";
   let userHasCustomDraggedText = false;
-  let textOffsetX = DEFAULT_TEXT_OFFSET_X;
-  let textOffsetY = DEFAULT_TEXT_OFFSET_Y;
+  let textOffsetX = DEFAULT_TEXT_OFFSET;
+  let textOffsetY = DEFAULT_TEXT_OFFSET;
 
   let dragMode = null;
   let dragStartX = 0;
@@ -2608,6 +2625,7 @@
   const DEFAULT_SETTINGS = {
     characterName: "",
     textPosition: "top-left",
+    textOffset: 15,
     fontFamily: "Arial, Helvetica, sans-serif",
     fontSize: 14,
     textPanelWidth: 500,
@@ -2637,11 +2655,22 @@
     return layers.find(l => l.type === "text") || null;
   }
 
+  function getStartingTextOffset(targetLayer = null) {
+    if (targetLayer && typeof targetLayer.textOffset === "number" && !isNaN(targetLayer.textOffset)) {
+      return targetLayer.textOffset;
+    }
+    if (typeof currentTextOffset === "number" && !isNaN(currentTextOffset)) {
+      return currentTextOffset;
+    }
+    return DEFAULT_TEXT_OFFSET;
+  }
+
   function getBottomLeftOffsetY(customHeight, targetLayer = null) {
     const ch = getCanvasHeight();
     const bounds = getTextBounds(targetLayer);
     const h = typeof customHeight === "number" ? customHeight : bounds.height;
-    return Math.max(DEFAULT_TEXT_OFFSET_X, Math.round(ch - h - DEFAULT_TEXT_OFFSET_Y));
+    const offset = getStartingTextOffset(targetLayer);
+    return Math.max(offset, Math.round(ch - h - offset));
   }
 
   function setTextPosition(mode, skipSave = false, keepCustomDrag = false, targetLayer = null) {
@@ -2662,16 +2691,51 @@
       if (layer) {
         layer.userHasCustomDraggedText = false;
       }
+      const offset = getStartingTextOffset(layer);
       if (mode === "bottom-left") {
-        textOffsetX = DEFAULT_TEXT_OFFSET_X;
+        textOffsetX = offset;
         textOffsetY = getBottomLeftOffsetY(null, layer);
       } else {
-        textOffsetX = DEFAULT_TEXT_OFFSET_X;
-        textOffsetY = DEFAULT_TEXT_OFFSET_Y;
+        textOffsetX = offset;
+        textOffsetY = offset;
       }
       if (layer) {
         layer.textOffsetX = textOffsetX;
         layer.textOffsetY = textOffsetY;
+      }
+      updateTextPosition();
+      updateDomLayers();
+      scheduleJpegPreview();
+    }
+
+    if (!skipSave) {
+      saveCurrentSettingsDebounced();
+    }
+  }
+
+  function setTextOffset(val, skipSave = false) {
+    const num = Math.max(0, Math.min(1000, Number(val) || 0));
+    currentTextOffset = num;
+    if (textOffsetInput && Number(textOffsetInput.value) !== num) {
+      textOffsetInput.value = num;
+    }
+
+    const layer = getActiveTextLayer();
+    if (layer) {
+      layer.textOffset = num;
+      layer.userHasCustomDraggedText = false;
+      const mode = layer.textPositionMode || textPositionMode || "top-left";
+      if (mode === "bottom-left") {
+        layer.textOffsetX = num;
+        layer.textOffsetY = getBottomLeftOffsetY(null, layer);
+      } else {
+        layer.textOffsetX = num;
+        layer.textOffsetY = num;
+      }
+      if (layer.id === selectedLayerId) {
+        textOffsetX = layer.textOffsetX;
+        textOffsetY = layer.textOffsetY;
+        userHasCustomDraggedText = false;
       }
       updateTextPosition();
       updateDomLayers();
@@ -2716,6 +2780,7 @@
       const current = {
         characterName: characterNameInput ? characterNameInput.value.trim() : (characterName || DEFAULT_SETTINGS.characterName),
         textPosition: textPositionMode || DEFAULT_SETTINGS.textPosition,
+        textOffset: (textOffsetInput ? parseInt(textOffsetInput.value, 10) : currentTextOffset) || DEFAULT_SETTINGS.textOffset,
         fontFamily: fontFamilySelect ? fontFamilySelect.value : DEFAULT_SETTINGS.fontFamily,
         fontSize: Number(fontSize.value) || DEFAULT_SETTINGS.fontSize,
         textPanelWidth: Number(textPanelWidthInput.value) || DEFAULT_SETTINGS.textPanelWidth,
@@ -2813,6 +2878,14 @@
         characterName = s.characterName;
         if (characterNameInput) {
           characterNameInput.value = s.characterName;
+        }
+      }
+      if (typeof s.textOffset === "number" && !isNaN(s.textOffset)) {
+        currentTextOffset = Math.max(0, Math.min(1000, s.textOffset));
+        if (textOffsetInput) textOffsetInput.value = currentTextOffset;
+        const active = getActiveTextLayer();
+        if (active && typeof active.textOffset !== "number") {
+          active.textOffset = currentTextOffset;
         }
       }
       if (typeof s.textPosition === "string" && (s.textPosition === "top-left" || s.textPosition === "bottom-left")) {
@@ -2915,6 +2988,13 @@
     characterName = DEFAULT_SETTINGS.characterName;
     if (characterNameInput) characterNameInput.value = DEFAULT_SETTINGS.characterName;
     if (characterNameStatus) characterNameStatus.textContent = "";
+    currentTextOffset = DEFAULT_SETTINGS.textOffset;
+    if (textOffsetInput) textOffsetInput.value = DEFAULT_SETTINGS.textOffset;
+    layers.forEach(l => {
+      if (l.type === "text") {
+        l.textOffset = DEFAULT_SETTINGS.textOffset;
+      }
+    });
     setTextPosition(DEFAULT_SETTINGS.textPosition || "top-left", true, false);
     if (fontFamilySelect) fontFamilySelect.value = DEFAULT_SETTINGS.fontFamily;
     if (fontSize) fontSize.value = DEFAULT_SETTINGS.fontSize;
@@ -3798,11 +3878,15 @@
 
     if (target.type === "text") {
       input.value = typeof target.text === "string" ? target.text : "";
-      textOffsetX = typeof target.textOffsetX === "number" ? target.textOffsetX : DEFAULT_TEXT_OFFSET_X;
-      textOffsetY = typeof target.textOffsetY === "number" ? target.textOffsetY : DEFAULT_TEXT_OFFSET_Y;
+      const off = getStartingTextOffset(target);
+      textOffsetX = typeof target.textOffsetX === "number" ? target.textOffsetX : off;
+      textOffsetY = typeof target.textOffsetY === "number" ? target.textOffsetY : off;
       textPositionMode = target.textPositionMode || "top-left";
       if (textPositionSelect) {
         textPositionSelect.value = textPositionMode;
+      }
+      if (textOffsetInput) {
+        textOffsetInput.value = off;
       }
       if (textPanelWidthInput) {
         const w = target.textPanelWidth || 500;
@@ -3833,14 +3917,14 @@
     const newNum = textLayers.length + 1;
 
     // Stagger position below existing text if possible
-    let newX = DEFAULT_TEXT_OFFSET_X;
-    let newY = DEFAULT_TEXT_OFFSET_Y;
+    let newX = currentTextOffset;
+    let newY = currentTextOffset;
     const lastText = textLayers[textLayers.length - 1];
     if (lastText) {
       const bounds = getTextBounds(lastText);
       newY = Math.round(bounds.y + bounds.height + 16);
       if (newY >= getCanvasHeight() - 70) {
-        newY = Math.max(DEFAULT_TEXT_OFFSET_Y, (DEFAULT_TEXT_OFFSET_Y + (textLayers.length * 36)) % Math.max(100, getCanvasHeight() - 120));
+        newY = Math.max(currentTextOffset, (currentTextOffset + (textLayers.length * 36)) % Math.max(100, getCanvasHeight() - 120));
       }
     }
 
@@ -3853,6 +3937,7 @@
       text: "",
       textOffsetX: newX,
       textOffsetY: newY,
+      textOffset: currentTextOffset,
       textPositionMode: DEFAULT_SETTINGS.textPosition || "top-left",
       userHasCustomDraggedText: false,
       textPanelWidth: getTextPanelWidth()
@@ -4166,12 +4251,13 @@
 
     if (layer.type === "text") {
       layer.userHasCustomDraggedText = false;
+      const off = getStartingTextOffset(layer);
       if (layer.textPositionMode === "bottom-left") {
-        layer.textOffsetX = DEFAULT_TEXT_OFFSET_X;
+        layer.textOffsetX = off;
         layer.textOffsetY = getBottomLeftOffsetY(null, layer);
       } else {
-        layer.textOffsetX = DEFAULT_TEXT_OFFSET_X;
-        layer.textOffsetY = DEFAULT_TEXT_OFFSET_Y;
+        layer.textOffsetX = off;
+        layer.textOffsetY = off;
       }
       if (layer.id === selectedLayerId) {
         textOffsetX = layer.textOffsetX;
@@ -6581,26 +6667,27 @@
   function resetTextPositionAction() {
     const active = getActiveTextLayer();
     const mode = (active && active.textPositionMode) || textPositionMode || (textPositionSelect ? textPositionSelect.value : "top-left");
+    const offset = getStartingTextOffset(active);
 
     userHasCustomDraggedText = false;
     if (active) {
       active.userHasCustomDraggedText = false;
       if (mode === "bottom-left") {
-        active.textOffsetX = DEFAULT_TEXT_OFFSET_X;
+        active.textOffsetX = offset;
         active.textOffsetY = getBottomLeftOffsetY(null, active);
       } else {
-        active.textOffsetX = DEFAULT_TEXT_OFFSET_X;
-        active.textOffsetY = DEFAULT_TEXT_OFFSET_Y;
+        active.textOffsetX = offset;
+        active.textOffsetY = offset;
       }
       textOffsetX = active.textOffsetX;
       textOffsetY = active.textOffsetY;
     } else {
       if (mode === "bottom-left") {
-        textOffsetX = DEFAULT_TEXT_OFFSET_X;
+        textOffsetX = offset;
         textOffsetY = getBottomLeftOffsetY();
       } else {
-        textOffsetX = DEFAULT_TEXT_OFFSET_X;
-        textOffsetY = DEFAULT_TEXT_OFFSET_Y;
+        textOffsetX = offset;
+        textOffsetY = offset;
       }
     }
 
@@ -6617,7 +6704,7 @@
     saveCurrentSettingsDebounced();
 
     const layerName = (active && layers.filter(l => l.type === "text").length > 1) ? ` (${active.name})` : "";
-    showToast("info", "Position Reset", `Chat text${layerName} reset to ${mode === "bottom-left" ? "bottom left" : "top left"}.`);
+    showToast("info", "Position Reset", `Chat text${layerName} reset to ${mode === "bottom-left" ? "bottom left" : "top left"} (${offset}px offset).`);
   }
 
   resetTextPositionButton.addEventListener("click", () => {
@@ -6628,6 +6715,20 @@
     textPositionSelect.addEventListener("change", () => {
       setTextPosition(textPositionSelect.value);
       showToast("info", textPositionSelect.value === "bottom-left" ? "Position: Bottom Left" : "Position: Top Left", `Chatlog positioned at ${textPositionSelect.value === "bottom-left" ? "bottom left" : "top left"}. Drag freely anytime.`);
+    });
+  }
+
+  if (textOffsetInput) {
+    textOffsetInput.addEventListener("input", () => {
+      const val = parseInt(textOffsetInput.value, 10);
+      setTextOffset(isNaN(val) ? 0 : val);
+    });
+    textOffsetInput.addEventListener("change", () => {
+      const val = parseInt(textOffsetInput.value, 10);
+      const cleanVal = isNaN(val) ? 0 : Math.max(0, Math.min(1000, val));
+      textOffsetInput.value = cleanVal;
+      setTextOffset(cleanVal);
+      showToast("info", "Text Offset Updated", `Chatlog starting offset set to ${cleanVal}px.`);
     });
   }
 

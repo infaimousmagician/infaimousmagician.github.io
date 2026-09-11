@@ -1,6 +1,6 @@
 {
   "name": "GTA RP Chatlog Magician",
-  "description": "GTA roleplay chatlog magician and preview tool with multi-layer canvas support, multiple chatlog text layer blocks (secondary chatbox), atmosphere and cinematic filters (warm sunset, noir, contrast, vignette, film grain), server-accurate fonts, stroke & shadow styles, censor blur and redaction, clipboard image pasting, drag-and-drop screenshots, canvas export, and direct ImgBB image uploading with automatic link copying.",
+  "description": "GTA roleplay chatlog magician and preview tool with multi-layer canvas support, multiple chatlog text layer blocks (secondary chatbox), atmosphere and cinematic filters (warm sunset, noir, contrast, vignette, film grain), server-accurate fonts, customizable starting text offset margins, stroke & shadow styles, censor blur and redaction, clipboard image pasting, drag-and-drop screenshots, canvas export, and direct ImgBB image uploading with automatic link copying.",
   "requestFramePermissions": [],
   "majorCapabilities": [
     "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
