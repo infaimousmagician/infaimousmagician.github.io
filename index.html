@@ -4,9 +4,9 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>GTA RP Chatlog Magician</title>
-<meta name="description" content="GTA roleplay chatlog magician and preview tool with multi-layer canvas support, atmosphere and cinematic filters (warm sunset, noir, contrast, vignette, film grain), server-accurate fonts, stroke & shadow styles, censor blur and redaction, clipboard image pasting, drag-and-drop screenshots, canvas export, and direct ImgBB image uploading with automatic link copying." />
+<meta name="description" content="GTA roleplay chatlog magician and preview tool with multi-layer canvas support, multiple chatlog text layer blocks (secondary chatbox), atmosphere and cinematic filters (warm sunset, noir, contrast, vignette, film grain), server-accurate fonts, stroke & shadow styles, censor blur and redaction, clipboard image pasting, drag-and-drop screenshots, canvas export, and direct ImgBB image uploading with automatic link copying." />
 <meta property="og:title" content="GTA RP Chatlog Magician" />
-<meta property="og:description" content="GTA roleplay chatlog magician and preview tool with multi-layer canvas support, atmosphere and cinematic filters (warm sunset, noir, contrast, vignette, film grain), server-accurate fonts, stroke & shadow styles, censor blur and redaction, clipboard image pasting, drag-and-drop screenshots, canvas export, and direct ImgBB image uploading with automatic link copying." />
+<meta property="og:description" content="GTA roleplay chatlog magician and preview tool with multi-layer canvas support, multiple chatlog text layer blocks (secondary chatbox), atmosphere and cinematic filters (warm sunset, noir, contrast, vignette, film grain), server-accurate fonts, stroke & shadow styles, censor blur and redaction, clipboard image pasting, drag-and-drop screenshots, canvas export, and direct ImgBB image uploading with automatic link copying." />
 <link rel="icon" type="image/svg+xml" href="clover.svg" />
 <link rel="icon" type="image/png" sizes="64x64" href="clover.png" />
 <link rel="shortcut icon" href="clover.png" />
@@ -1369,6 +1369,27 @@
     transform-origin: top left;
   }
 
+  .text-layers-container {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 3;
+  }
+
+  .active-text-layer-badge {
+    background: #082d1c;
+    color: #00df82;
+    border: 1px solid rgba(0, 223, 130, 0.45);
+    font-size: 11px;
+    font-weight: 700;
+    padding: 2px 9px;
+    border-radius: 999px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    user-select: none;
+    box-shadow: 0 0 10px rgba(0, 223, 130, 0.15);
+  }
+
   .preview-box {
     position: absolute;
     left: 0;
@@ -1759,46 +1780,6 @@
       </label>
     </div>
 
-    <div class="toolbar-group" id="atmosphereToolbarGroup">
-      <span class="toolbar-group-label">Atmosphere</span>
-      <label class="control" title="Cinematic color filter for the selected image layer">
-        Filter:
-        <select id="atmospherePresetSelect">
-          <option value="none" selected>Original</option>
-          <option value="sunset">🌅 Warm Sunset</option>
-          <option value="noir">🎬 Noir / B&amp;W</option>
-          <option value="contrast">⚡ High Contrast</option>
-          <option value="invert">🔄 Inverse</option>
-        </select>
-      </label>
-      <div id="filterIntensitySliderContainer" class="control" style="display: none; align-items: center; gap: 4px;" title="Fine-tune filter intensity">
-        <input id="filterIntensityInput" type="range" min="0" max="100" step="5" value="100" style="width: 55px;" title="Filter intensity" />
-        <span id="filterIntensityValue" style="font-size: 11px; color: var(--muted); min-width: 28px;">100%</span>
-      </div>
-
-      <div class="toolbar-divider"></div>
-
-      <label class="control" title="Toggle dark edge vignette to frame the scene">
-        <input id="vignetteToggle" type="checkbox" />
-        Vignette
-      </label>
-      <div id="vignetteSliderContainer" class="control" style="display: none; align-items: center; gap: 4px;">
-        <input id="vignetteStrengthInput" type="range" min="10" max="100" step="5" value="45" style="width: 55px;" title="Vignette darkness" />
-        <span id="vignetteStrengthValue" style="font-size: 11px; color: var(--muted); min-width: 26px;">45%</span>
-      </div>
-
-      <div class="toolbar-divider"></div>
-
-      <label class="control" title="Toggle 35mm photographic film grain">
-        <input id="filmGrainToggle" type="checkbox" />
-        Film Grain
-      </label>
-      <div id="filmGrainSliderContainer" class="control" style="display: none; align-items: center; gap: 4px;">
-        <input id="filmGrainStrengthInput" type="range" min="5" max="75" step="5" value="25" style="width: 50px;" title="Film grain intensity" />
-        <span id="filmGrainStrengthValue" style="font-size: 11px; color: var(--muted); min-width: 24px;">25%</span>
-      </div>
-    </div>
-
     <div class="toolbar-group">
       <span class="toolbar-group-label">Canvas & Frame</span>
       <div class="control" title="Canvas dimensions in pixels (Width × Height)">
@@ -1834,7 +1815,12 @@
 
   <main class="workspace">
     <section class="pane pane-input">
-      <div class="pane-title">Input</div>
+      <div class="pane-title pane-title-flex">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span>Input</span>
+          <span id="activeTextLayerBadge" class="active-text-layer-badge" title="Active Chatlog Layer">Chatlog Text 1</span>
+        </div>
+      </div>
       <textarea id="input" spellcheck="false" placeholder="[00:00:00] Carl Johnson says: I love money *rubs his money* I love money.
 [00:00:02] Carl Johnson says: Did you talk to ☘John☘?
 [00:00:04] * Carl Johnson does an example action.
@@ -1855,6 +1841,9 @@
       <div class="layers-toolbar">
         <button id="addLayerImageBtn" class="btn btn-accent btn-sm" title="Add an image layer on top of the canvas">
           + Add Image Layer
+        </button>
+        <button id="addLayerTextBtn" class="btn btn-neutral btn-sm" title="Add an additional chatlog text layer (secondary chatbox)">
+          + Add Chatlog Text Layer
         </button>
         <input type="file" id="layerImageFileInput" accept="image/*" multiple style="display: none;" />
       </div>
@@ -1893,6 +1882,16 @@
           <input type="range" id="layerFilterIntensityInput" min="0" max="1" step="0.01" value="1" class="inspector-slider" />
           <span id="layerFilterIntensityValue" class="inspector-val">100%</span>
         </div>
+        <div class="inspector-row" id="layerVignetteRow" style="display: none;">
+          <span class="inspector-label">Vignette:</span>
+          <input type="range" id="layerVignetteInput" min="0" max="100" step="1" value="0" class="inspector-slider" title="Dark edge vignette to frame the scene (0% to 100%)" />
+          <span id="layerVignetteValue" class="inspector-val">0%</span>
+        </div>
+        <div class="inspector-row" id="layerGrainRow" style="display: none;">
+          <span class="inspector-label">Film Grain:</span>
+          <input type="range" id="layerGrainInput" min="0" max="100" step="1" value="0" class="inspector-slider" title="Photographic 35mm film grain (0% to 100%)" />
+          <span id="layerGrainValue" class="inspector-val">0%</span>
+        </div>
         <div class="inspector-actions">
           <button id="layerMoveUpBtn" class="btn btn-neutral btn-xs" title="Move layer forward (up)">▲ Forward</button>
           <button id="layerMoveDownBtn" class="btn btn-neutral btn-xs" title="Move layer backward (down)">▼ Backward</button>
@@ -1912,7 +1911,8 @@
             <div id="backgroundGrainOverlay" class="background-grain-overlay" style="display: none;"></div>
           </div>
           <div id="overlayLayersContainer" class="overlay-layers-container"></div>
-          <div id="preview" class="preview-box"></div>
+          <div id="textLayersContainer" class="text-layers-container"></div>
+          <div id="preview" class="preview-box" style="display: none;"></div>
           <img id="jpegPreviewImage" class="jpeg-preview-layer" alt="" />
           <div id="selectionBox" class="selection-box-overlay"></div>
         </div>
@@ -2169,8 +2169,12 @@
   const layersList = document.getElementById("layersList");
   const layersCountBadge = document.getElementById("layersCountBadge");
   const addLayerImageBtn = document.getElementById("addLayerImageBtn");
+  const addLayerTextBtn = document.getElementById("addLayerTextBtn");
   const layerImageFileInput = document.getElementById("layerImageFileInput");
   const overlayLayersContainer = document.getElementById("overlayLayersContainer");
+  const textLayersContainer = document.getElementById("textLayersContainer");
+  const activeTextLayerBadge = document.getElementById("activeTextLayerBadge");
+  const textLayersSwitcher = document.getElementById("textLayersSwitcher");
   const backgroundLayerDom = document.getElementById("backgroundLayerDom");
   const selectionBox = document.getElementById("selectionBox");
 
@@ -2202,6 +2206,12 @@
   const layerFilterIntensityRow = document.getElementById("layerFilterIntensityRow");
   const layerFilterIntensityInput = document.getElementById("layerFilterIntensityInput");
   const layerFilterIntensityValue = document.getElementById("layerFilterIntensityValue");
+  const layerVignetteRow = document.getElementById("layerVignetteRow");
+  const layerVignetteInput = document.getElementById("layerVignetteInput");
+  const layerVignetteValue = document.getElementById("layerVignetteValue");
+  const layerGrainRow = document.getElementById("layerGrainRow");
+  const layerGrainInput = document.getElementById("layerGrainInput");
+  const layerGrainValue = document.getElementById("layerGrainValue");
 
   let layers = [
     {
@@ -2211,18 +2221,26 @@
       visible: true,
       opacity: 1,
       filter: "none",
-      filterIntensity: 1
+      filterIntensity: 1,
+      vignette: 0,
+      filmGrain: 0
     },
     {
       id: "layer-text",
       type: "text",
-      name: "Chatlog Text",
+      name: "Chatlog Text 1",
       visible: true,
-      opacity: 1
+      opacity: 1,
+      text: "",
+      textOffsetX: 15,
+      textOffsetY: 15,
+      textPositionMode: "top-left",
+      userHasCustomDraggedText: false,
+      textPanelWidth: 500
     }
   ];
   let selectedLayerId = "layer-text";
-  let layerIdCounter = 0;
+  let layerIdCounter = 1;
   let draggingLayerId = null;
   let originalLayerX = 0;
   let originalLayerY = 0;
@@ -2338,7 +2356,7 @@
   let originalTextX = 0;
   let originalTextY = 0;
 
-  const SETTINGS_STORAGE_KEY = "gtarp_chatlog_magician_settings_v1";
+  const SETTINGS_STORAGE_KEY = "gtarp_chatlog_magician_settings_v2";
 
   let characterName = "";
 
@@ -2359,39 +2377,60 @@
     atmospherePreset: "none",
     filterIntensity: 1,
     vignette: false,
-    vignetteStrength: 45,
+    vignetteStrength: 0,
     filmGrain: false,
-    filmGrainStrength: 25
+    filmGrainStrength: 0
   };
 
   let saveSettingsTimer = null;
 
-  function getBottomLeftOffsetY(customHeight) {
-    const ch = getCanvasHeight();
-    const bounds = getTextBounds();
-    const h = typeof customHeight === "number" ? customHeight : bounds.height;
-    return Math.max(DEFAULT_TEXT_OFFSET_Y, Math.round(ch - h - DEFAULT_TEXT_OFFSET_Y));
+  function getActiveTextLayer() {
+    const selected = layers.find(l => l.id === selectedLayerId);
+    if (selected && selected.type === "text") {
+      return selected;
+    }
+    return layers.find(l => l.type === "text") || null;
   }
 
-  function setTextPosition(mode, skipSave = false, keepCustomDrag = false) {
+  function getBottomLeftOffsetY(customHeight, targetLayer = null) {
+    const ch = getCanvasHeight();
+    const bounds = getTextBounds(targetLayer);
+    const h = typeof customHeight === "number" ? customHeight : bounds.height;
+    return Math.max(DEFAULT_TEXT_OFFSET_X, Math.round(ch - h - DEFAULT_TEXT_OFFSET_Y));
+  }
+
+  function setTextPosition(mode, skipSave = false, keepCustomDrag = false, targetLayer = null) {
     if (mode !== "top-left" && mode !== "bottom-left") {
       mode = "top-left";
     }
+    const layer = targetLayer || getActiveTextLayer();
     textPositionMode = mode;
+    if (layer) {
+      layer.textPositionMode = mode;
+    }
     if (textPositionSelect && textPositionSelect.value !== mode) {
       textPositionSelect.value = mode;
     }
 
     if (!keepCustomDrag) {
       userHasCustomDraggedText = false;
+      if (layer) {
+        layer.userHasCustomDraggedText = false;
+      }
       if (mode === "bottom-left") {
         textOffsetX = DEFAULT_TEXT_OFFSET_X;
-        textOffsetY = getBottomLeftOffsetY();
+        textOffsetY = getBottomLeftOffsetY(null, layer);
       } else {
         textOffsetX = DEFAULT_TEXT_OFFSET_X;
         textOffsetY = DEFAULT_TEXT_OFFSET_Y;
       }
+      if (layer) {
+        layer.textOffsetX = textOffsetX;
+        layer.textOffsetY = textOffsetY;
+      }
       updateTextPosition();
+      updateDomLayers();
+      scheduleJpegPreview();
     }
 
     if (!skipSave) {
@@ -2448,10 +2487,22 @@
           const bg = layers.find(l => l.type === "background");
           return bg && typeof bg.filterIntensity === "number" ? bg.filterIntensity : DEFAULT_SETTINGS.filterIntensity;
         })(),
-        vignette: vignetteToggle ? vignetteToggle.checked : DEFAULT_SETTINGS.vignette,
-        vignetteStrength: Number(vignetteStrengthInput ? vignetteStrengthInput.value : DEFAULT_SETTINGS.vignetteStrength) || DEFAULT_SETTINGS.vignetteStrength,
-        filmGrain: filmGrainToggle ? filmGrainToggle.checked : DEFAULT_SETTINGS.filmGrain,
-        filmGrainStrength: Number(filmGrainStrengthInput ? filmGrainStrengthInput.value : DEFAULT_SETTINGS.filmGrainStrength) || DEFAULT_SETTINGS.filmGrainStrength
+        vignette: (() => {
+          const bg = layers.find(l => l.type === "background");
+          return bg && typeof bg.vignette === "number" ? bg.vignette > 0 : (vignetteToggle ? vignetteToggle.checked : false);
+        })(),
+        vignetteStrength: (() => {
+          const bg = layers.find(l => l.type === "background");
+          return bg && typeof bg.vignette === "number" ? bg.vignette : (vignetteStrengthInput ? Number(vignetteStrengthInput.value) || 0 : 0);
+        })(),
+        filmGrain: (() => {
+          const bg = layers.find(l => l.type === "background");
+          return bg && typeof bg.filmGrain === "number" ? bg.filmGrain > 0 : (filmGrainToggle ? filmGrainToggle.checked : false);
+        })(),
+        filmGrainStrength: (() => {
+          const bg = layers.find(l => l.type === "background");
+          return bg && typeof bg.filmGrain === "number" ? bg.filmGrain : (filmGrainStrengthInput ? Number(filmGrainStrengthInput.value) || 0 : 0);
+        })()
       };
       localStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify(current));
     } catch (err) {
@@ -2468,8 +2519,41 @@
 
   function loadAndApplySavedSettings() {
     try {
-      const raw = localStorage.getItem(SETTINGS_STORAGE_KEY);
-      if (!raw) return;
+      let raw = localStorage.getItem(SETTINGS_STORAGE_KEY);
+      if (!raw) {
+        const legacy = localStorage.getItem("gtarp_chatlog_magician_settings_v1");
+        if (legacy) {
+          try {
+            const legParsed = JSON.parse(legacy);
+            if (legParsed && typeof legParsed === "object") {
+              if (legParsed.vignetteStrength === 45 || !legParsed.vignette) {
+                legParsed.vignetteStrength = 0;
+                legParsed.vignette = false;
+              }
+              if (legParsed.filmGrainStrength === 25 || !legParsed.filmGrain) {
+                legParsed.filmGrainStrength = 0;
+                legParsed.filmGrain = false;
+              }
+              raw = JSON.stringify(legParsed);
+            }
+          } catch (e) {}
+        }
+      }
+
+      if (!raw) {
+        const bgLayer = layers.find(l => l.type === "background");
+        if (bgLayer) {
+          bgLayer.vignette = 0;
+          bgLayer.filmGrain = 0;
+        }
+        if (layerVignetteInput) layerVignetteInput.value = 0;
+        if (layerVignetteValue) layerVignetteValue.textContent = "0%";
+        if (layerGrainInput) layerGrainInput.value = 0;
+        if (layerGrainValue) layerGrainValue.textContent = "0%";
+        updateAtmosphereDom();
+        return;
+      }
+
       const parsed = JSON.parse(raw);
       if (!parsed || typeof parsed !== "object") return;
 
@@ -2536,25 +2620,34 @@
         const bgLayer = layers.find(l => l.type === "background");
         if (bgLayer) bgLayer.filterIntensity = Math.max(0, Math.min(s.filterIntensity, 1));
       }
+      const rawVig = (typeof s.vignetteStrength === "number" && !isNaN(s.vignetteStrength)) ? s.vignetteStrength : 0;
+      const finalVig = Math.max(0, Math.min(rawVig, 100));
+      const bgLayer = layers.find(l => l.type === "background");
+      if (bgLayer) bgLayer.vignette = finalVig;
+      if (vignetteStrengthInput) vignetteStrengthInput.value = finalVig;
+      if (vignetteStrengthValue) vignetteStrengthValue.textContent = `${finalVig}%`;
+      if (layerVignetteInput) layerVignetteInput.value = finalVig;
+      if (layerVignetteValue) layerVignetteValue.textContent = `${finalVig}%`;
+
+      const rawGrain = (typeof s.filmGrainStrength === "number" && !isNaN(s.filmGrainStrength)) ? s.filmGrainStrength : 0;
+      const finalGrain = Math.max(0, Math.min(rawGrain, 100));
+      if (bgLayer) bgLayer.filmGrain = finalGrain;
+      if (filmGrainStrengthInput) filmGrainStrengthInput.value = finalGrain;
+      if (filmGrainStrengthValue) filmGrainStrengthValue.textContent = `${finalGrain}%`;
+      if (layerGrainInput) layerGrainInput.value = finalGrain;
+      if (layerGrainValue) layerGrainValue.textContent = `${finalGrain}%`;
+
       if (vignetteToggle && typeof s.vignette === "boolean") {
-        vignetteToggle.checked = s.vignette;
+        vignetteToggle.checked = finalVig > 0;
         if (vignetteSliderContainer) {
-          vignetteSliderContainer.style.display = s.vignette ? "flex" : "none";
+          vignetteSliderContainer.style.display = finalVig > 0 ? "flex" : "none";
         }
-      }
-      if (vignetteStrengthInput && typeof s.vignetteStrength === "number") {
-        vignetteStrengthInput.value = Math.max(10, Math.min(s.vignetteStrength, 100));
-        if (vignetteStrengthValue) vignetteStrengthValue.textContent = `${vignetteStrengthInput.value}%`;
       }
       if (filmGrainToggle && typeof s.filmGrain === "boolean") {
-        filmGrainToggle.checked = s.filmGrain;
+        filmGrainToggle.checked = finalGrain > 0;
         if (filmGrainSliderContainer) {
-          filmGrainSliderContainer.style.display = s.filmGrain ? "flex" : "none";
+          filmGrainSliderContainer.style.display = finalGrain > 0 ? "flex" : "none";
         }
-      }
-      if (filmGrainStrengthInput && typeof s.filmGrainStrength === "number") {
-        filmGrainStrengthInput.value = Math.max(5, Math.min(s.filmGrainStrength, 75));
-        if (filmGrainStrengthValue) filmGrainStrengthValue.textContent = `${filmGrainStrengthInput.value}%`;
       }
       updateAtmosphereDom();
     } catch (err) {
@@ -2566,6 +2659,7 @@
     clearTimeout(saveSettingsTimer);
     try {
       localStorage.removeItem(SETTINGS_STORAGE_KEY);
+      localStorage.removeItem("gtarp_chatlog_magician_settings_v1");
     } catch (err) {
       console.warn("Could not clear settings from localStorage:", err);
     }
@@ -2597,28 +2691,40 @@
     if (bgLayer) {
       bgLayer.filter = DEFAULT_SETTINGS.atmospherePreset;
       bgLayer.filterIntensity = DEFAULT_SETTINGS.filterIntensity;
+      bgLayer.vignette = 0;
+      bgLayer.filmGrain = 0;
     }
     layers.forEach(l => {
       if (l.type === "image") {
         l.filter = "none";
         l.filterIntensity = DEFAULT_SETTINGS.filterIntensity;
+        l.vignette = 0;
+        l.filmGrain = 0;
       }
     });
+    if (layerVignetteInput) {
+      layerVignetteInput.value = 0;
+      if (layerVignetteValue) layerVignetteValue.textContent = "0%";
+    }
+    if (layerGrainInput) {
+      layerGrainInput.value = 0;
+      if (layerGrainValue) layerGrainValue.textContent = "0%";
+    }
     if (vignetteToggle) {
-      vignetteToggle.checked = DEFAULT_SETTINGS.vignette;
+      vignetteToggle.checked = false;
       if (vignetteSliderContainer) vignetteSliderContainer.style.display = "none";
     }
     if (vignetteStrengthInput) {
-      vignetteStrengthInput.value = DEFAULT_SETTINGS.vignetteStrength;
-      if (vignetteStrengthValue) vignetteStrengthValue.textContent = `${DEFAULT_SETTINGS.vignetteStrength}%`;
+      vignetteStrengthInput.value = 0;
+      if (vignetteStrengthValue) vignetteStrengthValue.textContent = "0%";
     }
     if (filmGrainToggle) {
-      filmGrainToggle.checked = DEFAULT_SETTINGS.filmGrain;
+      filmGrainToggle.checked = false;
       if (filmGrainSliderContainer) filmGrainSliderContainer.style.display = "none";
     }
     if (filmGrainStrengthInput) {
-      filmGrainStrengthInput.value = DEFAULT_SETTINGS.filmGrainStrength;
-      if (filmGrainStrengthValue) filmGrainStrengthValue.textContent = `${DEFAULT_SETTINGS.filmGrainStrength}%`;
+      filmGrainStrengthInput.value = 0;
+      if (filmGrainStrengthValue) filmGrainStrengthValue.textContent = "0%";
     }
 
     document.documentElement.style.setProperty("--chat-font-size", `${DEFAULT_SETTINGS.fontSize}px`);
@@ -2662,20 +2768,36 @@
     return layer ? (layer.filter || "none") : "none";
   }
 
-  function isVignetteEnabled() {
+  function isVignetteEnabled(targetLayer = null) {
+    const layer = targetLayer || getSelectedImageOrBackgroundLayer() || layers.find(l => l.type === "background");
+    if (layer && typeof layer.vignette === "number") {
+      return layer.vignette > 0;
+    }
     return vignetteToggle ? vignetteToggle.checked : false;
   }
 
-  function getVignetteStrength() {
-    return vignetteStrengthInput ? Number(vignetteStrengthInput.value) || 45 : 45;
+  function getVignetteStrength(targetLayer = null) {
+    const layer = targetLayer || getSelectedImageOrBackgroundLayer() || layers.find(l => l.type === "background");
+    if (layer && typeof layer.vignette === "number") {
+      return layer.vignette;
+    }
+    return vignetteStrengthInput ? Number(vignetteStrengthInput.value) || 0 : 0;
   }
 
-  function isFilmGrainEnabled() {
+  function isFilmGrainEnabled(targetLayer = null) {
+    const layer = targetLayer || getSelectedImageOrBackgroundLayer() || layers.find(l => l.type === "background");
+    if (layer && typeof layer.filmGrain === "number") {
+      return layer.filmGrain > 0;
+    }
     return filmGrainToggle ? filmGrainToggle.checked : false;
   }
 
-  function getFilmGrainStrength() {
-    return filmGrainStrengthInput ? Number(filmGrainStrengthInput.value) || 25 : 25;
+  function getFilmGrainStrength(targetLayer = null) {
+    const layer = targetLayer || getSelectedImageOrBackgroundLayer() || layers.find(l => l.type === "background");
+    if (layer && typeof layer.filmGrain === "number") {
+      return layer.filmGrain;
+    }
+    return filmGrainStrengthInput ? Number(filmGrainStrengthInput.value) || 0 : 0;
   }
 
   function getCanvasFilterForPreset(preset, intensity = 1) {
@@ -2778,11 +2900,11 @@
     }
   }
 
-  function drawVignette(ctx, width, height, strengthPercent) {
-    const strength = Math.max(0.1, Math.min(1, strengthPercent / 100));
-    const cx = width / 2;
-    const cy = height / 2;
-    const maxRadius = Math.sqrt(cx * cx + cy * cy);
+  function drawVignette(ctx, width, height, strengthPercent, originX = 0, originY = 0) {
+    const strength = Math.max(0.05, Math.min(1, (strengthPercent || 0) / 100));
+    const cx = originX + width / 2;
+    const cy = originY + height / 2;
+    const maxRadius = Math.sqrt((width / 2) * (width / 2) + (height / 2) * (height / 2));
     const innerRadius = maxRadius * 0.32;
     const gradient = ctx.createRadialGradient(cx, cy, innerRadius, cx, cy, maxRadius);
     gradient.addColorStop(0, "rgba(0, 0, 0, 0)");
@@ -2791,19 +2913,19 @@
     gradient.addColorStop(1, `rgba(0, 0, 0, ${0.98 * strength})`);
     ctx.save();
     ctx.fillStyle = gradient;
-    ctx.fillRect(0, 0, width, height);
+    ctx.fillRect(originX, originY, width, height);
     ctx.restore();
   }
 
-  function drawFilmGrain(ctx, width, height, strengthPercent) {
+  function drawFilmGrain(ctx, width, height, strengthPercent, originX = 0, originY = 0) {
     const pattern = getFilmGrainPattern(ctx);
     if (!pattern) return;
-    const strength = Math.max(0.08, Math.min(0.75, (strengthPercent / 100) * 0.95));
+    const strength = Math.max(0.05, Math.min(0.75, ((strengthPercent || 0) / 100) * 0.95));
     ctx.save();
     ctx.globalAlpha = strength;
     ctx.globalCompositeOperation = "overlay";
     ctx.fillStyle = pattern;
-    ctx.fillRect(0, 0, width, height);
+    ctx.fillRect(originX, originY, width, height);
     ctx.restore();
   }
 
@@ -2816,25 +2938,27 @@
       backgroundImage.style.filter = cssFilter;
     }
 
+    const bgVig = bgLayer && typeof bgLayer.vignette === "number" ? bgLayer.vignette : (isVignetteEnabled() ? getVignetteStrength() : 0);
     if (backgroundVignetteOverlay) {
-      if (isVignetteEnabled()) {
+      if (bgVig > 0) {
         backgroundVignetteOverlay.style.display = "block";
-        const alpha = Math.min(1, Math.max(0.1, getVignetteStrength() / 100));
+        const alpha = Math.min(1, Math.max(0.05, bgVig / 100));
         backgroundVignetteOverlay.style.opacity = String(alpha);
       } else {
         backgroundVignetteOverlay.style.display = "none";
       }
     }
 
+    const bgGrn = bgLayer && typeof bgLayer.filmGrain === "number" ? bgLayer.filmGrain : (isFilmGrainEnabled() ? getFilmGrainStrength() : 0);
     if (backgroundGrainOverlay) {
-      if (isFilmGrainEnabled()) {
+      if (bgGrn > 0) {
         if (!cachedGrainCanvas) {
           const dummy = document.createElement("canvas");
           const dummyCtx = dummy.getContext("2d");
           getFilmGrainPattern(dummyCtx);
         }
         backgroundGrainOverlay.style.display = "block";
-        const grainAlpha = Math.min(0.75, Math.max(0.08, (getFilmGrainStrength() / 100) * 0.95));
+        const grainAlpha = Math.min(0.75, Math.max(0.05, (bgGrn / 100) * 0.95));
         backgroundGrainOverlay.style.opacity = String(grainAlpha);
       } else {
         backgroundGrainOverlay.style.display = "none";
@@ -2887,39 +3011,57 @@
     return { style, thickness: Math.max(0.5, Math.min(thickness, 10)) };
   }
 
-  function updateOutlineSettings() {
+  function getComputedChatTextShadow() {
     const { style, thickness } = getOutlineSettings();
     const t = thickness.toFixed(1) + "px";
     const negT = (-thickness).toFixed(1) + "px";
 
     if (style === "none") {
+      return "none";
+    }
+    if (style === "stroke") {
+      return `
+        ${negT} ${negT} 0 rgba(0,0,0,0.88),
+        ${t} ${negT} 0 rgba(0,0,0,0.88),
+        ${negT} ${t} 0 rgba(0,0,0,0.88),
+        ${t} ${t} 0 rgba(0,0,0,0.88)
+      `;
+    }
+    if (style === "shadow") {
+      const shadowOffset = Math.max(1, thickness).toFixed(1) + "px";
+      const shadowBlur = Math.max(2, thickness * 1.6).toFixed(1) + "px";
+      return `${shadowOffset} ${shadowOffset} ${shadowBlur} rgba(0,0,0,0.95)`;
+    }
+    if (style === "both") {
+      const shadowOffset = (thickness * 1.4).toFixed(1) + "px";
+      const shadowBlur = (thickness * 2).toFixed(1) + "px";
+      return `
+        ${negT} ${negT} 0 rgba(0,0,0,0.88),
+        ${t} ${negT} 0 rgba(0,0,0,0.88),
+        ${negT} ${t} 0 rgba(0,0,0,0.88),
+        ${t} ${t} 0 rgba(0,0,0,0.88),
+        ${shadowOffset} ${shadowOffset} ${shadowBlur} rgba(0,0,0,0.95)
+      `;
+    }
+    return "none";
+  }
+
+  function applyOutlineStyleToElement(el) {
+    if (!el) return;
+    el.style.setProperty("--chat-text-shadow", getComputedChatTextShadow());
+  }
+
+  function updateOutlineSettings() {
+    const { style } = getOutlineSettings();
+
+    if (style === "none") {
       strokeWidthControl.style.display = "none";
-      preview.style.setProperty("--chat-text-shadow", "none");
     } else {
       strokeWidthControl.style.display = "flex";
-      if (style === "stroke") {
-        preview.style.setProperty("--chat-text-shadow", `
-          ${negT} ${negT} 0 rgba(0,0,0,0.88),
-          ${t} ${negT} 0 rgba(0,0,0,0.88),
-          ${negT} ${t} 0 rgba(0,0,0,0.88),
-          ${t} ${t} 0 rgba(0,0,0,0.88)
-        `);
-      } else if (style === "shadow") {
-        const shadowOffset = Math.max(1, thickness).toFixed(1) + "px";
-        const shadowBlur = Math.max(2, thickness * 1.6).toFixed(1) + "px";
-        preview.style.setProperty("--chat-text-shadow", `${shadowOffset} ${shadowOffset} ${shadowBlur} rgba(0,0,0,0.95)`);
-      } else if (style === "both") {
-        const shadowOffset = (thickness * 1.4).toFixed(1) + "px";
-        const shadowBlur = (thickness * 2).toFixed(1) + "px";
-        preview.style.setProperty("--chat-text-shadow", `
-          ${negT} ${negT} 0 rgba(0,0,0,0.88),
-          ${t} ${negT} 0 rgba(0,0,0,0.88),
-          ${negT} ${t} 0 rgba(0,0,0,0.88),
-          ${t} ${t} 0 rgba(0,0,0,0.88),
-          ${shadowOffset} ${shadowOffset} ${shadowBlur} rgba(0,0,0,0.95)
-        `);
-      }
     }
+
+    applyOutlineStyleToElement(preview);
+    renderTextLayersDom();
     render();
   }
 
@@ -3322,7 +3464,9 @@
           width: img.naturalWidth,
           height: img.naturalHeight,
           filter: "none",
-          filterIntensity: 1
+          filterIntensity: 1,
+          vignette: 0,
+          filmGrain: 0
         };
 
         layers.push(newLayer);
@@ -3337,12 +3481,113 @@
     reader.readAsDataURL(file);
   }
 
+  function updateInputPaneHeader() {
+    const active = getActiveTextLayer();
+
+    if (activeTextLayerBadge) {
+      if (active) {
+        activeTextLayerBadge.textContent = active.name;
+        activeTextLayerBadge.title = `Currently editing: ${active.name}`;
+        activeTextLayerBadge.style.display = "inline-flex";
+      } else {
+        activeTextLayerBadge.style.display = "none";
+      }
+    }
+
+    if (textLayersSwitcher) {
+      textLayersSwitcher.style.display = "none";
+      textLayersSwitcher.innerHTML = "";
+    }
+  }
+
+  function selectLayer(layerId) {
+    const target = layers.find(l => l.id === layerId);
+    if (!target) return;
+
+    // Save previous active text layer's text & width
+    const currentActive = getActiveTextLayer();
+    if (currentActive && currentActive.id !== target.id) {
+      currentActive.text = input.value;
+      currentActive.textPanelWidth = getTextPanelWidth();
+    }
+
+    selectedLayerId = layerId;
+
+    if (target.type === "text") {
+      input.value = typeof target.text === "string" ? target.text : "";
+      textOffsetX = typeof target.textOffsetX === "number" ? target.textOffsetX : DEFAULT_TEXT_OFFSET_X;
+      textOffsetY = typeof target.textOffsetY === "number" ? target.textOffsetY : DEFAULT_TEXT_OFFSET_Y;
+      textPositionMode = target.textPositionMode || "top-left";
+      if (textPositionSelect) {
+        textPositionSelect.value = textPositionMode;
+      }
+      if (textPanelWidthInput) {
+        const w = target.textPanelWidth || 500;
+        textPanelWidthInput.value = w;
+        document.documentElement.style.setProperty("--text-panel-width", w + "px");
+      }
+    }
+
+    updateInputPaneHeader();
+    render();
+    renderLayersUI();
+    updateDomLayers();
+    updateInspectorUI();
+    updateSelectionBox();
+    scheduleJpegPreview();
+  }
+
+  function addChatlogTextLayer() {
+    // Save current active text layer's input
+    const currentActive = getActiveTextLayer();
+    if (currentActive) {
+      currentActive.text = input.value;
+      currentActive.textPanelWidth = getTextPanelWidth();
+    }
+
+    layerIdCounter++;
+    const textLayers = layers.filter(l => l.type === "text");
+    const newNum = textLayers.length + 1;
+
+    // Stagger position below existing text if possible
+    let newX = DEFAULT_TEXT_OFFSET_X;
+    let newY = DEFAULT_TEXT_OFFSET_Y;
+    const lastText = textLayers[textLayers.length - 1];
+    if (lastText) {
+      const bounds = getTextBounds(lastText);
+      newY = Math.round(bounds.y + bounds.height + 16);
+      if (newY >= getCanvasHeight() - 70) {
+        newY = Math.max(DEFAULT_TEXT_OFFSET_Y, (DEFAULT_TEXT_OFFSET_Y + (textLayers.length * 36)) % Math.max(100, getCanvasHeight() - 120));
+      }
+    }
+
+    const newLayer = {
+      id: "layer-text-" + Date.now() + "-" + layerIdCounter,
+      type: "text",
+      name: `Chatlog Text ${newNum}`,
+      visible: true,
+      opacity: 1,
+      text: "",
+      textOffsetX: newX,
+      textOffsetY: newY,
+      textPositionMode: DEFAULT_SETTINGS.textPosition || "top-left",
+      userHasCustomDraggedText: false,
+      textPanelWidth: getTextPanelWidth()
+    };
+
+    layers.push(newLayer);
+    selectLayer(newLayer.id);
+    showToast("info", "Chatlog Layer Added", `${newLayer.name} created with default settings.`);
+  }
+
   function renderLayersUI() {
     if (!layersList) return;
 
     if (layersCountBadge) {
       layersCountBadge.textContent = `${layers.length} Layers`;
     }
+
+    const textLayerCount = layers.filter(l => l.type === "text").length;
 
     // Visual order: top layer on top
     const reversed = layers.slice().reverse();
@@ -3450,12 +3695,12 @@
       item.appendChild(info);
       item.appendChild(reorder);
 
-      // Delete button for image layers
-      if (layer.type === "image") {
+      // Delete button for image layers or secondary text layers
+      if (layer.type === "image" || (layer.type === "text" && textLayerCount > 1)) {
         const delBtn = document.createElement("button");
         delBtn.type = "button";
         delBtn.className = "layer-delete-btn";
-        delBtn.title = "Delete Layer";
+        delBtn.title = `Delete ${layer.name}`;
         delBtn.textContent = "✕";
         delBtn.addEventListener("click", e => {
           e.stopPropagation();
@@ -3465,15 +3710,14 @@
       }
 
       item.addEventListener("click", () => {
-        selectedLayerId = layer.id;
-        renderLayersUI();
-        updateDomLayers();
+        selectLayer(layer.id);
       });
 
       layersList.appendChild(item);
     });
 
     updateInspectorUI();
+    updateInputPaneHeader();
   }
 
   function updateInspectorUI() {
@@ -3511,6 +3755,18 @@
           layerFilterIntensityValue.textContent = Math.round(intensity * 100) + "%";
         }
       }
+      if (layerVignetteRow) {
+        layerVignetteRow.style.display = "flex";
+        const vig = typeof layer.vignette === "number" ? layer.vignette : 0;
+        if (layerVignetteInput) layerVignetteInput.value = vig;
+        if (layerVignetteValue) layerVignetteValue.textContent = vig + "%";
+      }
+      if (layerGrainRow) {
+        layerGrainRow.style.display = "flex";
+        const grn = typeof layer.filmGrain === "number" ? layer.filmGrain : 0;
+        if (layerGrainInput) layerGrainInput.value = grn;
+        if (layerGrainValue) layerGrainValue.textContent = grn + "%";
+      }
       if (atmospherePresetSelect) {
         atmospherePresetSelect.value = layer.filter || "none";
         atmospherePresetSelect.disabled = false;
@@ -3535,6 +3791,8 @@
       if (layerScaleRow) layerScaleRow.style.display = "none";
       if (bgAtmosphereRow) bgAtmosphereRow.style.display = "none";
       if (layerFilterIntensityRow) layerFilterIntensityRow.style.display = "none";
+      if (layerVignetteRow) layerVignetteRow.style.display = "none";
+      if (layerGrainRow) layerGrainRow.style.display = "none";
       if (atmospherePresetSelect) {
         const bgLayer = layers.find(l => l.type === "background");
         atmospherePresetSelect.value = (bgLayer && bgLayer.filter) ? bgLayer.filter : "none";
@@ -3542,7 +3800,11 @@
         atmospherePresetSelect.title = "Filter (applies to background image)";
       }
       if (layerCenterBtn) layerCenterBtn.style.display = "inline-flex";
-      if (layerDeleteBtn) layerDeleteBtn.style.display = "none";
+      if (layerDeleteBtn) {
+        const textLayerCount = layers.filter(l => l.type === "text").length;
+        layerDeleteBtn.style.display = (layer.type === "text" && textLayerCount > 1) ? "inline-flex" : "none";
+        layerDeleteBtn.textContent = "Delete";
+      }
     }
   }
 
@@ -3575,11 +3837,37 @@
     if (targetLayer.type === "image") {
       layers = layers.filter(l => l.id !== layerId);
       if (selectedLayerId === layerId) {
-        selectedLayerId = layers[layers.length - 1] ? layers[layers.length - 1].id : "layer-text";
+        const fallback = layers.find(l => l.type === "text") || layers[layers.length - 1];
+        if (fallback && fallback.type === "text") {
+          selectLayer(fallback.id);
+        } else {
+          selectedLayerId = fallback ? fallback.id : "layer-text";
+        }
       }
       renderLayersUI();
       updateDomLayers();
       scheduleJpegPreview();
+      updateSelectionBox();
+    } else if (targetLayer.type === "text") {
+      const textLayers = layers.filter(l => l.type === "text");
+      if (textLayers.length <= 1) {
+        showToast("warning", "Cannot Delete", "At least one chatlog text layer must remain.");
+        return;
+      }
+      layers = layers.filter(l => l.id !== layerId);
+      if (selectedLayerId === layerId) {
+        const remainingText = layers.find(l => l.type === "text");
+        if (remainingText) {
+          selectLayer(remainingText.id);
+        } else {
+          selectedLayerId = layers[layers.length - 1].id;
+        }
+      }
+      renderLayersUI();
+      updateDomLayers();
+      scheduleJpegPreview();
+      updateSelectionBox();
+      showToast("info", "Deleted Layer", `${targetLayer.name} was removed.`);
     } else if (targetLayer.type === "background") {
       removeBackgroundAction();
     }
@@ -3593,15 +3881,21 @@
     const ch = getCanvasHeight();
 
     if (layer.type === "text") {
-      userHasCustomDraggedText = false;
-      if (textPositionMode === "bottom-left") {
-        textOffsetX = DEFAULT_TEXT_OFFSET_X;
-        textOffsetY = getBottomLeftOffsetY();
+      layer.userHasCustomDraggedText = false;
+      if (layer.textPositionMode === "bottom-left") {
+        layer.textOffsetX = DEFAULT_TEXT_OFFSET_X;
+        layer.textOffsetY = getBottomLeftOffsetY(null, layer);
       } else {
-        textOffsetX = DEFAULT_TEXT_OFFSET_X;
-        textOffsetY = DEFAULT_TEXT_OFFSET_Y;
+        layer.textOffsetX = DEFAULT_TEXT_OFFSET_X;
+        layer.textOffsetY = DEFAULT_TEXT_OFFSET_Y;
+      }
+      if (layer.id === selectedLayerId) {
+        textOffsetX = layer.textOffsetX;
+        textOffsetY = layer.textOffsetY;
       }
       updateTextPosition();
+      updateDomLayers();
+      scheduleJpegPreview();
     } else if (layer.type === "image" && layer.img) {
       const w = layer.img.naturalWidth * (layer.scale || 1);
       const h = layer.img.naturalHeight * (layer.scale || 1);
@@ -3616,16 +3910,60 @@
       bgY = Math.round((ch - h) / 2);
       updateBackgroundTransform();
     }
+    updateSelectionBox();
+  }
+
+  function renderTextLayersDom() {
+    if (!textLayersContainer) return;
+    textLayersContainer.innerHTML = "";
+
+    const textLayers = layers.filter(l => l.type === "text");
+    textLayers.forEach(layer => {
+      const layerIndex = layers.findIndex(l => l.id === layer.id);
+      const isSelected = layer.id === selectedLayerId;
+      const box = document.createElement("div");
+      box.id = `preview-${layer.id}`;
+      box.className = `preview-box ${isSelected ? "is-selected-text-layer" : ""}`;
+      if (!backgroundToggle.checked) {
+        box.classList.add("no-text-background");
+      }
+      const { mode, blurStrength } = getCensorSettings();
+      if (mode === "redact") {
+        box.classList.add("censor-redact");
+      } else if (mode === "mosaic") {
+        box.classList.add("censor-mosaic");
+        box.style.setProperty("--mosaic-size", `${blurStrength}px`);
+      } else {
+        box.style.setProperty("--blur-radius", `${blurStrength}px`);
+      }
+
+      box.style.setProperty("--chat-font-family", getFontFamily());
+      applyOutlineStyleToElement(box);
+
+      const w = layer.textPanelWidth || getTextPanelWidth();
+      box.style.setProperty("--text-panel-width", `${w}px`);
+      box.style.width = `${w}px`;
+      box.style.maxWidth = `${w}px`;
+
+      const offX = typeof layer.textOffsetX === "number" ? layer.textOffsetX : textOffsetX;
+      const offY = typeof layer.textOffsetY === "number" ? layer.textOffsetY : textOffsetY;
+      box.style.transform = `translate(${offX}px, ${offY}px)`;
+      box.style.zIndex = layerIndex + 1;
+      box.style.display = layer.visible !== false ? "block" : "none";
+      box.style.opacity = typeof layer.opacity === "number" ? layer.opacity : 1;
+
+      const layerContent = (layer.id === selectedLayerId) ? input.value : (layer.text || "");
+      box.innerHTML = formatLinesToHtml(layerContent);
+
+      textLayersContainer.appendChild(box);
+    });
   }
 
   function updateDomLayers() {
     if (!overlayLayersContainer) return;
 
     const bgLayer = layers.find(l => l.type === "background");
-    const textLayer = layers.find(l => l.type === "text");
-
     const bgIdx = layers.findIndex(l => l.type === "background");
-    const textIdx = layers.findIndex(l => l.type === "text");
 
     if (backgroundLayerDom) {
       backgroundLayerDom.style.zIndex = bgIdx !== -1 ? (bgIdx + 1) : 1;
@@ -3639,9 +3977,8 @@
     }
 
     if (preview) {
-      preview.style.zIndex = textIdx !== -1 ? (textIdx + 1) : 2;
-      preview.style.display = (textLayer && textLayer.visible !== false) ? "block" : "none";
-      preview.style.opacity = textLayer && typeof textLayer.opacity === "number" ? textLayer.opacity : 1;
+      // preview is kept hidden as textLayersContainer renders all text layers in true z-index
+      preview.style.display = "none";
     }
 
     overlayLayersContainer.innerHTML = "";
@@ -3661,6 +3998,8 @@
 
       overlayLayersContainer.appendChild(imgEl);
     });
+
+    renderTextLayersDom();
 
     if (jpegPreviewImage) {
       jpegPreviewImage.style.zIndex = "50";
@@ -4475,9 +4814,10 @@
     return result;
   }
 
-  function render() {
+  function formatLinesToHtml(textContent) {
     let carriedColor = null;
-    const lines = input.value.split("\n").map((rawLine) => {
+    const content = typeof textContent === "string" ? textContent : "";
+    const lines = content.split("\n").map((rawLine) => {
       if (rawLine.trim() === "") {
         return `<span class="line blank-line">&nbsp;</span>`;
       }
@@ -4514,16 +4854,28 @@
       return `<span class="line"><span class="text-bg ${className}">${innerHtml}</span></span>`;
     });
 
-    preview.innerHTML = lines.join("");
-    if (textPositionMode === "bottom-left" && !userHasCustomDraggedText) {
-      textOffsetY = getBottomLeftOffsetY();
-    }
-    updateTextPosition();
+    return lines.join("");
   }
 
-  function getVisibleLinesForCanvas() {
+  function render() {
+    const active = getActiveTextLayer();
+    if (active) {
+      active.text = input.value;
+    }
+    preview.innerHTML = formatLinesToHtml(input.value);
+    if (active && active.textPositionMode === "bottom-left" && !active.userHasCustomDraggedText) {
+      active.textOffsetY = getBottomLeftOffsetY(null, active);
+      textOffsetY = active.textOffsetY;
+    }
+    updateTextPosition();
+    renderTextLayersDom();
+    scheduleJpegPreview();
+  }
+
+  function getVisibleLinesForCanvas(textContent = null) {
     let carriedColor = null;
-    return input.value.split("\n").map(rawLine => {
+    const content = typeof textContent === "string" ? textContent : input.value;
+    return content.split("\n").map(rawLine => {
       const isBlank = rawLine.trim() === "";
       const visibleText = stripTimestamp(rawLine);
       const className = classifyLine(rawLine);
@@ -4609,18 +4961,24 @@
     return parts;
   }
 
-  function getTextBounds() {
+  function getTextBounds(targetLayer = null) {
+    const layer = targetLayer || getActiveTextLayer();
+    const lX = layer && typeof layer.textOffsetX === "number" ? layer.textOffsetX : textOffsetX;
+    const lY = layer && typeof layer.textOffsetY === "number" ? layer.textOffsetY : textOffsetY;
+    const lWidth = layer && layer.textPanelWidth ? layer.textPanelWidth : getTextPanelWidth();
+    const lContent = (layer && layer.id === selectedLayerId) ? input.value : ((layer && typeof layer.text === "string") ? layer.text : input.value);
+
     const fontPx = getFontSize();
     const lineHeight = Math.round(fontPx * 1.25);
     const xPadding = 4;
     const yPadding = 2;
-    const maxTextWidth = getTextPanelWidth();
+    const maxTextWidth = lWidth;
 
     const measuringCanvas = document.createElement("canvas");
     const ctx = measuringCanvas.getContext("2d");
     ctx.font = `700 ${fontPx}px ${getFontFamily()}`;
 
-    const sourceLines = getVisibleLinesForCanvas();
+    const sourceLines = getVisibleLinesForCanvas(lContent);
 
     let maxWidth = 1;
     let rowCount = 0;
@@ -4640,15 +4998,15 @@
     });
 
     return {
-      x: textOffsetX,
-      y: textOffsetY,
+      x: lX,
+      y: lY,
       width: Math.max(20, Math.min(maxWidth + xPadding * 2, maxTextWidth)),
       height: Math.max(lineHeight, rowCount * lineHeight + yPadding * 2)
     };
   }
 
-  function pointIsInsideTextBounds(x, y) {
-    const bounds = getTextBounds();
+  function pointIsInsideTextBounds(x, y, targetLayer = null) {
+    const bounds = getTextBounds(targetLayer);
 
     return (
       x >= bounds.x &&
@@ -4675,7 +5033,7 @@
       selectionBox.style.width = w + "px";
       selectionBox.style.height = h + "px";
     } else if (selected.type === "text") {
-      const bounds = getTextBounds();
+      const bounds = getTextBounds(selected);
       selectionBox.style.display = "block";
       selectionBox.style.left = Math.round(bounds.x) + "px";
       selectionBox.style.top = Math.round(bounds.y) + "px";
@@ -4851,8 +5209,8 @@
     ctx.closePath();
   }
 
-  function buildWrappedRows(ctx, maxTextWidth) {
-    const sourceLines = getVisibleLinesForCanvas();
+  function buildWrappedRows(ctx, maxTextWidth, textContent = null) {
+    const sourceLines = getVisibleLinesForCanvas(textContent);
     const wrappedRows = [];
 
     sourceLines.forEach(line => {
@@ -4942,15 +5300,21 @@
     }
   }
 
-  function drawTextLayerToCanvas(ctx, fontPx, fontFamily, lineHeight, xPadding, yPadding, maxTextWidth) {
+  function drawTextLayerToCanvas(ctx, fontPx, fontFamily, lineHeight, xPadding, yPadding, maxTextWidth, layer = null) {
+    const activeText = layer || getActiveTextLayer();
+    const lX = activeText && typeof activeText.textOffsetX === "number" ? activeText.textOffsetX : textOffsetX;
+    const lY = activeText && typeof activeText.textOffsetY === "number" ? activeText.textOffsetY : textOffsetY;
+    const lWidth = activeText && activeText.textPanelWidth ? activeText.textPanelWidth : maxTextWidth;
+    const lContent = (activeText && activeText.id === selectedLayerId) ? input.value : ((activeText && typeof activeText.text === "string") ? activeText.text : input.value);
+
     ctx.font = `700 ${fontPx}px ${fontFamily}`;
     ctx.textBaseline = "top";
     ctx.lineJoin = "round";
 
-    const wrappedRows = buildWrappedRows(ctx, maxTextWidth);
+    const wrappedRows = buildWrappedRows(ctx, lWidth, lContent);
 
     wrappedRows.forEach((row, index) => {
-      const y = textOffsetY + yPadding + index * lineHeight;
+      const y = lY + yPadding + index * lineHeight;
 
       if (row.isBlank) {
         return;
@@ -4962,7 +5326,7 @@
         ctx.fillStyle = "rgba(0,0,0,0.84)";
         roundedRect(
           ctx,
-          textOffsetX,
+          lX,
           y - 1,
           textWidth + xPadding * 2,
           lineHeight,
@@ -4972,7 +5336,7 @@
       }
 
       if (row.segments && row.segments.length > 0) {
-        let currentX = textOffsetX + xPadding;
+        let currentX = lX + xPadding;
         row.segments.forEach(seg => {
           drawTextWithStroke(ctx, seg.text, currentX, y, seg.color, seg.isBlurred, lineHeight);
           currentX += ctx.measureText(seg.text).width;
@@ -4981,7 +5345,7 @@
         drawCharacterKillLine(
           ctx,
           row.text,
-          textOffsetX + xPadding,
+          lX + xPadding,
           y,
           lineHeight
         );
@@ -4990,7 +5354,7 @@
           ctx,
           row.text,
           row.color,
-          textOffsetX + xPadding,
+          lX + xPadding,
           y,
           lineHeight
         );
@@ -5081,19 +5445,23 @@
             ctx.restore();
           }
 
-          if (isVignetteEnabled()) {
-            drawVignette(ctx, canvasWidth, canvasHeight, getVignetteStrength());
+          const bgVig = typeof layer.vignette === "number" ? layer.vignette : (isVignetteEnabled() ? getVignetteStrength() : 0);
+          if (bgVig > 0) {
+            drawVignette(ctx, canvasWidth, canvasHeight, bgVig);
           }
 
-          if (isFilmGrainEnabled()) {
-            drawFilmGrain(ctx, canvasWidth, canvasHeight, getFilmGrainStrength());
+          const bgGrn = typeof layer.filmGrain === "number" ? layer.filmGrain : (isFilmGrainEnabled() ? getFilmGrainStrength() : 0);
+          if (bgGrn > 0) {
+            drawFilmGrain(ctx, canvasWidth, canvasHeight, bgGrn);
           }
         } else if (!isTransparent) {
-          if (isVignetteEnabled()) {
-            drawVignette(ctx, canvasWidth, canvasHeight, getVignetteStrength());
+          const bgVig = typeof layer.vignette === "number" ? layer.vignette : (isVignetteEnabled() ? getVignetteStrength() : 0);
+          if (bgVig > 0) {
+            drawVignette(ctx, canvasWidth, canvasHeight, bgVig);
           }
-          if (isFilmGrainEnabled()) {
-            drawFilmGrain(ctx, canvasWidth, canvasHeight, getFilmGrainStrength());
+          const bgGrn = typeof layer.filmGrain === "number" ? layer.filmGrain : (isFilmGrainEnabled() ? getFilmGrainStrength() : 0);
+          if (bgGrn > 0) {
+            drawFilmGrain(ctx, canvasWidth, canvasHeight, bgGrn);
           }
         }
       } else if (layer.type === "image") {
@@ -5130,9 +5498,27 @@
             );
             ctx.restore();
           }
+
+          if (layer.vignette && layer.vignette > 0) {
+            ctx.save();
+            ctx.beginPath();
+            ctx.rect(layer.x, layer.y, imgW, imgH);
+            ctx.clip();
+            drawVignette(ctx, imgW, imgH, layer.vignette, layer.x, layer.y);
+            ctx.restore();
+          }
+
+          if (layer.filmGrain && layer.filmGrain > 0) {
+            ctx.save();
+            ctx.beginPath();
+            ctx.rect(layer.x, layer.y, imgW, imgH);
+            ctx.clip();
+            drawFilmGrain(ctx, imgW, imgH, layer.filmGrain, layer.x, layer.y);
+            ctx.restore();
+          }
         }
       } else if (layer.type === "text") {
-        drawTextLayerToCanvas(ctx, fontPx, fontFamily, lineHeight, xPadding, yPadding, maxTextWidth);
+        drawTextLayerToCanvas(ctx, fontPx, fontFamily, lineHeight, xPadding, yPadding, maxTextWidth, layer);
       }
 
       ctx.restore();
@@ -5242,7 +5628,7 @@
       if (!layer.visible) continue;
 
       if (layer.type === "text") {
-        if (pointIsInsideTextBounds(pointX, pointY)) {
+        if (pointIsInsideTextBounds(pointX, pointY, layer)) {
           return layer;
         }
       } else if (layer.type === "image") {
@@ -5272,9 +5658,7 @@
     const hitLayer = findLayerAtPoint(point.x, point.y);
 
     if (hitLayer) {
-      selectedLayerId = hitLayer.id;
-      renderLayersUI();
-      updateDomLayers();
+      selectLayer(hitLayer.id);
 
       dragStartX = point.x;
       dragStartY = point.y;
@@ -5283,8 +5667,9 @@
 
       if (hitLayer.type === "text") {
         dragMode = "text";
-        originalTextX = textOffsetX;
-        originalTextY = textOffsetY;
+        draggingLayerId = hitLayer.id;
+        originalTextX = typeof hitLayer.textOffsetX === "number" ? hitLayer.textOffsetX : textOffsetX;
+        originalTextY = typeof hitLayer.textOffsetY === "number" ? hitLayer.textOffsetY : textOffsetY;
       } else if (hitLayer.type === "image") {
         dragMode = "image";
         draggingLayerId = hitLayer.id;
@@ -5308,10 +5693,19 @@
     const dy = point.y - dragStartY;
 
     if (dragMode === "text") {
-      textOffsetX = originalTextX + dx;
-      textOffsetY = originalTextY + dy;
-      userHasCustomDraggedText = true;
-      updateTextPosition();
+      const layer = layers.find(l => l.id === draggingLayerId) || getActiveTextLayer();
+      if (layer) {
+        layer.textOffsetX = originalTextX + dx;
+        layer.textOffsetY = originalTextY + dy;
+        layer.userHasCustomDraggedText = true;
+        if (layer.id === selectedLayerId) {
+          textOffsetX = layer.textOffsetX;
+          textOffsetY = layer.textOffsetY;
+          userHasCustomDraggedText = true;
+        }
+        updateTextPosition();
+        renderTextLayersDom();
+      }
     } else if (dragMode === "image") {
       const layer = layers.find(l => l.id === draggingLayerId);
       if (layer) {
@@ -5626,6 +6020,12 @@
     });
   }
 
+  if (addLayerTextBtn) {
+    addLayerTextBtn.addEventListener("click", () => {
+      addChatlogTextLayer();
+    });
+  }
+
   if (layerImageFileInput) {
     layerImageFileInput.addEventListener("change", event => {
       const files = event.target.files;
@@ -5792,6 +6192,42 @@
     };
     layerFilterIntensityInput.addEventListener("input", handleIntensityChange);
     layerFilterIntensityInput.addEventListener("change", handleIntensityChange);
+  }
+
+  if (layerVignetteInput) {
+    const handleLayerVignetteChange = () => {
+      const targetLayer = getSelectedImageOrBackgroundLayer();
+      if (!targetLayer) return;
+      const val = parseInt(layerVignetteInput.value, 10) || 0;
+      targetLayer.vignette = Math.max(0, Math.min(val, 100));
+      if (layerVignetteValue) {
+        layerVignetteValue.textContent = `${targetLayer.vignette}%`;
+      }
+      updateAtmosphereDom();
+      updateDomLayers();
+      scheduleJpegPreview();
+      saveCurrentSettingsDebounced();
+    };
+    layerVignetteInput.addEventListener("input", handleLayerVignetteChange);
+    layerVignetteInput.addEventListener("change", handleLayerVignetteChange);
+  }
+
+  if (layerGrainInput) {
+    const handleLayerGrainChange = () => {
+      const targetLayer = getSelectedImageOrBackgroundLayer();
+      if (!targetLayer) return;
+      const val = parseInt(layerGrainInput.value, 10) || 0;
+      targetLayer.filmGrain = Math.max(0, Math.min(val, 100));
+      if (layerGrainValue) {
+        layerGrainValue.textContent = `${targetLayer.filmGrain}%`;
+      }
+      updateAtmosphereDom();
+      updateDomLayers();
+      scheduleJpegPreview();
+      saveCurrentSettingsDebounced();
+    };
+    layerGrainInput.addEventListener("input", handleLayerGrainChange);
+    layerGrainInput.addEventListener("change", handleLayerGrainChange);
   }
 
   if (vignetteToggle) {
@@ -6188,7 +6624,13 @@
 
   clearButton.addEventListener("click", () => {
     input.value = "";
+    const active = getActiveTextLayer();
+    if (active) {
+      active.text = "";
+    }
     render();
+    updateDomLayers();
+    scheduleJpegPreview();
   });
 
   if (openSettingsModalButton) {
