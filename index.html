@@ -2197,7 +2197,7 @@
   <div class="footer-note" id="footerNote">
     <span class="tip-label">Tip ☘</span>
     <div class="tip-carousel">
-      <span id="tipText" class="tip-text">Add images on top of the canvas via the Layers box or "+ Add Image Layer". Drag on the canvas to move any layer, or use the mouse wheel to scale image layers.</span>
+      <span id="tipText" class="tip-text">Select an image or Background in <strong>Layers</strong> to adjust <strong>Atmosphere Filters</strong> (Sunset, Noir, Contrast, Invert), <strong>Vignette</strong>, and <strong>Film Grain</strong> in the Layer Inspector.</span>
     </div>
     <div class="tip-controls">
       <button type="button" id="tipPrevBtn" class="tip-nav-btn" title="Previous tip">◀</button>
@@ -6882,22 +6882,21 @@
 
   // Tip Rotation Carousel
   const siteTips = [
+    "To add a filter, select an image or Background layer in the <strong>Layers</strong> list.",
+    "The <strong>Typography</strong> and <strong>Outline & BG</strong> toolbars in the top bar appear contextually whenever a chat text layer is selected or when you click into the text editor.",
+    "Click the <strong>🎵</strong> button in the top right header to play background music on continuous loop. Want your own background music? Open <a href='#' data-action='open-settings' style='color: var(--accent); font-weight: 700; text-decoration: underline; cursor: pointer;'>⚙ Settings</a>",
+    "Need a secondary chatbox? Click <strong>+ Add Chatlog Text Layer</strong> in the Layers pane to create multiple independent text blocks.",
     "Go to <a href='#' data-action='open-settings' style='color: var(--accent); font-weight: 700; text-decoration: underline; cursor: pointer;'>⚙ Settings</a> to save your character name. This enables smart phone formatting: your character's phone speech appears in natural vocal tones (white for say, gray for low, orange for whisper), while the other caller appears in phone yellow.",
-    "Highlight any word and click <strong>Color Text 🎨</strong> (or press <strong>Ctrl+K</strong>) to choose from pre-determined chat colors (Purple, Whisper Orange, Radio Amber, Money Green, etc.) or custom hex values to color specific words.",
-    "Try the <strong>Mood presets</strong> (Warm Sunset, Noir / B&W, High Contrast, Cold Night) along with <strong>Vignette</strong> and <strong>Film Grain</strong> in the top toolbar to give your RP screenshot cinematic immersion.",
-    "Your customized canvas dimensions, fonts, outline styles, and censorship settings are automatically saved and remembered across visits.",
-    "Add images on top of the canvas via the Layers box or <strong>+ Add Image Layer</strong>. Drag on the canvas to move any layer, or use the mouse wheel to scale.",
-    "Highlight any text and press <strong>Ctrl+B</strong> (or click <strong>Blur Selection ☘</strong>) to censor sensitive names, radio channels, or locations.",
-    "Switch censor modes in top controls: choose between smooth <strong>Gaussian Blur</strong>, retro <strong>Mosaic Blur</strong>, or <strong>Redacted Black Bar</strong>.",
+    "Highlight any word and click <strong>Color Text 🎨</strong> (or press <strong>Ctrl+K</strong>) to choose from pre-determined chat colors or custom hex values to color specific words.",
+    "Highlight any text and press <strong>Ctrl+B</strong> (or click <strong>Blur Selection ☘</strong>) to censor sensitive names, radio channels, or locations. Switch censor modes in top controls after blurring text.",
     "Press <strong>Ctrl+V</strong> anywhere to instantly paste screenshots or copied images directly onto the canvas as new layers.",
     "Drag and drop image files directly from your computer onto the canvas stage to add them as background or overlay graphics.",
-    "Reorder layer depth with the <strong>▲</strong> and <strong>▼</strong> buttons in the Layers pane, toggle visibility with the eye icon, and adjust layer opacity.",
-    "Click and drag the chatlog text anywhere on the canvas to reposition it freely. You can also toggle between <strong>Top Left</strong> (default) and <strong>Bottom Left</strong> position presets or click <strong>Reset Text Position</strong> anytime.",
-    "Custom canvas sizing: Type any width and height into <strong>Canvas width / height</strong> to match 1080p, 1440p, 4K, or custom screenshot aspect ratios.",
-    "Fine-tune the chat aesthetic with <strong>Outline style</strong> (Classic outline, Drop shadow, Both, or None) and adjust outline stroke thickness.",
-    " When no background image is added, <strong>Copy PNG</strong> and <strong>Download PNG</strong> export with a transparent canvas so you can extrapolate text directly onto your screenshots in Photoshop or photo editors. The preview displays on black for convenience while typing.",
+    "Click and drag any layer (text or image) on the canvas to reposition it freely. Use your mouse wheel over an image or the Scale slider in the Inspector to resize.",
+    "Accidentally dragged your text off-screen? Click <strong>Reset Text Position</strong> in the toolbar to instantly snap the active text layer back to its position preset (Top Left or Bottom Left).",
+    "Use <strong>▲ Forward</strong> and <strong>▼ Backward</strong> to reorder depth, toggle visibility with the eye icon, adjust layer opacity (0–100%), or click <strong>Center</strong> to align any layer.",
+    "Type any width and height into <strong>Canvas width / height</strong> to match 1080p, 1440p, 4K, or custom screenshot aspect ratios.",
     "Click <strong>Copy PNG</strong> to copy the rendered chatlog directly to your clipboard for instant pasting into Discord, forums, or image editing software.",
-    "Click <strong>Upload to ImgBB</strong> to upload your chatlog directly to ImgBB and automatically copy the link to your clipboard (Ctrl+V)."
+    "Click <strong>Upload to ImgBB</strong> to upload your chatlog directly to ImgBB and automatically copy the link to your clipboard (Ctrl+V).",
   ];
 
   let currentTipIndex = 0;
