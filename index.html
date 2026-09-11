@@ -538,6 +538,13 @@
     font-weight: 700;
   }
 
+  .italic-text {
+    font-style: italic !important;
+  }
+  .text-bg .italic-text {
+    font-style: italic !important;
+  }
+
   .toast-container {
     position: fixed;
     bottom: 58px;
@@ -2037,9 +2044,9 @@
         </div>
       </div>
       <textarea id="input" spellcheck="false" placeholder="[00:00:00] Carl Johnson says: I love money *rubs his money* I love money.
-[00:00:02] Carl Johnson says: Did you talk to ☘John☘?
-[00:00:04] * Carl Johnson does an example action.
-[00:00:08] Carl Johnson says [low]: This is a low line.
+[00:00:02] Carl Johnson says: Did you talk to /Tenpenny/ or ☘John☘?
+[00:00:04] * Carl Johnson does an /urgent/ example action.
+[00:00:08] Carl Johnson says [low]: This is a /low whisper/.
 [00:00:10] Carl Johnson says [lower]: This is a lower line.
 [00:00:12] Carl Johnson whispers: Secret plan with ☘Officer Tenpenny☘.
 [00:00:16] Someone paid you $46,800.
@@ -3454,6 +3461,36 @@
       preview.style.setProperty("--blur-radius", `${blurStrength}px`);
     }
     render();
+  }
+
+  function italicSelectedTextInInput() {
+    const start = input.selectionStart;
+    const end = input.selectionEnd;
+    const val = input.value;
+
+    if (start === end) {
+      const before = val.slice(0, start);
+      const after = val.slice(end);
+      input.value = before + "//" + after;
+      input.selectionStart = start + 1;
+      input.selectionEnd = start + 1;
+    } else {
+      const selected = val.slice(start, end);
+      if (selected.startsWith("/") && selected.endsWith("/") && selected.length >= 2) {
+        const unwrapped = selected.slice(1, -1);
+        input.value = val.slice(0, start) + unwrapped + val.slice(end);
+        input.selectionStart = start;
+        input.selectionEnd = start + unwrapped.length;
+      } else {
+        const wrapped = `/${selected}/`;
+        input.value = val.slice(0, start) + wrapped + val.slice(end);
+        input.selectionStart = start;
+        input.selectionEnd = start + wrapped.length;
+      }
+    }
+    input.focus();
+    render();
+    scheduleJpegPreview();
   }
 
   function blurSelectedTextInInput() {
@@ -4918,14 +4955,18 @@
             text: seg.text.slice(lastIndex, match.index),
             color: seg.color,
             className: seg.className,
-            isBlurred: false
+            isBlurred: Boolean(seg.isBlurred),
+            isItalic: Boolean(seg.isItalic),
+            isCustomColor: Boolean(seg.isCustomColor)
           });
         }
         result.push({
           text: match[1],
           color: seg.color,
           className: seg.className,
-          isBlurred: true
+          isBlurred: true,
+          isItalic: Boolean(seg.isItalic),
+          isCustomColor: Boolean(seg.isCustomColor)
         });
         lastIndex = match.index + match[0].length;
       }
@@ -4935,7 +4976,71 @@
           text: seg.text.slice(lastIndex),
           color: seg.color,
           className: seg.className,
-          isBlurred: false
+          isBlurred: Boolean(seg.isBlurred),
+          isItalic: Boolean(seg.isItalic),
+          isCustomColor: Boolean(seg.isCustomColor)
+        });
+      }
+    }
+
+    return result;
+  }
+
+  function parseItalicInSegments(segments) {
+    const result = [];
+    const rpCommandRegex = /^(\s*(?:\[[^\]]*\]\s*)?)\/(me|do|ame|b|ooc|s|w|low|whisper|shout|dep|radio)\s+/i;
+
+    for (let sIdx = 0; sIdx < segments.length; sIdx++) {
+      const seg = segments[sIdx];
+      if (seg.className === "timestamp") {
+        result.push(seg);
+        continue;
+      }
+
+      let offset = 0;
+      if (sIdx === 0) {
+        const matchCmd = seg.text.match(rpCommandRegex);
+        if (matchCmd) {
+          offset = matchCmd[0].length;
+        }
+      }
+
+      const ITALIC_REGEX = /(?<!\d|\/)\/([^/\r\n]+)\/(?!\d|\/)/g;
+      ITALIC_REGEX.lastIndex = offset;
+
+      let lastIndex = 0;
+      let match;
+
+      while ((match = ITALIC_REGEX.exec(seg.text)) !== null) {
+        if (match.index > lastIndex) {
+          result.push({
+            text: seg.text.slice(lastIndex, match.index),
+            color: seg.color,
+            className: seg.className,
+            isBlurred: Boolean(seg.isBlurred),
+            isItalic: Boolean(seg.isItalic),
+            isCustomColor: Boolean(seg.isCustomColor)
+          });
+        }
+        result.push({
+          text: match[1],
+          color: seg.color,
+          className: seg.className,
+          isBlurred: Boolean(seg.isBlurred),
+          isItalic: true,
+          isCustomColor: Boolean(seg.isCustomColor)
+        });
+        lastIndex = match.index + match[0].length;
+      }
+
+      if (lastIndex < seg.text.length) {
+        result.push({
+          text: seg.text.slice(lastIndex),
+          color: seg.color,
+          className: seg.className,
+          isBlurred: Boolean(seg.isBlurred),
+          isItalic: Boolean(seg.isItalic),
+          isCustomColor: Boolean(seg.isCustomColor)
         });
       }
     }
@@ -4950,23 +5055,23 @@
       const parts = splitCharacterKillLine(restText);
       const ckSegments = [];
       if (!parts.tag) {
-        ckSegments.push({ text: restText, color: CHAT_COLORS.ckred, className: "ck-red", isBlurred: false });
+        ckSegments.push({ text: restText, color: CHAT_COLORS.ckred, className: "ck-red", isBlurred: false, isItalic: false });
       } else {
-        ckSegments.push({ text: parts.tag, color: CHAT_COLORS.ckblue, className: "ck-blue", isBlurred: false });
+        ckSegments.push({ text: parts.tag, color: CHAT_COLORS.ckblue, className: "ck-blue", isBlurred: false, isItalic: false });
         if (parts.spacing) {
-          ckSegments.push({ text: parts.spacing, color: CHAT_COLORS.ckred, className: "ck-red", isBlurred: false });
+          ckSegments.push({ text: parts.spacing, color: CHAT_COLORS.ckred, className: "ck-red", isBlurred: false, isItalic: false });
         }
         if (parts.rest) {
-          ckSegments.push({ text: parts.rest, color: CHAT_COLORS.ckred, className: "ck-red", isBlurred: false });
+          ckSegments.push({ text: parts.rest, color: CHAT_COLORS.ckred, className: "ck-red", isBlurred: false, isItalic: false });
         }
       }
-      return segments.concat(parseBlurInSegments(ckSegments));
+      return segments.concat(parseBlurInSegments(parseItalicInSegments(ckSegments)));
     }
 
     const midSegments = [];
 
     if (className === "me" || className === "ame" || className === "do") {
-      midSegments.push({ text: restText, color: CHAT_COLORS.me, className: "me", isBlurred: false });
+      midSegments.push({ text: restText, color: CHAT_COLORS.me, className: "me", isBlurred: false, isItalic: false });
     } else {
       const ASTERISK_REGEX = /\*([^*\r\n]+)\*/g;
       let lastIndex = 0;
@@ -4978,14 +5083,16 @@
             text: restText.slice(lastIndex, match.index),
             color: baseColor,
             className: className,
-            isBlurred: false
+            isBlurred: false,
+            isItalic: false
           });
         }
         midSegments.push({
           text: match[1],
           color: CHAT_COLORS.me,
           className: "me",
-          isBlurred: false
+          isBlurred: false,
+          isItalic: false
         });
         lastIndex = match.index + match[0].length;
       }
@@ -4995,12 +5102,13 @@
           text: restText.slice(lastIndex),
           color: baseColor,
           className: className,
-          isBlurred: false
+          isBlurred: false,
+          isItalic: false
         });
       }
     }
 
-    return segments.concat(parseBlurInSegments(midSegments));
+    return segments.concat(parseBlurInSegments(parseItalicInSegments(midSegments)));
   }
 
   function getLineSegments(text, className, isCharacterKill, initialColor = null) {
@@ -5037,6 +5145,7 @@
         className: className,
         defaultColor: baseColor,
         isBlurred: false,
+        isItalic: false,
         keep: true
       });
     }
@@ -5100,12 +5209,33 @@
       }
     }
 
-    // Step 4: Assemble into final segments, prioritizing forcedColor over defaultColor
+    // Magician step 4: Italic parsing /.../
+    const rpCommandRegex = /^(\s*(?:\[[^\]]*\]\s*)?)\/(me|do|ame|b|ooc|s|w|low|whisper|shout|dep|radio)\s+/i;
+    let itOffset = 0;
+    const matchCmd = cleanText.match(rpCommandRegex);
+    if (matchCmd) {
+      itOffset = matchCmd[0].length;
+    }
+    const ITALIC_REGEX = /(?<!\d|\/)\/([^/\r\n]+)\/(?!\d|\/)/g;
+    ITALIC_REGEX.lastIndex = itOffset;
+    let itMatch;
+    while ((itMatch = ITALIC_REGEX.exec(cleanText)) !== null) {
+      const itStart = itMatch.index;
+      const itEnd = itStart + itMatch[0].length - 1;
+      chars[itStart].keep = false;
+      chars[itEnd].keep = false;
+      for (let i = itStart + 1; i < itEnd; i++) {
+        chars[i].isItalic = true;
+      }
+    }
+
+    // Step 5: Assemble into final segments, prioritizing forcedColor over defaultColor
     const segments = [];
     let curText = "";
     let curColor = null;
     let curClass = "";
     let curBlurred = false;
+    let curItalic = false;
     let curIsCustom = false;
 
     for (let i = 0; i < chars.length; i++) {
@@ -5120,11 +5250,13 @@
         curColor = effectiveColor;
         curClass = c.className;
         curBlurred = c.isBlurred;
+        curItalic = Boolean(c.isItalic);
         curIsCustom = isCustom;
       } else if (
         effectiveColor === curColor &&
         c.className === curClass &&
         c.isBlurred === curBlurred &&
+        Boolean(c.isItalic) === curItalic &&
         isCustom === curIsCustom
       ) {
         curText += c.char;
@@ -5134,12 +5266,14 @@
           color: curColor,
           className: curClass,
           isBlurred: curBlurred,
+          isItalic: curItalic,
           isCustomColor: curIsCustom
         });
         curText = c.char;
         curColor = effectiveColor;
         curClass = c.className;
         curBlurred = c.isBlurred;
+        curItalic = Boolean(c.isItalic);
         curIsCustom = isCustom;
       }
     }
@@ -5150,6 +5284,7 @@
         color: curColor,
         className: curClass,
         isBlurred: curBlurred,
+        isItalic: curItalic,
         isCustomColor: curIsCustom
       });
     }
@@ -5182,6 +5317,7 @@
           color: seg.color,
           className: seg.className,
           isBlurred: Boolean(seg.isBlurred),
+          isItalic: Boolean(seg.isItalic),
           isCustomColor: Boolean(seg.isCustomColor)
         });
       }
@@ -5215,6 +5351,10 @@
           content = `<span class="ck-blue">${escaped}</span>`;
         } else if (seg.className === "ck-red") {
           content = `<span class="ck-red">${escaped}</span>`;
+        }
+
+        if (seg.isItalic) {
+          content = `<span class="italic-text">${content}</span>`;
         }
 
         if (seg.isCustomColor) {
@@ -5697,7 +5837,22 @@
         return;
       }
 
-      const textWidth = Math.ceil(ctx.measureText(row.text || " ").width);
+      let textWidth = 0;
+      if (row.segments && row.segments.length > 0) {
+        row.segments.forEach(seg => {
+          if (seg.isItalic) {
+            ctx.save();
+            ctx.font = `italic 700 ${fontPx}px ${fontFamily}`;
+            textWidth += ctx.measureText(seg.text).width;
+            ctx.restore();
+          } else {
+            textWidth += ctx.measureText(seg.text).width;
+          }
+        });
+        textWidth = Math.ceil(textWidth);
+      } else {
+        textWidth = Math.ceil(ctx.measureText(row.text || " ").width);
+      }
 
       if (backgroundToggle.checked) {
         ctx.fillStyle = "rgba(0,0,0,0.84)";
@@ -5715,8 +5870,16 @@
       if (row.segments && row.segments.length > 0) {
         let currentX = lX + xPadding;
         row.segments.forEach(seg => {
-          drawTextWithStroke(ctx, seg.text, currentX, y, seg.color, seg.isBlurred, lineHeight);
-          currentX += ctx.measureText(seg.text).width;
+          if (seg.isItalic) {
+            ctx.save();
+            ctx.font = `italic 700 ${fontPx}px ${fontFamily}`;
+            drawTextWithStroke(ctx, seg.text, currentX, y, seg.color, seg.isBlurred, lineHeight);
+            currentX += ctx.measureText(seg.text).width;
+            ctx.restore();
+          } else {
+            drawTextWithStroke(ctx, seg.text, currentX, y, seg.color, seg.isBlurred, lineHeight);
+            currentX += ctx.measureText(seg.text).width;
+          }
         });
       } else if (row.isCharacterKill) {
         drawCharacterKillLine(
@@ -6331,6 +6494,9 @@
     if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "b") {
       event.preventDefault();
       blurSelectedTextInInput();
+    } else if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "i") {
+      event.preventDefault();
+      italicSelectedTextInInput();
     } else if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "k") {
       event.preventDefault();
       toggleColorChipsPopup();
@@ -7130,21 +7296,22 @@
 
   // Tip Rotation Carousel
   const siteTips = [
-    "To add a filter, select an image or Background layer in the <strong>Layers</strong> list.",
+    "Image filters and adjustments (Brightness, Contrast, Saturation, Blur, Tint, and Presets) have moved into the <strong>Inspector</strong> panel. Select any image or Background layer in the Layers list to open them.",
+    "Fine-tune the starting vertical margin (distance from the canvas edge) using the <strong>Offset</strong> control in the Typography toolbar.",
     "The <strong>Typography</strong> and <strong>Outline & BG</strong> toolbars in the top bar appear contextually whenever a chat text layer is selected or when you click into the text editor.",
-    "Click the <strong>🎵</strong> button in the top right header to play background music on continuous loop. Want your own background music? Open <a href='#' data-action='open-settings' style='color: var(--accent); font-weight: 700; text-decoration: underline; cursor: pointer;'>⚙ Settings</a>",
+    "Click the <strong>🎵</strong> button in the top right header to toggle the floating background music player. Want your own stream? Add custom audio streams in <a href='#' data-action='open-settings' style='color: var(--accent); font-weight: 700; text-decoration: underline; cursor: pointer;'>⚙ Settings</a>.",
     "Need a secondary chatbox? Click <strong>+ Add Chatlog Text Layer</strong> in the Layers pane to create multiple independent text blocks.",
     "Go to <a href='#' data-action='open-settings' style='color: var(--accent); font-weight: 700; text-decoration: underline; cursor: pointer;'>⚙ Settings</a> to save your character name. This enables smart phone formatting: your character's phone speech appears in natural vocal tones (white for say, gray for low, orange for whisper), while the other caller appears in phone yellow.",
     "Highlight any word and click <strong>Color Text 🎨</strong> (or press <strong>Ctrl+K</strong>) to choose from pre-determined chat colors or custom hex values to color specific words.",
-    "Highlight any text and press <strong>Ctrl+B</strong> (or click <strong>Blur Selection ☘</strong>) to censor sensitive names, radio channels, or locations. Switch censor modes in top controls after blurring text.",
+    "Highlight any text and press <strong>Ctrl+B</strong> (or click <strong>Blur Selection ☘</strong>) to censor sensitive names, radio channels, or locations. When blurred text is active, choose your censor style (Gaussian Blur, Pixel Mosaic, or Blackout Redact) in the top bar.",
     "Press <strong>Ctrl+V</strong> anywhere to instantly paste screenshots or copied images directly onto the canvas as new layers.",
     "Drag and drop image files directly from your computer onto the canvas stage to add them as background or overlay graphics.",
     "Click and drag any layer (text or image) on the canvas to reposition it freely. Use your mouse wheel over an image or the Scale slider in the Inspector to resize.",
     "Accidentally dragged your text off-screen? Click <strong>Reset Text Position</strong> in the toolbar to instantly snap the active text layer back to its position preset (Top Left or Bottom Left).",
-    "Use <strong>▲ Forward</strong> and <strong>▼ Backward</strong> to reorder depth, toggle visibility with the eye icon, adjust layer opacity (0–100%), or click <strong>Center</strong> to align any layer.",
+    "Use <strong>▲ Forward</strong> and <strong>▼ Backward</strong> in the Layers pane to reorder depth, toggle visibility with the eye icon, adjust layer opacity (0–100%), or click <strong>Center</strong> to align any layer.",
     "Type any width and height into <strong>Canvas width / height</strong> to match 1080p, 1440p, 4K, or custom screenshot aspect ratios.",
     "Click <strong>Copy PNG</strong> to copy the rendered chatlog directly to your clipboard for instant pasting into Discord, forums, or image editing software.",
-    "Click <strong>Upload to ImgBB</strong> to upload your chatlog directly to ImgBB and automatically copy the link to your clipboard (Ctrl+V).",
+    "Click <strong>Upload to ImgBB</strong> to upload your chatlog directly to ImgBB and automatically copy the direct image link to your clipboard."
   ];
 
   let currentTipIndex = 0;
