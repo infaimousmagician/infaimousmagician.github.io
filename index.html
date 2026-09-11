@@ -1761,7 +1761,7 @@
       </label>
     </div>
 
-    <div class="toolbar-group">
+    <div class="toolbar-group" id="censorshipToolbarGroup" style="display: none;">
       <span class="toolbar-group-label">Censorship</span>
       <label class="control" title="Censorship effect for ☘blurred☘ text">
         Style:
@@ -2124,6 +2124,7 @@
   const outlineStyleSelect = document.getElementById("outlineStyleSelect");
   const strokeWidthInput = document.getElementById("strokeWidthInput");
   const strokeWidthControl = document.getElementById("strokeWidthControl");
+  const censorshipToolbarGroup = document.getElementById("censorshipToolbarGroup");
   const censorStyleSelect = document.getElementById("censorStyleSelect");
   const blurStrengthInput = document.getElementById("blurStrengthInput");
   const blurStrengthValue = document.getElementById("blurStrengthValue");
@@ -3063,6 +3064,26 @@
     applyOutlineStyleToElement(preview);
     renderTextLayersDom();
     render();
+  }
+
+  function hasAnyBlurredText() {
+    if (input && typeof input.value === "string" && input.value.includes("☘")) {
+      return true;
+    }
+    if (Array.isArray(layers)) {
+      for (const l of layers) {
+        if (l && l.type === "text" && typeof l.text === "string" && l.text.includes("☘")) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
+  function updateCensorshipVisibility() {
+    if (!censorshipToolbarGroup) return;
+    const isBlurred = hasAnyBlurredText();
+    censorshipToolbarGroup.style.display = isBlurred ? "flex" : "none";
   }
 
   function getCensorSettings() {
@@ -4869,6 +4890,7 @@
     }
     updateTextPosition();
     renderTextLayersDom();
+    updateCensorshipVisibility();
     scheduleJpegPreview();
   }
 
