@@ -6306,17 +6306,50 @@
     removeBackgroundAction();
   });
 
-  resetTextPositionButton.addEventListener("click", () => {
+  function resetTextPositionAction() {
+    const active = getActiveTextLayer();
+    const mode = (active && active.textPositionMode) || textPositionMode || (textPositionSelect ? textPositionSelect.value : "top-left");
+
     userHasCustomDraggedText = false;
-    if (textPositionMode === "bottom-left") {
-      textOffsetX = DEFAULT_TEXT_OFFSET_X;
-      textOffsetY = getBottomLeftOffsetY();
+    if (active) {
+      active.userHasCustomDraggedText = false;
+      if (mode === "bottom-left") {
+        active.textOffsetX = DEFAULT_TEXT_OFFSET_X;
+        active.textOffsetY = getBottomLeftOffsetY(null, active);
+      } else {
+        active.textOffsetX = DEFAULT_TEXT_OFFSET_X;
+        active.textOffsetY = DEFAULT_TEXT_OFFSET_Y;
+      }
+      textOffsetX = active.textOffsetX;
+      textOffsetY = active.textOffsetY;
     } else {
-      textOffsetX = DEFAULT_TEXT_OFFSET_X;
-      textOffsetY = DEFAULT_TEXT_OFFSET_Y;
+      if (mode === "bottom-left") {
+        textOffsetX = DEFAULT_TEXT_OFFSET_X;
+        textOffsetY = getBottomLeftOffsetY();
+      } else {
+        textOffsetX = DEFAULT_TEXT_OFFSET_X;
+        textOffsetY = DEFAULT_TEXT_OFFSET_Y;
+      }
     }
+
+    if (textPositionSelect && textPositionSelect.value !== mode) {
+      textPositionSelect.value = mode;
+    }
+    textPositionMode = mode;
+
     updateTextPosition();
-    showToast("info", "Position Reset", `Chat text reset to ${textPositionMode === "bottom-left" ? "bottom left" : "top left"}.`);
+    renderTextLayersDom();
+    updateDomLayers();
+    updateSelectionBox();
+    scheduleJpegPreview();
+    saveCurrentSettingsDebounced();
+
+    const layerName = (active && layers.filter(l => l.type === "text").length > 1) ? ` (${active.name})` : "";
+    showToast("info", "Position Reset", `Chat text${layerName} reset to ${mode === "bottom-left" ? "bottom left" : "top left"}.`);
+  }
+
+  resetTextPositionButton.addEventListener("click", () => {
+    resetTextPositionAction();
   });
 
   if (textPositionSelect) {
