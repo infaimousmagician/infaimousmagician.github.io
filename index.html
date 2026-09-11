@@ -4416,6 +4416,65 @@
       return "ad";
     }
 
+    // Spoken dialogue checks (must take precedence over item/money keyword matching)
+    if (
+      lowerWithoutTimestamp.includes(" says [lower]:") ||
+      lowerWithoutTimestamp.includes(" says [lower]") ||
+      lowerWithoutTimestamp.includes(" [lower]:") ||
+      lowerWithoutTimestamp.startsWith("says [lower]:")
+    ) {
+      const speaker = extractSpeakerName(withoutTimestamp);
+      const charName = getCharacterName();
+      if (charName && matchesCharacterName(speaker, charName)) {
+        return "say";
+      }
+      return "lower";
+    }
+
+    if (
+      lowerWithoutTimestamp.includes(" says [low]:") ||
+      lowerWithoutTimestamp.includes(" says [low]") ||
+      lowerWithoutTimestamp.includes(" [low]:") ||
+      lowerWithoutTimestamp.startsWith("says [low]:") ||
+      lowerWithoutTimestamp.includes(" says quietly:") ||
+      lowerWithoutTimestamp.includes(" murmurs:") ||
+      lowerWithoutTimestamp.includes(" mutters:") ||
+      lowerWithoutTimestamp.startsWith("murmurs:") ||
+      lowerWithoutTimestamp.startsWith("mutters:")
+    ) {
+      const speaker = extractSpeakerName(withoutTimestamp);
+      const charName = getCharacterName();
+      if (charName && matchesCharacterName(speaker, charName)) {
+        return "say";
+      }
+      return "low";
+    }
+
+    if (
+      lowerWithoutTimestamp.startsWith("whispers:") ||
+      lowerText.includes(" whispers:")
+    ) {
+      return "whisper";
+    }
+
+    if (
+      lowerWithoutTimestamp.startsWith("shouts:") ||
+      lowerWithoutTimestamp.startsWith("yells:") ||
+      lowerWithoutTimestamp.startsWith("screams:") ||
+      lowerText.includes(" shouts:") ||
+      lowerText.includes(" yells:") ||
+      lowerText.includes(" screams:")
+    ) {
+      return "shout";
+    }
+
+    if (
+      lowerWithoutTimestamp.startsWith("says:") ||
+      lowerText.includes(" says:")
+    ) {
+      return "say";
+    }
+
     if (
       lowerText.includes("rolls") ||
       lowerText.includes("dice") ||
@@ -4468,59 +4527,6 @@
       lowerText.includes("invalid command")
     ) {
       return "error";
-    }
-
-    if (
-      lowerWithoutTimestamp.includes(" says [lower]:") ||
-      lowerWithoutTimestamp.includes(" says [lower]") ||
-      lowerWithoutTimestamp.includes(" [lower]:") ||
-      lowerWithoutTimestamp.startsWith("says [lower]:")
-    ) {
-      const speaker = extractSpeakerName(withoutTimestamp);
-      const charName = getCharacterName();
-      if (charName && matchesCharacterName(speaker, charName)) {
-        return "say";
-      }
-      return "lower";
-    }
-
-    if (
-      lowerWithoutTimestamp.includes(" says [low]:") ||
-      lowerWithoutTimestamp.includes(" says [low]") ||
-      lowerWithoutTimestamp.includes(" [low]:") ||
-      lowerWithoutTimestamp.startsWith("says [low]:") ||
-      lowerWithoutTimestamp.includes(" says quietly:") ||
-      lowerWithoutTimestamp.includes(" murmurs:") ||
-      lowerWithoutTimestamp.includes(" mutters:") ||
-      lowerWithoutTimestamp.startsWith("murmurs:") ||
-      lowerWithoutTimestamp.startsWith("mutters:")
-    ) {
-      const speaker = extractSpeakerName(withoutTimestamp);
-      const charName = getCharacterName();
-      if (charName && matchesCharacterName(speaker, charName)) {
-        return "say";
-      }
-      return "low";
-    }
-
-    if (
-      lowerText.includes(" whispers:")
-    ) {
-      return "whisper";
-    }
-
-    if (
-      lowerText.includes(" shouts:") ||
-      lowerText.includes(" yells:") ||
-      lowerText.includes(" screams:")
-    ) {
-      return "shout";
-    }
-
-    if (
-      lowerText.includes(" says:")
-    ) {
-      return "say";
     }
 
     return "default";
