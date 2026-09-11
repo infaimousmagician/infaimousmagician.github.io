@@ -2132,6 +2132,43 @@
           </div>
         </div>
 
+        <!-- Section: Background Music Player -->
+        <div class="settings-section">
+          <div class="settings-section-title">
+            <span>🎵</span>
+            <span>Background Music Player</span>
+          </div>
+          <div class="settings-field-group">
+            <label for="customMusicUrlInput" class="settings-label">
+              <span>YouTube Song Link:</span>
+              <span id="customMusicUrlStatus" class="settings-status-badge"></span>
+            </label>
+            <div style="display: flex; gap: 8px; align-items: center;">
+              <input
+                type="url"
+                id="customMusicUrlInput"
+                class="modal-input"
+                placeholder="https://www.youtube.com/watch?v=EgBQ67xhusU"
+                spellcheck="false"
+                autocomplete="off"
+                style="font-family: inherit; font-size: 13px; flex: 1;"
+              />
+              <button
+                type="button"
+                id="resetMusicToDefaultBtn"
+                class="btn btn-neutral btn-sm"
+                title="Reset to default song (Matty Boy - I'm Known For That)"
+                style="white-space: nowrap; padding: 6px 10px;"
+              >
+                Default
+              </button>
+            </div>
+            <div class="settings-help-text">
+              Paste any YouTube song or video link (e.g., <code>https://www.youtube.com/watch?v=...</code> or <code>https://youtu.be/...</code>). The 🎵 button in the header will play this track on repeat. This setting is saved permanently and is preserved even when resetting other configurations.
+            </div>
+          </div>
+        </div>
+
         <!-- Section: Reset & Defaults -->
         <div class="settings-danger-section">
           <div class="settings-danger-title">
@@ -2221,6 +2258,9 @@
   const closeSettingsModalFooterBtn = document.getElementById("closeSettingsModalFooterBtn");
   const characterNameInput = document.getElementById("characterNameInput");
   const characterNameStatus = document.getElementById("characterNameStatus");
+  const customMusicUrlInput = document.getElementById("customMusicUrlInput");
+  const customMusicUrlStatus = document.getElementById("customMusicUrlStatus");
+  const resetMusicToDefaultBtn = document.getElementById("resetMusicToDefaultBtn");
   const toastContainer = document.getElementById("toastContainer");
 
   const layersPane = document.getElementById("layersPane");
@@ -2512,6 +2552,9 @@
     if (!settingsModal) return;
     if (characterNameInput) {
       characterNameInput.value = characterName || "";
+    }
+    if (typeof syncMusicSettingsUI === "function") {
+      syncMusicSettingsUI();
     }
     settingsModal.style.display = "flex";
   }
@@ -6934,9 +6977,36 @@
   }
 
   // ==========================================
-  // YouTube Music Player Integration ("Matty Boy - I'm Known For That" - Loop)
+  // YouTube Music Player Integration & Custom Track Settings
   // ==========================================
-  const YT_MUSIC_VIDEO_ID = "EgBQ67xhusU";
+  const DEFAULT_MUSIC_URL = "https://www.youtube.com/watch?v=EgBQ67xhusU";
+  const DEFAULT_MUSIC_VIDEO_ID = "EgBQ67xhusU";
+  const MUSIC_STORAGE_KEY = "gtarp_chatlog_custom_music_url";
+
+  function extractYouTubeVideoId(urlOrId) {
+    if (!urlOrId || typeof urlOrId !== "string") return null;
+    const trimmed = urlOrId.trim();
+    if (/^[a-zA-Z0-9_-]{11}$/.test(trimmed)) {
+      return trimmed;
+    }
+    const youtuBe = trimmed.match(/youtu\.be\/([a-zA-Z0-9_-]{11})/);
+    if (youtuBe) return youtuBe[1];
+
+    const ytStandard = trimmed.match(/(?:youtube(?:-nocookie)?\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|e(?:mbed)?|shorts)\/|\S*?[?&]v=))([a-zA-Z0-9_-]{11})/);
+    if (ytStandard) return ytStandard[1];
+
+    return null;
+  }
+
+  let currentMusicUrl = (() => {
+    try {
+      const saved = localStorage.getItem(MUSIC_STORAGE_KEY);
+      if (saved && saved.trim()) return saved.trim();
+    } catch (e) {}
+    return DEFAULT_MUSIC_URL;
+  })();
+
+  let currentMusicVideoId = extractYouTubeVideoId(currentMusicUrl) || DEFAULT_MUSIC_VIDEO_ID;
   let ytMusicPlayer = null;
   let ytMusicReady = false;
   let ytMusicPendingPlay = false;
@@ -6946,10 +7016,127 @@
   function setMusicPlayingUI(isPlaying) {
     if (musicPlayButton) {
       musicPlayButton.classList.toggle("is-playing", isPlaying);
+      const isDefault = (currentMusicVideoId === DEFAULT_MUSIC_VIDEO_ID);
       musicPlayButton.title = isPlaying
-        ? "Pause 'Matty Boy - I'm Known For That' (Looping)"
-        : "Play 'Matty Boy - I'm Known For That' (🎵)";
+        ? (isDefault ? "Pause 'Matty Boy - I'm Known For That' (Looping)" : "Pause custom YouTube music (Looping)")
+        : (isDefault ? "Play 'Matty Boy - I'm Known For That' (Looping)" : "Play custom YouTube music (Looping)");
     }
+  }
+
+  function syncMusicSettingsUI() {
+    if (!customMusicUrlInput) return;
+    try {
+      const saved = localStorage.getItem(MUSIC_STORAGE_KEY);
+      const isCustom = Boolean(saved && saved.trim());
+      customMusicUrlInput.value = isCustom ? saved.trim() : DEFAULT_MUSIC_URL;
+      if (customMusicUrlStatus) {
+        if (!isCustom || currentMusicVideoId === DEFAULT_MUSIC_VIDEO_ID) {
+          customMusicUrlStatus.textContent = "Default Track";
+          customMusicUrlStatus.style.color = "#888888";
+        } else {
+          customMusicUrlStatus.textContent = "Custom Track";
+          customMusicUrlStatus.style.color = "#00d984";
+        }
+      }
+    } catch (e) {
+      customMusicUrlInput.value = DEFAULT_MUSIC_URL;
+    }
+  }
+
+  function updateCustomMusicTrack(newUrl, isResetToDefault = false) {
+    const trimmed = (newUrl || "").trim();
+    if (isResetToDefault || !trimmed) {
+      currentMusicUrl = DEFAULT_MUSIC_URL;
+      currentMusicVideoId = DEFAULT_MUSIC_VIDEO_ID;
+      try {
+        localStorage.removeItem(MUSIC_STORAGE_KEY);
+      } catch (e) {}
+      if (customMusicUrlInput) customMusicUrlInput.value = DEFAULT_MUSIC_URL;
+      if (customMusicUrlStatus) {
+        customMusicUrlStatus.textContent = "Default Track";
+        customMusicUrlStatus.style.color = "#888888";
+      }
+    } else {
+      const parsedId = extractYouTubeVideoId(trimmed);
+      if (!parsedId) {
+        if (customMusicUrlStatus) {
+          customMusicUrlStatus.textContent = "Invalid YouTube Link";
+          customMusicUrlStatus.style.color = "#ff6b6b";
+        }
+        return false;
+      }
+      currentMusicUrl = trimmed;
+      currentMusicVideoId = parsedId;
+      try {
+        localStorage.setItem(MUSIC_STORAGE_KEY, trimmed);
+      } catch (e) {}
+      if (customMusicUrlStatus) {
+        customMusicUrlStatus.textContent = (parsedId === DEFAULT_MUSIC_VIDEO_ID) ? "Default Track" : "Saved ✓";
+        customMusicUrlStatus.style.color = "#00d984";
+      }
+    }
+
+    // Switch video on running YouTube player
+    if (ytMusicPlayer && ytMusicReady) {
+      try {
+        const state = ytMusicPlayer.getPlayerState();
+        if (state === 1) { // If playing, load and play the new track immediately
+          ytMusicPlayer.loadVideoById({
+            videoId: currentMusicVideoId
+          });
+          setMusicPlayingUI(true);
+        } else { // If paused, cue it up
+          ytMusicPlayer.cueVideoById({
+            videoId: currentMusicVideoId
+          });
+          setMusicPlayingUI(false);
+        }
+      } catch (err) {
+        console.warn("Could not cue/load video:", err);
+      }
+    }
+
+    setMusicPlayingUI(false);
+    return true;
+  }
+
+  // Bind settings modal music controls
+  let musicInputTimer = null;
+  if (customMusicUrlInput) {
+    customMusicUrlInput.addEventListener("input", () => {
+      if (musicInputTimer) clearTimeout(musicInputTimer);
+      const val = customMusicUrlInput.value.trim();
+      if (!val) {
+        updateCustomMusicTrack("", true);
+        return;
+      }
+      musicInputTimer = setTimeout(() => {
+        const ok = updateCustomMusicTrack(val, false);
+        if (ok) {
+          showToast("success", "Music Saved", "Custom YouTube music loaded and will loop!");
+        }
+      }, 450);
+    });
+
+    customMusicUrlInput.addEventListener("change", () => {
+      if (musicInputTimer) clearTimeout(musicInputTimer);
+      const val = customMusicUrlInput.value.trim();
+      if (!val) {
+        updateCustomMusicTrack("", true);
+      } else {
+        const ok = updateCustomMusicTrack(val, false);
+        if (ok) {
+          showToast("success", "Music Saved", "Custom YouTube music loaded and will loop!");
+        }
+      }
+    });
+  }
+
+  if (resetMusicToDefaultBtn) {
+    resetMusicToDefaultBtn.addEventListener("click", () => {
+      updateCustomMusicTrack(DEFAULT_MUSIC_URL, true);
+      showToast("info", "Music Restored", "Restored default song: Matty Boy - I'm Known For That");
+    });
   }
 
   window.onYouTubeIframeAPIReady = function() {
@@ -6957,7 +7144,7 @@
       ytMusicPlayer = new YT.Player("ytMusicPlayer", {
         height: "180",
         width: "320",
-        videoId: YT_MUSIC_VIDEO_ID,
+        videoId: currentMusicVideoId,
         playerVars: {
           autoplay: 0,
           controls: 0,
@@ -6966,7 +7153,7 @@
           rel: 0,
           playsinline: 1,
           loop: 1,
-          playlist: YT_MUSIC_VIDEO_ID
+          playlist: currentMusicVideoId
         },
         events: {
           onReady: function() {
@@ -7004,7 +7191,7 @@
             showToast("error", "Audio Notice", "Unable to stream song directly. Click to listen on YouTube.");
             if (musicPlayButton) {
               musicPlayButton.onclick = () => {
-                window.open("https://www.youtube.com/watch?v=" + YT_MUSIC_VIDEO_ID, "_blank");
+                window.open("https://www.youtube.com/watch?v=" + currentMusicVideoId, "_blank");
               };
             }
           }
