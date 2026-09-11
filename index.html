@@ -3054,7 +3054,13 @@
         fontSize.value = Math.max(8, Math.min(s.fontSize, 72));
       }
       if (textPanelWidthInput && typeof s.textPanelWidth === "number" && !isNaN(s.textPanelWidth)) {
-        textPanelWidthInput.value = Math.max(50, Math.min(s.textPanelWidth, 4000));
+        const val = Math.max(50, Math.min(s.textPanelWidth, 4000));
+        textPanelWidthInput.value = val;
+        layers.forEach(l => {
+          if (l.type === "text") {
+            l.textPanelWidth = val;
+          }
+        });
       }
       if (outlineStyleSelect && typeof s.outlineStyle === "string") {
         outlineStyleSelect.value = s.outlineStyle;
@@ -3153,6 +3159,11 @@
     if (fontFamilySelect) fontFamilySelect.value = DEFAULT_SETTINGS.fontFamily;
     if (fontSize) fontSize.value = DEFAULT_SETTINGS.fontSize;
     if (textPanelWidthInput) textPanelWidthInput.value = DEFAULT_SETTINGS.textPanelWidth;
+    layers.forEach(l => {
+      if (l.type === "text") {
+        l.textPanelWidth = DEFAULT_SETTINGS.textPanelWidth;
+      }
+    });
     if (outlineStyleSelect) outlineStyleSelect.value = DEFAULT_SETTINGS.outlineStyle;
     if (strokeWidthInput) strokeWidthInput.value = DEFAULT_SETTINGS.strokeWidth;
     if (backgroundToggle) backgroundToggle.checked = DEFAULT_SETTINGS.backgroundToggle;
@@ -3473,9 +3484,17 @@
   }
 
   function getTextPanelWidth() {
-    const value = Number(textPanelWidthInput.value);
-    if (Number.isNaN(value) || value < 50) return 500;
-    return Math.min(value, 4000);
+    if (!textPanelWidthInput) return 500;
+    const raw = textPanelWidthInput.value.trim();
+    if (!raw) {
+      const active = getActiveTextLayer();
+      return (active && typeof active.textPanelWidth === "number") ? active.textPanelWidth : 500;
+    }
+    const value = parseFloat(raw);
+    if (Number.isNaN(value) || value <= 0) {
+      return 500;
+    }
+    return Math.max(20, Math.min(value, 4000));
   }
 
   function getFontFamily() {
@@ -3951,9 +3970,19 @@
   }
 
   function updateTextPanelWidth() {
+    if (!textPanelWidthInput) return;
+    const raw = textPanelWidthInput.value.trim();
+    if (raw === "") {
+      return;
+    }
     const width = getTextPanelWidth();
+    const active = getActiveTextLayer();
+    if (active) {
+      active.textPanelWidth = width;
+    }
     document.documentElement.style.setProperty("--text-panel-width", width + "px");
     render();
+    updateSelectionBox();
   }
 
   function updateBackgroundTransform() {
@@ -4707,7 +4736,7 @@
 
     let value = Number(rawValue);
 
-    if (Number.isNaN(value) || value < 50) {
+    if (Number.isNaN(value)) {
       value = 500;
     }
 
@@ -6156,12 +6185,13 @@
           const imgPreset = layer.filter || "none";
           const imgIntensity = typeof layer.filterIntensity === "number" ? layer.filterIntensity : 1;
           const imgFilterStr = getCanvasFilterForPreset(imgPreset, imgIntensity);
-          if (imgFilterStr && imgFilterStr !== "none") {
-            ctx.filter = imgFilterStr;
-          }
 
           const imgW = layer.img.naturalWidth * (layer.scale || 1);
           const imgH = layer.img.naturalHeight * (layer.scale || 1);
+
+          if (imgFilterStr && imgFilterStr !== "none") {
+            ctx.filter = imgFilterStr;
+          }
 
           ctx.drawImage(
             layer.img,
@@ -6481,6 +6511,11 @@
   });
 
   textPanelWidthInput.addEventListener("input", () => {
+    updateTextPanelWidth();
+    saveCurrentSettingsDebounced();
+  });
+
+  textPanelWidthInput.addEventListener("keyup", () => {
     updateTextPanelWidth();
     saveCurrentSettingsDebounced();
   });
