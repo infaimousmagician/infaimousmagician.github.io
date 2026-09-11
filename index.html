@@ -526,6 +526,11 @@
     color: #ffb5b5;
   }
 
+  .btn-sm {
+    padding: 5px 10px;
+    font-size: 12px;
+  }
+
   .btn-xs {
     padding: 3px 8px;
     font-size: 11px;
@@ -830,6 +835,101 @@
     background: #2a2a2a;
     border-color: #555555;
     color: #ffffff;
+  }
+
+  .btn-imgbb-history {
+    background: #102920;
+    border: 1px solid #1c5e47;
+    color: #9fe7cf;
+    font-weight: 600;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.15s ease;
+  }
+
+  .btn-imgbb-history:hover {
+    background: #173d30;
+    border-color: #2ea37e;
+    color: #ffffff;
+    box-shadow: 0 0 10px rgba(0, 223, 130, 0.2);
+  }
+
+  .imgbb-history-item {
+    background: #141414;
+    border: 1px solid #272727;
+    border-radius: 8px;
+    padding: 10px 12px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    transition: border-color 0.15s ease, background 0.15s ease;
+  }
+
+  .imgbb-history-item:hover {
+    border-color: #383838;
+    background: #181818;
+  }
+
+  .imgbb-history-thumb {
+    width: 48px;
+    height: 48px;
+    border-radius: 6px;
+    object-fit: cover;
+    background: #0a0a0a;
+    border: 1px solid #2d2d2d;
+    flex-shrink: 0;
+    cursor: pointer;
+    transition: transform 0.15s ease, border-color 0.15s ease;
+  }
+
+  .imgbb-history-thumb:hover {
+    transform: scale(1.05);
+    border-color: var(--accent);
+  }
+
+  .imgbb-history-details {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .imgbb-history-url-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .imgbb-history-url {
+    font-family: monospace;
+    font-size: 12px;
+    color: #e0e0e0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    text-decoration: none;
+    max-width: 320px;
+  }
+
+  .imgbb-history-url:hover {
+    color: #00df82;
+    text-decoration: underline;
+  }
+
+  .imgbb-history-meta {
+    font-size: 11px;
+    color: #888888;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .imgbb-history-actions {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
   }
 
   /* Settings Modal Components */
@@ -2029,6 +2129,10 @@
     </div>
 
     <div class="toolbar-group">
+      <button id="imgbbHistoryButton" class="btn btn-imgbb-history btn-sm" style="display: none;" title="View all uploaded ImgBB links (history)">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>
+        <span id="imgbbHistoryButtonLabel">Uploaded Links (0)</span>
+      </button>
       <button id="openSettingsModalButton" type="button" class="btn btn-neutral btn-sm" title="Open Settings (Character Name, defaults, preferences)">
         ⚙ Settings
       </button>
@@ -2258,6 +2362,49 @@
       <div class="modal-footer">
         <button type="button" id="clearImgbbKeyBtn" class="btn btn-neutral" style="font-size: 12px;">Clear Stored Key</button>
         <button type="button" id="doneImgbbModalBtn" class="btn btn-imgbb">Done</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ImgBB Uploaded Links History Modal -->
+  <div id="imgbbHistoryModal" class="modal-backdrop" style="display: none;" role="dialog" aria-label="Uploaded ImgBB Links">
+    <div class="modal-dialog" style="width: 580px;">
+      <div class="modal-header">
+        <div class="modal-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--accent);"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>
+          <span>Uploaded ImgBB Links</span>
+          <span id="imgbbHistoryCountBadge" class="badge" style="background: rgba(0, 223, 130, 0.15); color: #00df82; border: 1px solid rgba(0, 223, 130, 0.4); font-size: 11px; padding: 1px 7px; border-radius: 999px; font-weight: 700;">0</span>
+        </div>
+        <button type="button" id="closeImgbbHistoryModalBtn" class="toast-close" title="Close modal (Esc)">&times;</button>
+      </div>
+      <div class="modal-body" style="gap: 12px; max-height: 72vh;">
+        <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center; justify-content: space-between; border-bottom: 1px solid #282828; padding-bottom: 10px;">
+          <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+            <button type="button" id="copyAllImgbbLinksBtn" class="btn btn-neutral btn-xs" title="Copy all URLs separated by newlines">
+              📋 Copy All Links
+            </button>
+            <button type="button" id="copyAllImgbbBbcodeBtn" class="btn btn-neutral btn-xs" title="Copy all URLs formatted as [IMG]url[/IMG] for GTA forums">
+              🖼️ Copy as [IMG] BBCode
+            </button>
+          </div>
+          <button type="button" id="clearImgbbHistoryBtn" class="btn btn-danger btn-xs" title="Clear upload history">
+            Clear History
+          </button>
+        </div>
+
+        <div id="imgbbHistoryList" class="imgbb-history-list" style="display: flex; flex-direction: column; gap: 8px; overflow-y: auto; max-height: 52vh; padding-right: 2px;">
+          <!-- Populated dynamically via JS -->
+        </div>
+
+        <div id="imgbbHistoryEmpty" style="display: none; text-align: center; padding: 32px 16px; color: #888888;">
+          <div style="font-size: 28px; margin-bottom: 8px;">📤</div>
+          <div style="font-weight: 600; color: #cccccc; margin-bottom: 4px;">No uploaded links yet</div>
+          <div style="font-size: 12px;">Click "Upload to ImgBB" on any chatlog and your links will appear here.</div>
+        </div>
+      </div>
+      <div class="modal-footer" style="display: flex; justify-content: space-between; align-items: center;">
+        <span style="font-size: 11px; color: #777777;">Saved in local browser storage</span>
+        <button type="button" id="doneImgbbHistoryModalBtn" class="btn btn-neutral btn-sm">Done</button>
       </div>
     </div>
   </div>
@@ -6982,6 +7129,220 @@
     });
   }
 
+  // ImgBB Uploaded Links History Manager
+  const IMGBB_HISTORY_STORAGE_KEY = "imgbb_upload_history";
+  const imgbbHistoryButton = document.getElementById("imgbbHistoryButton");
+  const imgbbHistoryButtonLabel = document.getElementById("imgbbHistoryButtonLabel");
+  const imgbbHistoryModal = document.getElementById("imgbbHistoryModal");
+  const imgbbHistoryCountBadge = document.getElementById("imgbbHistoryCountBadge");
+  const closeImgbbHistoryModalBtn = document.getElementById("closeImgbbHistoryModalBtn");
+  const doneImgbbHistoryModalBtn = document.getElementById("doneImgbbHistoryModalBtn");
+  const imgbbHistoryList = document.getElementById("imgbbHistoryList");
+  const imgbbHistoryEmpty = document.getElementById("imgbbHistoryEmpty");
+  const copyAllImgbbLinksBtn = document.getElementById("copyAllImgbbLinksBtn");
+  const copyAllImgbbBbcodeBtn = document.getElementById("copyAllImgbbBbcodeBtn");
+  const clearImgbbHistoryBtn = document.getElementById("clearImgbbHistoryBtn");
+
+  function getImgbbUploadHistory() {
+    try {
+      const data = localStorage.getItem(IMGBB_HISTORY_STORAGE_KEY);
+      if (!data) return [];
+      const parsed = JSON.parse(data);
+      return Array.isArray(parsed) ? parsed : [];
+    } catch {
+      return [];
+    }
+  }
+
+  function saveImgbbUploadHistory(history) {
+    try {
+      localStorage.setItem(IMGBB_HISTORY_STORAGE_KEY, JSON.stringify(history));
+    } catch (e) {
+      console.warn("Could not save ImgBB upload history:", e);
+    }
+    updateImgbbHistoryButton();
+  }
+
+  function addImgbbUploadToHistory(record) {
+    const history = getImgbbUploadHistory();
+    history.unshift(record);
+    saveImgbbUploadHistory(history);
+  }
+
+  function removeImgbbUploadFromHistory(id) {
+    let history = getImgbbUploadHistory();
+    history = history.filter(item => item.id !== id);
+    saveImgbbUploadHistory(history);
+    renderImgbbHistoryList();
+  }
+
+  function clearImgbbUploadHistory() {
+    saveImgbbUploadHistory([]);
+    renderImgbbHistoryList();
+    showToast("info", "Upload History Cleared", "All uploaded link records have been cleared from this browser.");
+  }
+
+  function updateImgbbHistoryButton() {
+    if (!imgbbHistoryButton) return;
+    const history = getImgbbUploadHistory();
+    if (history.length > 0) {
+      imgbbHistoryButton.style.display = "inline-flex";
+      if (imgbbHistoryButtonLabel) {
+        imgbbHistoryButtonLabel.textContent = `Uploaded Links (${history.length})`;
+      }
+      if (imgbbHistoryCountBadge) {
+        imgbbHistoryCountBadge.textContent = history.length;
+      }
+    } else {
+      imgbbHistoryButton.style.display = "none";
+      if (imgbbHistoryCountBadge) {
+        imgbbHistoryCountBadge.textContent = "0";
+      }
+    }
+  }
+
+  function openImgbbHistoryModal() {
+    if (!imgbbHistoryModal) return;
+    renderImgbbHistoryList();
+    imgbbHistoryModal.style.display = "flex";
+  }
+
+  function closeImgbbHistoryModal() {
+    if (!imgbbHistoryModal) return;
+    imgbbHistoryModal.style.display = "none";
+  }
+
+  function renderImgbbHistoryList() {
+    if (!imgbbHistoryList) return;
+    const history = getImgbbUploadHistory();
+    if (imgbbHistoryCountBadge) {
+      imgbbHistoryCountBadge.textContent = history.length;
+    }
+
+    if (history.length === 0) {
+      imgbbHistoryList.innerHTML = "";
+      if (imgbbHistoryEmpty) imgbbHistoryEmpty.style.display = "block";
+      if (copyAllImgbbLinksBtn) copyAllImgbbLinksBtn.disabled = true;
+      if (copyAllImgbbBbcodeBtn) copyAllImgbbBbcodeBtn.disabled = true;
+      if (clearImgbbHistoryBtn) clearImgbbHistoryBtn.disabled = true;
+      return;
+    }
+
+    if (imgbbHistoryEmpty) imgbbHistoryEmpty.style.display = "none";
+    if (copyAllImgbbLinksBtn) copyAllImgbbLinksBtn.disabled = false;
+    if (copyAllImgbbBbcodeBtn) copyAllImgbbBbcodeBtn.disabled = false;
+    if (clearImgbbHistoryBtn) clearImgbbHistoryBtn.disabled = false;
+
+    imgbbHistoryList.innerHTML = history.map(item => `
+      <div class="imgbb-history-item" data-id="${item.id}">
+        <a href="${item.url}" target="_blank" rel="noopener noreferrer" title="Click to open image in new tab">
+          <img src="${item.thumbUrl || item.url}" class="imgbb-history-thumb" alt="Upload thumbnail" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\\'http://www.w3.org/2000/svg\\' width=\\'48\\' height=\\'48\\' fill=\\'%23222\\'><rect width=\\'48\\' height=\\'48\\'/><text x=\\'50%\\' y=\\'55%\\' fill=\\'%23666\\' font-size=\\'18\\' text-anchor=\\'middle\\'>🖼</text></svg>'" />
+        </a>
+        <div class="imgbb-history-details">
+          <div class="imgbb-history-url-row">
+            <a href="${item.url}" target="_blank" rel="noopener noreferrer" class="imgbb-history-url" title="${item.url}">${item.url}</a>
+          </div>
+          <div class="imgbb-history-meta">
+            <span>📅 ${item.timeFormatted || 'Recent upload'}</span>
+          </div>
+        </div>
+        <div class="imgbb-history-actions">
+          <button type="button" class="btn btn-neutral btn-xs imgbb-copy-single-btn" data-url="${item.url}" title="Copy direct link to clipboard">
+            Copy
+          </button>
+          <a href="${item.url}" target="_blank" rel="noopener noreferrer" class="btn btn-neutral btn-xs" title="Open image in new tab" style="text-decoration: none; display: inline-flex; align-items: center; justify-content: center; padding: 4px 7px;">
+            ↗
+          </a>
+          <button type="button" class="btn btn-danger btn-xs imgbb-del-single-btn" data-id="${item.id}" title="Remove from upload history">
+            ✕
+          </button>
+        </div>
+      </div>
+    `).join("");
+
+    imgbbHistoryList.querySelectorAll(".imgbb-copy-single-btn").forEach(btn => {
+      btn.addEventListener("click", async (e) => {
+        e.stopPropagation();
+        const url = btn.getAttribute("data-url");
+        if (url) {
+          await copyTextToClipboard(url);
+          const orig = btn.textContent;
+          btn.textContent = "Copied! ✓";
+          btn.style.color = "#00df82";
+          btn.style.borderColor = "#00df82";
+          setTimeout(() => {
+            btn.textContent = orig;
+            btn.style.color = "";
+            btn.style.borderColor = "";
+          }, 1200);
+        }
+      });
+    });
+
+    imgbbHistoryList.querySelectorAll(".imgbb-del-single-btn").forEach(btn => {
+      btn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        const id = btn.getAttribute("data-id");
+        if (id) {
+          removeImgbbUploadFromHistory(id);
+        }
+      });
+    });
+  }
+
+  if (imgbbHistoryButton) {
+    imgbbHistoryButton.addEventListener("click", openImgbbHistoryModal);
+  }
+  if (closeImgbbHistoryModalBtn) {
+    closeImgbbHistoryModalBtn.addEventListener("click", closeImgbbHistoryModal);
+  }
+  if (doneImgbbHistoryModalBtn) {
+    doneImgbbHistoryModalBtn.addEventListener("click", closeImgbbHistoryModal);
+  }
+  if (imgbbHistoryModal) {
+    imgbbHistoryModal.addEventListener("click", (e) => {
+      if (e.target === imgbbHistoryModal) closeImgbbHistoryModal();
+    });
+  }
+
+  if (copyAllImgbbLinksBtn) {
+    copyAllImgbbLinksBtn.addEventListener("click", async () => {
+      const history = getImgbbUploadHistory();
+      if (!history.length) return;
+      const allUrls = history.map(h => h.url).join("\n");
+      await copyTextToClipboard(allUrls);
+      const orig = copyAllImgbbLinksBtn.textContent;
+      copyAllImgbbLinksBtn.textContent = "Copied All Links! ✓";
+      setTimeout(() => {
+        copyAllImgbbLinksBtn.textContent = orig;
+      }, 1500);
+      showToast("success", "Links Copied", `Copied ${history.length} ImgBB link(s) to clipboard.`);
+    });
+  }
+
+  if (copyAllImgbbBbcodeBtn) {
+    copyAllImgbbBbcodeBtn.addEventListener("click", async () => {
+      const history = getImgbbUploadHistory();
+      if (!history.length) return;
+      const bbcode = history.map(h => `[IMG]${h.url}[/IMG]`).join("\n");
+      await copyTextToClipboard(bbcode);
+      const orig = copyAllImgbbBbcodeBtn.textContent;
+      copyAllImgbbBbcodeBtn.textContent = "Copied BBCode! ✓";
+      setTimeout(() => {
+        copyAllImgbbBbcodeBtn.textContent = orig;
+      }, 1500);
+      showToast("success", "BBCode Copied", `Copied ${history.length} image link(s) formatted in [IMG] BBCode.`);
+    });
+  }
+
+  if (clearImgbbHistoryBtn) {
+    clearImgbbHistoryBtn.addEventListener("click", () => {
+      if (confirm("Are you sure you want to clear your uploaded links history?")) {
+        clearImgbbUploadHistory();
+      }
+    });
+  }
+
   function showToast(type, title, messageHtml, linkUrl = null, actionBtn = null) {
     if (!toastContainer) return;
     const toast = document.createElement("div");
@@ -7161,6 +7522,17 @@
         const uploadedUrl = directData.data.url || directData.data.display_url || directData.data.url_viewer;
         await copyTextToClipboard(uploadedUrl);
 
+        // Store upload in local history
+        const uploadRecord = {
+          id: "imgbb_" + Date.now() + "_" + Math.random().toString(36).substring(2, 7),
+          url: uploadedUrl,
+          thumbUrl: directData.data?.thumb?.url || directData.data?.display_url || uploadedUrl,
+          deleteUrl: directData.data?.delete_url || "",
+          timestamp: Date.now(),
+          timeFormatted: new Date().toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }) + " at " + new Date().toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' })
+        };
+        addImgbbUploadToHistory(uploadRecord);
+
         uploadImgbbButton.innerHTML = `
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
           <span>Link Copied! (Ctrl+V)</span>
@@ -7170,7 +7542,8 @@
           "success",
           "Uploaded to ImgBB & Copied!",
           `Image uploaded successfully! Direct link copied to clipboard for Ctrl+V: <a href="${uploadedUrl}" target="_blank" rel="noopener noreferrer" class="toast-link">${uploadedUrl}</a>`,
-          uploadedUrl
+          uploadedUrl,
+          { text: "View Links 🔗", onClick: openImgbbHistoryModal }
         );
 
         setTimeout(() => {
@@ -7266,8 +7639,16 @@
   }
 
   document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape" && settingsModal && settingsModal.style.display !== "none") {
-      closeSettingsModal();
+    if (e.key === "Escape") {
+      if (settingsModal && settingsModal.style.display !== "none") {
+        closeSettingsModal();
+      }
+      if (imgbbHistoryModal && imgbbHistoryModal.style.display !== "none") {
+        closeImgbbHistoryModal();
+      }
+      if (imgbbModal && imgbbModal.style.display !== "none") {
+        closeImgbbModal();
+      }
     }
   });
 
@@ -7278,6 +7659,7 @@
   }
 
   loadAndApplySavedSettings();
+  updateImgbbHistoryButton();
 
   const initialFontSize = Number(fontSize.value) || 14;
   document.documentElement.style.setProperty("--chat-font-size", initialFontSize + "px");
