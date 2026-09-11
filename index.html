@@ -1692,7 +1692,7 @@
   </header>
 
   <div class="toolbar">
-    <div class="toolbar-group">
+    <div class="toolbar-group" id="typographyToolbarGroup">
       <span class="toolbar-group-label">Typography</span>
       <label class="control" title="Font family">
         Font:
@@ -1734,7 +1734,7 @@
       </label>
     </div>
 
-    <div class="toolbar-group">
+    <div class="toolbar-group" id="outlineBgToolbarGroup">
       <span class="toolbar-group-label">Outline & BG</span>
       <label class="control" title="Outline / shadow styling">
         Outline:
@@ -2119,6 +2119,8 @@
   const preview = document.getElementById("preview");
   const previewOuter = document.getElementById("previewOuter");
   const canvasStage = document.getElementById("canvasStage");
+  const typographyToolbarGroup = document.getElementById("typographyToolbarGroup");
+  const outlineBgToolbarGroup = document.getElementById("outlineBgToolbarGroup");
   const fontFamilySelect = document.getElementById("fontFamilySelect");
   const fontSize = document.getElementById("fontSize");
   const outlineStyleSelect = document.getElementById("outlineStyleSelect");
@@ -3080,10 +3082,25 @@
     return false;
   }
 
+  function updateTextToolbarVisibility() {
+    const selected = getSelectedLayer();
+    const isTextSelected = Boolean(selected && selected.type === "text");
+
+    if (typographyToolbarGroup) {
+      typographyToolbarGroup.style.display = isTextSelected ? "flex" : "none";
+    }
+    if (outlineBgToolbarGroup) {
+      outlineBgToolbarGroup.style.display = isTextSelected ? "flex" : "none";
+    }
+    updateCensorshipVisibility();
+  }
+
   function updateCensorshipVisibility() {
     if (!censorshipToolbarGroup) return;
+    const selected = getSelectedLayer();
+    const isTextSelected = Boolean(selected && selected.type === "text");
     const isBlurred = hasAnyBlurredText();
-    censorshipToolbarGroup.style.display = isBlurred ? "flex" : "none";
+    censorshipToolbarGroup.style.display = (isTextSelected && isBlurred) ? "flex" : "none";
   }
 
   function getCensorSettings() {
@@ -3827,6 +3844,7 @@
         layerDeleteBtn.textContent = "Delete";
       }
     }
+    updateTextToolbarVisibility();
   }
 
   function moveLayerUp(layerId) {
@@ -4896,7 +4914,7 @@
     }
     updateTextPosition();
     renderTextLayersDom();
-    updateCensorshipVisibility();
+    updateTextToolbarVisibility();
     scheduleJpegPreview();
   }
 
@@ -5949,6 +5967,15 @@
   }
 
   // Track selection inside textarea
+  input.addEventListener("focus", () => {
+    const selected = getSelectedLayer();
+    if (!selected || selected.type !== "text") {
+      const activeText = getActiveTextLayer();
+      if (activeText) {
+        selectLayer(activeText.id);
+      }
+    }
+  });
   input.addEventListener("select", updateSavedInputSelection);
   input.addEventListener("mouseup", updateSavedInputSelection);
   input.addEventListener("keyup", updateSavedInputSelection);
