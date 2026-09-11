@@ -88,6 +88,7 @@
     border-bottom: 1px solid var(--border);
     background: #121212;
     display: flex;
+    justify-content: center;
     align-items: stretch;
     gap: 10px;
     flex-wrap: wrap;
@@ -1680,6 +1681,55 @@
       justify-content: flex-start;
     }
   }
+
+  /* Header Music Player Button */
+  .header-actions {
+    display: flex;
+    align-items: center;
+  }
+
+  .music-single-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: #143522;
+    border: 1px solid rgba(0, 217, 132, 0.5);
+    color: #ffffff;
+    font-size: 18px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    user-select: none;
+    line-height: 1;
+    padding: 0;
+  }
+
+  .music-single-btn:hover {
+    background: #1c4b31;
+    border-color: #00d984;
+    transform: scale(1.08);
+    box-shadow: 0 0 10px rgba(0, 217, 132, 0.4);
+  }
+
+  .music-single-btn.is-playing {
+    background: #008a50;
+    border-color: #00d984;
+    box-shadow: 0 0 12px rgba(0, 217, 132, 0.8);
+    animation: music-note-pulse 1.8s infinite ease-in-out;
+  }
+
+  @keyframes music-note-pulse {
+    0%, 100% {
+      transform: scale(1);
+      box-shadow: 0 0 10px rgba(0, 217, 132, 0.6);
+    }
+    50% {
+      transform: scale(1.1);
+      box-shadow: 0 0 18px rgba(0, 217, 132, 0.95);
+    }
+  }
 </style>
 </head>
 <body>
@@ -1688,6 +1738,11 @@
     <div>
       <h1><img src="clover.svg" alt="☘" class="header-icon" /> GTA RP Chatlog Magician</h1>
       <span>Paste a GTA-style chatlog and preview it with in-game-like colors.</span>
+    </div>
+    <div class="header-actions">
+      <button id="musicPlayButton" class="music-single-btn" type="button" title="Play 'Matty Boy - I'm Known For That'" aria-label="Play song">
+        🎵
+      </button>
     </div>
   </header>
 
@@ -6877,6 +6932,128 @@
       render();
     });
   }
+
+  // ==========================================
+  // YouTube Music Player Integration ("Matty Boy - I'm Known For That" - Loop)
+  // ==========================================
+  const YT_MUSIC_VIDEO_ID = "EgBQ67xhusU";
+  let ytMusicPlayer = null;
+  let ytMusicReady = false;
+  let ytMusicPendingPlay = false;
+
+  const musicPlayButton = document.getElementById("musicPlayButton");
+
+  function setMusicPlayingUI(isPlaying) {
+    if (musicPlayButton) {
+      musicPlayButton.classList.toggle("is-playing", isPlaying);
+      musicPlayButton.title = isPlaying
+        ? "Pause 'Matty Boy - I'm Known For That' (Looping)"
+        : "Play 'Matty Boy - I'm Known For That' (🎵)";
+    }
+  }
+
+  window.onYouTubeIframeAPIReady = function() {
+    try {
+      ytMusicPlayer = new YT.Player("ytMusicPlayer", {
+        height: "180",
+        width: "320",
+        videoId: YT_MUSIC_VIDEO_ID,
+        playerVars: {
+          autoplay: 0,
+          controls: 0,
+          disablekb: 1,
+          fs: 0,
+          rel: 0,
+          playsinline: 1,
+          loop: 1,
+          playlist: YT_MUSIC_VIDEO_ID
+        },
+        events: {
+          onReady: function() {
+            ytMusicReady = true;
+            try {
+              ytMusicPlayer.setVolume(75);
+            } catch (e) {}
+            if (ytMusicPendingPlay) {
+              ytMusicPendingPlay = false;
+              ytMusicPlayer.playVideo();
+              setMusicPlayingUI(true);
+            }
+          },
+          onStateChange: function(event) {
+            // YT.PlayerState: PLAYING = 1, PAUSED = 2, ENDED = 0, BUFFERING = 3
+            if (event.data === 1) {
+              setMusicPlayingUI(true);
+            } else if (event.data === 2) {
+              setMusicPlayingUI(false);
+            } else if (event.data === 0) {
+              // Loop: Automatically replay song when finished
+              try {
+                ytMusicPlayer.seekTo(0);
+                ytMusicPlayer.playVideo();
+                setMusicPlayingUI(true);
+              } catch (e) {
+                setMusicPlayingUI(false);
+              }
+            }
+          },
+          onError: function(err) {
+            console.warn("YouTube player error:", err);
+            ytMusicPendingPlay = false;
+            setMusicPlayingUI(false);
+            showToast("error", "Audio Notice", "Unable to stream song directly. Click to listen on YouTube.");
+            if (musicPlayButton) {
+              musicPlayButton.onclick = () => {
+                window.open("https://www.youtube.com/watch?v=" + YT_MUSIC_VIDEO_ID, "_blank");
+              };
+            }
+          }
+        }
+      });
+    } catch (e) {
+      console.warn("Error creating YouTube player:", e);
+    }
+  };
+
+  // Inject YouTube iframe API script asynchronously
+  (function initYouTubeMusicApi() {
+    if (!window.YT) {
+      const tag = document.createElement("script");
+      tag.src = "https://www.youtube.com/iframe_api";
+      const firstScript = document.getElementsByTagName("script")[0];
+      if (firstScript && firstScript.parentNode) {
+        firstScript.parentNode.insertBefore(tag, firstScript);
+      } else {
+        document.head.appendChild(tag);
+      }
+    }
+  })();
+
+  if (musicPlayButton) {
+    musicPlayButton.addEventListener("click", () => {
+      if (!ytMusicReady || !ytMusicPlayer) {
+        ytMusicPendingPlay = true;
+        showToast("info", "Loading Music", "Starting playback (looping)...");
+        return;
+      }
+
+      try {
+        const state = ytMusicPlayer.getPlayerState();
+        if (state === 1) { // Currently playing -> pause
+          ytMusicPlayer.pauseVideo();
+          setMusicPlayingUI(false);
+        } else { // Paused or unstarted -> play
+          ytMusicPlayer.playVideo();
+          setMusicPlayingUI(true);
+        }
+      } catch (err) {
+        console.error("Playback error:", err);
+      }
+    });
+  }
 </script>
+<div id="ytMusicContainer" style="position: fixed; right: -9999px; bottom: -9999px; width: 320px; height: 180px; opacity: 0.001; pointer-events: none; z-index: -9999;" aria-hidden="true">
+  <div id="ytMusicPlayer"></div>
+</div>
 </body>
 </html>
