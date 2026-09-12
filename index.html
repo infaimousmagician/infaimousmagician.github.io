@@ -1532,7 +1532,7 @@
   .text-bg {
     display: inline;
     padding: 0 3px;
-    background: rgba(0, 0, 0, 0.84);
+    background: var(--text-bg-color, rgba(0, 0, 0, 1));
     box-decoration-break: clone;
     -webkit-box-decoration-break: clone;
     text-shadow: var(--chat-text-shadow,
@@ -1543,7 +1543,7 @@
   }
 
   .no-text-background .text-bg {
-    background: transparent;
+    background: transparent !important;
     padding-left: 0;
     padding-right: 0;
   }
@@ -2081,6 +2081,13 @@
         <input id="backgroundToggle" type="checkbox" checked />
         Dark text background
       </label>
+
+      <label class="control" id="backgroundOpacityControl" title="Dark text background opacity (0% to 100%)" style="display: inline-flex;">
+        <div class="toolbar-divider"></div>
+        <span>Opacity:</span>
+        <input id="backgroundOpacityInput" type="range" min="0" max="100" step="1" value="100" style="width: 75px;" />
+        <span id="backgroundOpacityValue">100%</span>
+      </label>
     </div>
 
     <div class="toolbar-group" id="censorshipToolbarGroup" style="display: none;">
@@ -2187,6 +2194,11 @@
           <span class="inspector-label">Opacity:</span>
           <input type="range" id="layerOpacityInput" min="0" max="1" step="0.01" value="1" class="inspector-slider" />
           <span id="layerOpacityValue" class="inspector-val">100%</span>
+        </div>
+        <div class="inspector-row" id="layerTextBgRow" style="display: none;">
+          <span class="inspector-label">BG Opacity:</span>
+          <input type="range" id="layerTextBgOpacityInput" min="0" max="100" step="1" value="100" class="inspector-slider" title="Dark text background opacity (0% to 100%)" />
+          <span id="layerTextBgOpacityValue" class="inspector-val">100%</span>
         </div>
         <div class="inspector-row" id="layerScaleRow">
           <span class="inspector-label">Scale:</span>
@@ -2550,6 +2562,9 @@
   const removeColorWrapBtn = document.getElementById("removeColorWrapBtn");
   const textPanelWidthInput = document.getElementById("textPanelWidthInput");
   const backgroundToggle = document.getElementById("backgroundToggle");
+  const backgroundOpacityControl = document.getElementById("backgroundOpacityControl");
+  const backgroundOpacityInput = document.getElementById("backgroundOpacityInput");
+  const backgroundOpacityValue = document.getElementById("backgroundOpacityValue");
   const backgroundImageInput = document.getElementById("backgroundImageInput");
   const backgroundImage = document.getElementById("backgroundImage");
   const canvasWidthInput = document.getElementById("canvasWidthInput");
@@ -2595,6 +2610,9 @@
   const inspectorLayerType = document.getElementById("inspectorLayerType");
   const layerOpacityInput = document.getElementById("layerOpacityInput");
   const layerOpacityValue = document.getElementById("layerOpacityValue");
+  const layerTextBgRow = document.getElementById("layerTextBgRow");
+  const layerTextBgOpacityInput = document.getElementById("layerTextBgOpacityInput");
+  const layerTextBgOpacityValue = document.getElementById("layerTextBgOpacityValue");
   const layerScaleRow = document.getElementById("layerScaleRow");
   const layerScaleInput = document.getElementById("layerScaleInput");
   const layerScaleValue = document.getElementById("layerScaleValue");
@@ -2786,6 +2804,7 @@
     outlineStyle: "stroke",
     strokeWidth: 1.5,
     backgroundToggle: true,
+    backgroundOpacity: 100,
     censorStyle: "blur",
     blurStrength: 3,
     canvasWidth: 600,
@@ -2941,6 +2960,7 @@
         outlineStyle: outlineStyleSelect ? outlineStyleSelect.value : DEFAULT_SETTINGS.outlineStyle,
         strokeWidth: parseFloat(strokeWidthInput ? strokeWidthInput.value : String(DEFAULT_SETTINGS.strokeWidth)) || DEFAULT_SETTINGS.strokeWidth,
         backgroundToggle: backgroundToggle ? backgroundToggle.checked : DEFAULT_SETTINGS.backgroundToggle,
+        backgroundOpacity: backgroundOpacityInput ? (parseInt(backgroundOpacityInput.value, 10) || 100) : DEFAULT_SETTINGS.backgroundOpacity,
         censorStyle: censorStyleSelect ? censorStyleSelect.value : DEFAULT_SETTINGS.censorStyle,
         blurStrength: parseInt(blurStrengthInput ? blurStrengthInput.value : String(DEFAULT_SETTINGS.blurStrength), 10) || DEFAULT_SETTINGS.blurStrength,
         canvasWidth: Number(canvasWidthInput.value) || DEFAULT_SETTINGS.canvasWidth,
@@ -3071,6 +3091,13 @@
       if (backgroundToggle && typeof s.backgroundToggle === "boolean") {
         backgroundToggle.checked = s.backgroundToggle;
       }
+      if (backgroundOpacityInput && typeof s.backgroundOpacity === "number" && !isNaN(s.backgroundOpacity)) {
+        const bgOp = Math.max(0, Math.min(s.backgroundOpacity, 100));
+        backgroundOpacityInput.value = bgOp;
+        if (backgroundOpacityValue) backgroundOpacityValue.textContent = `${bgOp}%`;
+        if (layerTextBgOpacityInput) layerTextBgOpacityInput.value = bgOp;
+        if (layerTextBgOpacityValue) layerTextBgOpacityValue.textContent = `${bgOp}%`;
+      }
       if (censorStyleSelect && typeof s.censorStyle === "string") {
         censorStyleSelect.value = s.censorStyle;
       }
@@ -3167,6 +3194,14 @@
     if (outlineStyleSelect) outlineStyleSelect.value = DEFAULT_SETTINGS.outlineStyle;
     if (strokeWidthInput) strokeWidthInput.value = DEFAULT_SETTINGS.strokeWidth;
     if (backgroundToggle) backgroundToggle.checked = DEFAULT_SETTINGS.backgroundToggle;
+    if (backgroundOpacityInput) {
+      backgroundOpacityInput.value = DEFAULT_SETTINGS.backgroundOpacity;
+      if (backgroundOpacityValue) backgroundOpacityValue.textContent = `${DEFAULT_SETTINGS.backgroundOpacity}%`;
+    }
+    if (layerTextBgOpacityInput) {
+      layerTextBgOpacityInput.value = DEFAULT_SETTINGS.backgroundOpacity;
+      if (layerTextBgOpacityValue) layerTextBgOpacityValue.textContent = `${DEFAULT_SETTINGS.backgroundOpacity}%`;
+    }
     if (censorStyleSelect) censorStyleSelect.value = DEFAULT_SETTINGS.censorStyle;
     if (blurStrengthInput) {
       blurStrengthInput.value = DEFAULT_SETTINGS.blurStrength;
@@ -3222,7 +3257,7 @@
 
     document.documentElement.style.setProperty("--chat-font-size", `${DEFAULT_SETTINGS.fontSize}px`);
     updateTextPanelWidth();
-    preview.classList.toggle("no-text-background", !backgroundToggle.checked);
+    updateTextBackground();
     updateCanvasStageSize();
     updateFontFamily();
     updateOutlineSettings();
@@ -3985,6 +4020,42 @@
     updateSelectionBox();
   }
 
+  function updateTextBackground() {
+    const isChecked = backgroundToggle ? backgroundToggle.checked : true;
+    if (backgroundOpacityControl) {
+      backgroundOpacityControl.style.display = isChecked ? "inline-flex" : "none";
+    }
+    const selected = getSelectedLayer();
+    if (layerTextBgRow) {
+      layerTextBgRow.style.display = (isChecked && selected && selected.type === "text") ? "flex" : "none";
+    }
+
+    const rawOp = backgroundOpacityInput ? parseInt(backgroundOpacityInput.value, 10) : 100;
+    const op = isNaN(rawOp) ? 100 : Math.max(0, Math.min(rawOp, 100));
+    const alpha = isChecked ? op / 100 : 0;
+
+    if (backgroundOpacityValue) backgroundOpacityValue.textContent = `${op}%`;
+    if (layerTextBgOpacityValue) layerTextBgOpacityValue.textContent = `${op}%`;
+    if (layerTextBgOpacityInput && Number(layerTextBgOpacityInput.value) !== op) {
+      layerTextBgOpacityInput.value = op;
+    }
+
+    document.documentElement.style.setProperty("--text-bg-opacity", String(alpha));
+    document.documentElement.style.setProperty("--text-bg-color", `rgba(0, 0, 0, ${alpha})`);
+
+    preview.classList.toggle("no-text-background", !isChecked || alpha === 0);
+
+    const boxes = document.querySelectorAll(".preview-box");
+    boxes.forEach(box => {
+      box.classList.toggle("no-text-background", !isChecked || alpha === 0);
+      box.style.setProperty("--text-bg-opacity", String(alpha));
+      box.style.setProperty("--text-bg-color", `rgba(0, 0, 0, ${alpha})`);
+    });
+
+    render();
+    scheduleJpegPreview();
+  }
+
   function updateBackgroundTransform() {
     backgroundImage.style.transform = `translate(${bgX}px, ${bgY}px) scale(${bgScale})`;
     scheduleJpegPreview();
@@ -4313,6 +4384,18 @@
       layerOpacityValue.textContent = Math.round(layerOpacityInput.value * 100) + "%";
     }
 
+    if (layerTextBgRow) {
+      const isText = layer.type === "text";
+      const isChecked = backgroundToggle ? backgroundToggle.checked : true;
+      layerTextBgRow.style.display = (isText && isChecked) ? "flex" : "none";
+      if (isText && isChecked) {
+        const rawOp = backgroundOpacityInput ? parseInt(backgroundOpacityInput.value, 10) : 100;
+        const op = isNaN(rawOp) ? 100 : Math.max(0, Math.min(rawOp, 100));
+        if (layerTextBgOpacityInput) layerTextBgOpacityInput.value = op;
+        if (layerTextBgOpacityValue) layerTextBgOpacityValue.textContent = `${op}%`;
+      }
+    }
+
     const layerIdx = layers.findIndex(l => l.id === layer.id);
     if (layerMoveUpBtn) layerMoveUpBtn.disabled = layerIdx === layers.length - 1;
     if (layerMoveDownBtn) layerMoveDownBtn.disabled = layerIdx === 0;
@@ -4507,9 +4590,15 @@
       const box = document.createElement("div");
       box.id = `preview-${layer.id}`;
       box.className = `preview-box ${isSelected ? "is-selected-text-layer" : ""}`;
-      if (!backgroundToggle.checked) {
+      const isChecked = backgroundToggle ? backgroundToggle.checked : true;
+      const rawOp = backgroundOpacityInput ? parseInt(backgroundOpacityInput.value, 10) : 100;
+      const op = isNaN(rawOp) ? 100 : Math.max(0, Math.min(rawOp, 100));
+      const alpha = isChecked ? op / 100 : 0;
+      if (!isChecked || alpha === 0) {
         box.classList.add("no-text-background");
       }
+      box.style.setProperty("--text-bg-opacity", String(alpha));
+      box.style.setProperty("--text-bg-color", `rgba(0, 0, 0, ${alpha})`);
       const { mode, blurStrength } = getCensorSettings();
       if (mode === "redact") {
         box.classList.add("censor-redact");
@@ -6031,16 +6120,21 @@
       }
 
       if (backgroundToggle.checked) {
-        ctx.fillStyle = "rgba(0,0,0,0.84)";
-        roundedRect(
-          ctx,
-          lX,
-          y - 1,
-          textWidth + xPadding * 2,
-          lineHeight,
-          0
-        );
-        ctx.fill();
+        const rawOp = backgroundOpacityInput ? parseInt(backgroundOpacityInput.value, 10) : 100;
+        const op = isNaN(rawOp) ? 100 : Math.max(0, Math.min(rawOp, 100));
+        const bgAlpha = op / 100;
+        if (bgAlpha > 0) {
+          ctx.fillStyle = `rgba(0, 0, 0, ${bgAlpha})`;
+          roundedRect(
+            ctx,
+            lX,
+            y - 1,
+            textWidth + xPadding * 2,
+            lineHeight,
+            0
+          );
+          ctx.fill();
+        }
       }
 
       if (row.segments && row.segments.length > 0) {
@@ -6545,10 +6639,35 @@
   });
 
   backgroundToggle.addEventListener("change", () => {
-    preview.classList.toggle("no-text-background", !backgroundToggle.checked);
-    scheduleJpegPreview();
+    updateTextBackground();
     saveCurrentSettings();
   });
+
+  if (backgroundOpacityInput) {
+    const handleBgOpacityInput = () => {
+      if (layerTextBgOpacityInput) layerTextBgOpacityInput.value = backgroundOpacityInput.value;
+      updateTextBackground();
+      saveCurrentSettingsDebounced();
+    };
+    backgroundOpacityInput.addEventListener("input", handleBgOpacityInput);
+    backgroundOpacityInput.addEventListener("change", () => {
+      handleBgOpacityInput();
+      saveCurrentSettings();
+    });
+  }
+
+  if (layerTextBgOpacityInput) {
+    const handleLayerBgOpacityInput = () => {
+      if (backgroundOpacityInput) backgroundOpacityInput.value = layerTextBgOpacityInput.value;
+      updateTextBackground();
+      saveCurrentSettingsDebounced();
+    };
+    layerTextBgOpacityInput.addEventListener("input", handleLayerBgOpacityInput);
+    layerTextBgOpacityInput.addEventListener("change", () => {
+      handleLayerBgOpacityInput();
+      saveCurrentSettings();
+    });
+  }
 
   fontFamilySelect.addEventListener("change", () => {
     updateFontFamily();
@@ -7699,7 +7818,7 @@
   const initialFontSize = Number(fontSize.value) || 14;
   document.documentElement.style.setProperty("--chat-font-size", initialFontSize + "px");
   updateTextPanelWidth();
-  preview.classList.toggle("no-text-background", !backgroundToggle.checked);
+  updateTextBackground();
   updateCanvasStageSize();
   updateBackgroundTransform();
   updateTextPosition();
