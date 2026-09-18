@@ -1586,6 +1586,11 @@
     font-weight: 700;
   }
 
+  .say-other {
+    color: var(--say-other-color, #c8c8c8);
+    font-weight: 700;
+  }
+
   .low {
     color: #d9d4d5;
     font-weight: 700;
@@ -2153,12 +2158,24 @@
           <span>Input</span>
           <span id="activeTextLayerBadge" class="active-text-layer-badge" title="Active Chatlog Layer">Chatlog Text 1</span>
         </div>
+        <div class="quick-char-wrapper" style="display: flex; align-items: center; gap: 6px;" title="Set your character's name to automatically differentiate say dialogue (yours in white, others slightly darker)">
+          <span style="font-size: 11px; color: #8c8c8c; font-weight: normal;">Character:</span>
+          <input
+            id="quickCharacterNameInput"
+            type="text"
+            placeholder="e.g. Carl Johnson"
+            spellcheck="false"
+            autocomplete="off"
+            style="background: #191919; border: 1px solid #3a3a3a; color: #f1f1f1; font-size: 11px; padding: 2px 7px; border-radius: 4px; width: 140px; outline: none;"
+          />
+        </div>
       </div>
       <textarea id="input" spellcheck="false" placeholder="[00:00:00] Carl Johnson says: I love money *rubs his money* I love money.
-[00:00:02] Carl Johnson says: Did you talk to /Tenpenny/ or ☘John☘?
-[00:00:04] * Carl Johnson does an /urgent/ example action.
+[00:00:02] Frank Tenpenny says: Keep moving, Carl.
+[00:00:04] Carl Johnson says: Did you talk to /Tenpenny/ or ☘John☘?
+[00:00:06] * Carl Johnson does an /urgent/ example action.
 [00:00:08] Carl Johnson says [low]: This is a /low whisper/.
-[00:00:10] Carl Johnson says [lower]: This is a lower line.
+[00:00:10] Frank Tenpenny says [low]: Don't try anything funny.
 [00:00:12] Carl Johnson whispers: Secret plan with ☘Officer Tenpenny☘.
 [00:00:16] Someone paid you $46,800.
 [00:00:20] [Character kill] Carl Johnson has been killed.
@@ -2452,8 +2469,20 @@
               autocomplete="off"
               style="font-family: inherit; font-size: 14px;"
             />
+            <div style="margin-top: 10px; display: flex; flex-direction: column; gap: 8px;">
+              <label class="control" style="display: inline-flex; align-items: center; gap: 8px; cursor: pointer; color: #ddd; font-size: 13px;">
+                <input id="differentiateSayToggle" type="checkbox" checked />
+                <span>Slightly darken other characters' say dialogue</span>
+              </label>
+              <div id="otherSayColorRow" style="display: flex; align-items: center; gap: 8px; padding-left: 24px;">
+                <span style="font-size: 12px; color: #888;">Other character say color:</span>
+                <input id="otherSayColorInput" type="color" value="#c8c8c8" style="width: 28px; height: 24px; border: 1px solid #444; border-radius: 4px; background: none; cursor: pointer; padding: 0;" title="Select color for other characters' speech" />
+                <input id="otherSayColorTextInput" type="text" value="#c8c8c8" maxlength="7" spellcheck="false" style="width: 75px; font-size: 12px; font-family: monospace; background: #1c1c1c; border: 1px solid #3e3e3e; color: #fff; padding: 3px 6px; border-radius: 4px;" title="Hex color code" />
+                <button type="button" id="resetOtherSayColorBtn" class="btn btn-neutral btn-xs" title="Reset to standard slightly darker say (#c8c8c8)" style="padding: 3px 8px; font-size: 11px;">Default (#c8c8c8)</button>
+              </div>
+            </div>
             <div class="settings-help-text">
-              Store your character's in-game name. When your character is speaking, all lows and lowers appear white (matching your in-game perspective), while speech from other characters appears in muted tones. In phone conversations, your character speaks in natural tones while the other caller appears in phone yellow.
+              Store your character's in-game name. When your character speaks, their speech appears in standard bright white (<code style="color: #f1f1f1;">#f1f1f1</code>), while say dialogue from other characters is slightly darker (<code id="helpOtherSayColorCode" style="color: #c8c8c8;">#c8c8c8</code>) so you can effortlessly differentiate who is speaking in screenshots. In phone conversations, your character speaks in natural vocal tones while the caller appears in phone yellow.
             </div>
           </div>
         </div>
@@ -2588,6 +2617,12 @@
   const closeSettingsModalFooterBtn = document.getElementById("closeSettingsModalFooterBtn");
   const characterNameInput = document.getElementById("characterNameInput");
   const characterNameStatus = document.getElementById("characterNameStatus");
+  const quickCharacterNameInput = document.getElementById("quickCharacterNameInput");
+  const differentiateSayToggle = document.getElementById("differentiateSayToggle");
+  const otherSayColorInput = document.getElementById("otherSayColorInput");
+  const otherSayColorTextInput = document.getElementById("otherSayColorTextInput");
+  const resetOtherSayColorBtn = document.getElementById("resetOtherSayColorBtn");
+  const helpOtherSayColorCode = document.getElementById("helpOtherSayColorCode");
   const customMusicUrlInput = document.getElementById("customMusicUrlInput");
   const customMusicUrlStatus = document.getElementById("customMusicUrlStatus");
   const resetMusicToDefaultBtn = document.getElementById("resetMusicToDefaultBtn");
@@ -2684,6 +2719,8 @@
   const CHAT_COLORS = {
     timestamp: "#d8d8d8",
     say: "#f1f1f1",
+    "say-other": "#c8c8c8",
+    sayother: "#c8c8c8",
     talking: "#f1f1f1",
     low: "#d9d4d5",
     lower: "#b8b4b5",
@@ -2715,6 +2752,7 @@
   const PRESET_COLOR_CHIPS = [
     { name: "Me / Action", color: "#c2a3da", role: "Purple" },
     { name: "Say / Speech", color: "#f1f1f1", role: "White" },
+    { name: "Other Character Say", color: "#c8c8c8", role: "Dim White" },
     { name: "Whisper", color: "#eda841", role: "Orange" },
     { name: "Radio", color: "#fee58f", role: "Amber" },
     { name: "Phone / PM", color: "#fbf724", role: "Yellow" },
@@ -2730,6 +2768,10 @@
     action: "#c2a3da",
     purple: "#c2a3da",
     say: "#f1f1f1",
+    "say-other": "#c8c8c8",
+    sayother: "#c8c8c8",
+    othersay: "#c8c8c8",
+    "other-say": "#c8c8c8",
     speech: "#f1f1f1",
     white: "#f1f1f1",
     whisper: "#eda841",
@@ -2796,6 +2838,8 @@
 
   const DEFAULT_SETTINGS = {
     characterName: "",
+    differentiateSay: true,
+    otherSayColor: "#c8c8c8",
     textPosition: "top-left",
     textOffset: 15,
     fontFamily: "Arial, Helvetica, sans-serif",
@@ -2920,22 +2964,78 @@
     }
   }
 
-  function getCharacterName() {
-    return characterNameInput ? characterNameInput.value.trim() : (characterName || "");
+  function updateOtherSayColor(color) {
+    const validColor = /^#[0-9a-fA-F]{6}$/i.test(color) ? color : "#c8c8c8";
+    CHAT_COLORS["say-other"] = validColor;
+    CHAT_COLORS.sayother = validColor;
+    CHAT_COLORS.othersay = validColor;
+    CHAT_COLORS["other-say"] = validColor;
+    document.documentElement.style.setProperty("--say-other-color", validColor);
+    if (otherSayColorInput && otherSayColorInput.value !== validColor) otherSayColorInput.value = validColor;
+    if (otherSayColorTextInput && otherSayColorTextInput.value !== validColor) otherSayColorTextInput.value = validColor;
+    if (helpOtherSayColorCode) {
+      helpOtherSayColorCode.textContent = validColor;
+      helpOtherSayColorCode.style.color = validColor;
+    }
   }
 
-  function setCharacterName(name) {
-    characterName = typeof name === "string" ? name.trim() : "";
-    if (characterNameInput) characterNameInput.value = characterName;
+  function handleCharacterNameChange(name, sourceInput = null) {
+    const rawVal = typeof name === "string" ? name : "";
+    characterName = rawVal;
+    if (characterNameInput && characterNameInput !== sourceInput && characterNameInput !== document.activeElement) {
+      if (characterNameInput.value !== rawVal) {
+        characterNameInput.value = rawVal;
+      }
+    }
+    if (quickCharacterNameInput && quickCharacterNameInput !== sourceInput && quickCharacterNameInput !== document.activeElement) {
+      if (quickCharacterNameInput.value !== rawVal) {
+        quickCharacterNameInput.value = rawVal;
+      }
+    }
+    if (characterNameStatus) {
+      characterNameStatus.textContent = rawVal.trim() ? "Saved" : "";
+    }
     render();
+    updateDomLayers();
     scheduleJpegPreview();
     saveCurrentSettingsDebounced();
   }
 
+  function getCharacterName() {
+    if (document.activeElement === quickCharacterNameInput && quickCharacterNameInput) {
+      return quickCharacterNameInput.value.trim();
+    }
+    if (document.activeElement === characterNameInput && characterNameInput) {
+      return characterNameInput.value.trim();
+    }
+    if (quickCharacterNameInput && quickCharacterNameInput.value.trim()) {
+      return quickCharacterNameInput.value.trim();
+    }
+    if (characterNameInput && characterNameInput.value.trim()) {
+      return characterNameInput.value.trim();
+    }
+    return (characterName || "").trim();
+  }
+
+  function setCharacterName(name) {
+    handleCharacterNameChange(name);
+  }
+
   function openSettingsModal() {
     if (!settingsModal) return;
+    const currentName = getCharacterName();
     if (characterNameInput) {
-      characterNameInput.value = characterName || "";
+      characterNameInput.value = currentName;
+    }
+    if (quickCharacterNameInput) {
+      quickCharacterNameInput.value = currentName;
+    }
+    if (differentiateSayToggle) {
+      const otherSayRow = document.getElementById("otherSayColorRow");
+      if (otherSayRow) {
+        otherSayRow.style.opacity = differentiateSayToggle.checked ? "1" : "0.5";
+        otherSayRow.style.pointerEvents = differentiateSayToggle.checked ? "auto" : "none";
+      }
     }
     if (typeof syncMusicSettingsUI === "function") {
       syncMusicSettingsUI();
@@ -2951,7 +3051,9 @@
   function saveCurrentSettings() {
     try {
       const current = {
-        characterName: characterNameInput ? characterNameInput.value.trim() : (characterName || DEFAULT_SETTINGS.characterName),
+        characterName: getCharacterName(),
+        differentiateSay: differentiateSayToggle ? differentiateSayToggle.checked : DEFAULT_SETTINGS.differentiateSay,
+        otherSayColor: CHAT_COLORS["say-other"] || DEFAULT_SETTINGS.otherSayColor,
         textPosition: textPositionMode || DEFAULT_SETTINGS.textPosition,
         textOffset: (textOffsetInput ? parseInt(textOffsetInput.value, 10) : currentTextOffset) || DEFAULT_SETTINGS.textOffset,
         fontFamily: fontFamilySelect ? fontFamilySelect.value : DEFAULT_SETTINGS.fontFamily,
@@ -3053,6 +3155,22 @@
         if (characterNameInput) {
           characterNameInput.value = s.characterName;
         }
+        if (quickCharacterNameInput) {
+          quickCharacterNameInput.value = s.characterName;
+        }
+      }
+      if (typeof s.differentiateSay === "boolean") {
+        if (differentiateSayToggle) {
+          differentiateSayToggle.checked = s.differentiateSay;
+        }
+        const otherSayRow = document.getElementById("otherSayColorRow");
+        if (otherSayRow) {
+          otherSayRow.style.opacity = s.differentiateSay ? "1" : "0.5";
+          otherSayRow.style.pointerEvents = s.differentiateSay ? "auto" : "none";
+        }
+      }
+      if (typeof s.otherSayColor === "string" && s.otherSayColor) {
+        updateOtherSayColor(s.otherSayColor);
       }
       if (typeof s.textOffset === "number" && !isNaN(s.textOffset)) {
         currentTextOffset = Math.max(0, Math.min(1000, s.textOffset));
@@ -3174,7 +3292,15 @@
 
     characterName = DEFAULT_SETTINGS.characterName;
     if (characterNameInput) characterNameInput.value = DEFAULT_SETTINGS.characterName;
+    if (quickCharacterNameInput) quickCharacterNameInput.value = DEFAULT_SETTINGS.characterName;
     if (characterNameStatus) characterNameStatus.textContent = "";
+    if (differentiateSayToggle) differentiateSayToggle.checked = DEFAULT_SETTINGS.differentiateSay;
+    updateOtherSayColor(DEFAULT_SETTINGS.otherSayColor);
+    const otherSayRow = document.getElementById("otherSayColorRow");
+    if (otherSayRow) {
+      otherSayRow.style.opacity = DEFAULT_SETTINGS.differentiateSay ? "1" : "0.5";
+      otherSayRow.style.pointerEvents = DEFAULT_SETTINGS.differentiateSay ? "auto" : "none";
+    }
     currentTextOffset = DEFAULT_SETTINGS.textOffset;
     if (textOffsetInput) textOffsetInput.value = DEFAULT_SETTINGS.textOffset;
     layers.forEach(l => {
@@ -4925,12 +5051,17 @@
     const c = charName.trim().toLowerCase();
 
     if (s === c) return true;
+    if (s === "you" || s === "your character") return true;
 
     const sNorm = s.replace(/_/g, " ");
     const cNorm = c.replace(/_/g, " ");
     if (sNorm === cNorm) return true;
 
     if (sNorm.endsWith(" " + cNorm) || cNorm.endsWith(" " + sNorm)) {
+      return true;
+    }
+
+    if (sNorm.startsWith(cNorm + " ") || cNorm.startsWith(sNorm + " ")) {
       return true;
     }
 
@@ -5119,10 +5250,26 @@
       return "shout";
     }
 
-    if (
+    const isSayLine = (
       lowerWithoutTimestamp.startsWith("says:") ||
-      lowerText.includes(" says:")
-    ) {
+      lowerText.includes(" says:") ||
+      /\bsays\s*(?:\[[^\]]*\]|\([^\)]*\)|to\s+[A-Za-z0-9_'\.\-\s]+)?\s*:/i.test(withoutTimestamp) ||
+      /\bcalls\s*(?:\[[^\]]*\]|\([^\)]*\))?\s*:/i.test(withoutTimestamp)
+    );
+
+    if (isSayLine) {
+      const speaker = extractSpeakerName(withoutTimestamp);
+      const charName = getCharacterName();
+      const shouldDifferentiate = !differentiateSayToggle || differentiateSayToggle.checked;
+
+      if (shouldDifferentiate && charName) {
+        if (speaker && matchesCharacterName(speaker, charName)) {
+          return "say";
+        }
+        if (speaker && !matchesCharacterName(speaker, charName)) {
+          return "say-other";
+        }
+      }
       return "say";
     }
 
@@ -7774,13 +7921,84 @@
 
   if (characterNameInput) {
     characterNameInput.addEventListener("input", () => {
-      characterName = characterNameInput.value.trim();
-      if (characterNameStatus) {
-        characterNameStatus.textContent = characterName ? "Saved" : "";
+      handleCharacterNameChange(characterNameInput.value, characterNameInput);
+    });
+    characterNameInput.addEventListener("blur", () => {
+      const trimmed = characterNameInput.value.trim();
+      if (characterNameInput.value !== trimmed) {
+        characterNameInput.value = trimmed;
+        handleCharacterNameChange(trimmed, characterNameInput);
+      }
+    });
+  }
+
+  if (quickCharacterNameInput) {
+    quickCharacterNameInput.addEventListener("input", () => {
+      handleCharacterNameChange(quickCharacterNameInput.value, quickCharacterNameInput);
+    });
+    quickCharacterNameInput.addEventListener("blur", () => {
+      const trimmed = quickCharacterNameInput.value.trim();
+      if (quickCharacterNameInput.value !== trimmed) {
+        quickCharacterNameInput.value = trimmed;
+        handleCharacterNameChange(trimmed, quickCharacterNameInput);
+      }
+    });
+  }
+
+  if (differentiateSayToggle) {
+    differentiateSayToggle.addEventListener("change", () => {
+      const otherSayRow = document.getElementById("otherSayColorRow");
+      if (otherSayRow) {
+        otherSayRow.style.opacity = differentiateSayToggle.checked ? "1" : "0.5";
+        otherSayRow.style.pointerEvents = differentiateSayToggle.checked ? "auto" : "none";
       }
       render();
+      updateDomLayers();
       scheduleJpegPreview();
       saveCurrentSettingsDebounced();
+    });
+  }
+
+  if (otherSayColorInput) {
+    otherSayColorInput.addEventListener("input", () => {
+      updateOtherSayColor(otherSayColorInput.value);
+      render();
+      updateDomLayers();
+      scheduleJpegPreview();
+      saveCurrentSettingsDebounced();
+    });
+  }
+
+  if (otherSayColorTextInput) {
+    otherSayColorTextInput.addEventListener("input", () => {
+      let val = otherSayColorTextInput.value.trim();
+      if (!val.startsWith("#") && val.length > 0) val = "#" + val;
+      if (/^#[0-9a-fA-F]{6}$/i.test(val)) {
+        updateOtherSayColor(val);
+        render();
+        updateDomLayers();
+        scheduleJpegPreview();
+        saveCurrentSettingsDebounced();
+      }
+    });
+    otherSayColorTextInput.addEventListener("blur", () => {
+      let val = otherSayColorTextInput.value.trim();
+      if (!val.startsWith("#") && val.length > 0) val = "#" + val;
+      if (/^#[0-9a-fA-F]{6}$/i.test(val)) {
+        updateOtherSayColor(val);
+      } else {
+        otherSayColorTextInput.value = CHAT_COLORS["say-other"] || "#c8c8c8";
+      }
+    });
+  }
+
+  if (resetOtherSayColorBtn) {
+    resetOtherSayColorBtn.addEventListener("click", () => {
+      updateOtherSayColor("#c8c8c8");
+      render();
+      updateDomLayers();
+      scheduleJpegPreview();
+      saveCurrentSettings();
     });
   }
 
@@ -7837,7 +8055,7 @@
     "The <strong>Typography</strong> and <strong>Outline & BG</strong> toolbars in the top bar appear contextually whenever a chat text layer is selected or when you click into the text editor.",
     "Click the <strong>🎵</strong> button in the top right header to toggle the floating background music player. Want your own stream? Add custom audio streams in <a href='#' data-action='open-settings' style='color: var(--accent); font-weight: 700; text-decoration: underline; cursor: pointer;'>⚙ Settings</a>.",
     "Need a secondary chatbox? Click <strong>+ Add Chatlog Text Layer</strong> in the Layers pane to create multiple independent text blocks.",
-    "Go to <a href='#' data-action='open-settings' style='color: var(--accent); font-weight: 700; text-decoration: underline; cursor: pointer;'>⚙ Settings</a> to save your character name. This enables smart phone formatting: your character's phone speech appears in natural vocal tones (white for say, gray for low, orange for whisper), while the other caller appears in phone yellow.",
+    "Set your <strong>Character Name</strong> in the input header or in <a href='#' data-action='open-settings' style='color: var(--accent); font-weight: 700; text-decoration: underline; cursor: pointer;'>⚙ Settings</a> to automatically differentiate dialogue: your character's /say appears in bright white, while speech from other characters is slightly darker for immediate visual clarity. Lows, whispers, and phone calls also format automatically.",
     "Highlight any word and click <strong>Color Text 🎨</strong> (or press <strong>Ctrl+K</strong>) to choose from pre-determined chat colors or custom hex values to color specific words.",
     "Highlight any text and press <strong>Ctrl+B</strong> (or click <strong>Blur Selection ☘</strong>) to censor sensitive names, radio channels, or locations. When blurred text is active, choose your censor style (Gaussian Blur, Pixel Mosaic, or Blackout Redact) in the top bar.",
     "Press <strong>Ctrl+V</strong> anywhere to instantly paste screenshots or copied images directly onto the canvas as new layers.",
