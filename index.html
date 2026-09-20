@@ -2409,10 +2409,10 @@
       <div class="modal-body" style="gap: 12px; max-height: 72vh;">
         <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center; justify-content: space-between; border-bottom: 1px solid #282828; padding-bottom: 10px;">
           <div style="display: flex; gap: 6px; flex-wrap: wrap;">
-            <button type="button" id="copyAllImgbbLinksBtn" class="btn btn-neutral btn-xs" title="Copy all URLs separated by newlines">
+            <button type="button" id="copyAllImgbbLinksBtn" class="btn btn-neutral btn-xs" title="Copy all URLs in ascending order (oldest first) with space and line break for forum pasting">
               📋 Copy All Links
             </button>
-            <button type="button" id="copyAllImgbbBbcodeBtn" class="btn btn-neutral btn-xs" title="Copy all URLs formatted as [IMG]url[/IMG] for GTA forums">
+            <button type="button" id="copyAllImgbbBbcodeBtn" class="btn btn-neutral btn-xs" title="Copy all URLs in ascending order (oldest first) formatted as [IMG]url[/IMG] for GTA forums">
               🖼️ Copy as [IMG] BBCode
             </button>
           </div>
@@ -7610,14 +7610,17 @@
     copyAllImgbbLinksBtn.addEventListener("click", async () => {
       const history = getImgbbUploadHistory();
       if (!history.length) return;
-      const allUrls = history.map(h => h.url).join("\n");
+      // Ascending order: oldest upload copies first
+      const chronological = [...history].reverse();
+      // Put a space after each link and an indent (newline) for forum paste auto-embeds
+      const allUrls = chronological.map(h => `${h.url} `).join("\n") + "\n";
       await copyTextToClipboard(allUrls);
       const orig = copyAllImgbbLinksBtn.textContent;
       copyAllImgbbLinksBtn.textContent = "Copied All Links! ✓";
       setTimeout(() => {
         copyAllImgbbLinksBtn.textContent = orig;
       }, 1500);
-      showToast("success", "Links Copied", `Copied ${history.length} ImgBB link(s) to clipboard.`);
+      showToast("success", "Links Copied (Oldest First)", `Copied ${history.length} ImgBB link(s) in ascending order with space & indent for forums.`);
     });
   }
 
@@ -7625,14 +7628,16 @@
     copyAllImgbbBbcodeBtn.addEventListener("click", async () => {
       const history = getImgbbUploadHistory();
       if (!history.length) return;
-      const bbcode = history.map(h => `[IMG]${h.url}[/IMG]`).join("\n");
+      // Ascending order: oldest upload copies first
+      const chronological = [...history].reverse();
+      const bbcode = chronological.map(h => `[IMG]${h.url}[/IMG]`).join("\n");
       await copyTextToClipboard(bbcode);
       const orig = copyAllImgbbBbcodeBtn.textContent;
       copyAllImgbbBbcodeBtn.textContent = "Copied BBCode! ✓";
       setTimeout(() => {
         copyAllImgbbBbcodeBtn.textContent = orig;
       }, 1500);
-      showToast("success", "BBCode Copied", `Copied ${history.length} image link(s) formatted in [IMG] BBCode.`);
+      showToast("success", "BBCode Copied (Oldest First)", `Copied ${history.length} image link(s) in ascending order formatted in [IMG] BBCode.`);
     });
   }
 
