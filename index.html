@@ -4,9 +4,9 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>GTA RP Chatlog Magician</title>
-<meta name="description" content="GTA roleplay chatlog magician and preview tool with multi-layer canvas support, multiple chatlog text layer blocks (secondary chatbox), atmosphere and cinematic filters (warm sunset, noir, contrast, vignette, film grain), server-accurate fonts, customizable starting text offset margins, stroke & shadow styles, censor blur and redaction, clipboard image pasting, drag-and-drop screenshots, canvas export, and direct ImgBB image uploading with automatic link copying." />
+<meta name="description" content="GTA roleplay chatlog magician and preview tool with multi-layer canvas support, animated GIF upload and auto-detect GIF export, multiple chatlog text layer blocks (secondary chatbox), atmosphere and cinematic filters (warm sunset, noir, contrast, vignette, film grain), server-accurate fonts, customizable starting text offset margins, stroke & shadow styles, censor blur and redaction, clipboard image pasting, drag-and-drop screenshots, canvas export, and direct ImgBB image uploading with automatic link copying." />
 <meta property="og:title" content="GTA RP Chatlog Magician" />
-<meta property="og:description" content="GTA roleplay chatlog magician and preview tool with multi-layer canvas support, multiple chatlog text layer blocks (secondary chatbox), atmosphere and cinematic filters (warm sunset, noir, contrast, vignette, film grain), server-accurate fonts, customizable starting text offset margins, stroke & shadow styles, censor blur and redaction, clipboard image pasting, drag-and-drop screenshots, canvas export, and direct ImgBB image uploading with automatic link copying." />
+<meta property="og:description" content="GTA roleplay chatlog magician and preview tool with multi-layer canvas support, animated GIF upload and auto-detect GIF export, multiple chatlog text layer blocks (secondary chatbox), atmosphere and cinematic filters (warm sunset, noir, contrast, vignette, film grain), server-accurate fonts, customizable starting text offset margins, stroke & shadow styles, censor blur and redaction, clipboard image pasting, drag-and-drop screenshots, canvas export, and direct ImgBB image uploading with automatic link copying." />
 <link rel="icon" type="image/svg+xml" href="clover.svg" />
 <link rel="icon" type="image/png" sizes="64x64" href="clover.png" />
 <link rel="shortcut icon" href="clover.png" />
@@ -14,6 +14,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+<script src="/vendor/gif-bundle.js"></script>
 <style>
   :root {
     --page-bg: #181818;
@@ -2128,7 +2129,7 @@
 
       <label class="control" title="Upload background screenshot">
         <span>BG Canvas:</span>
-        <input id="backgroundImageInput" type="file" accept="image/*" />
+        <input id="backgroundImageInput" type="file" accept="image/*,image/gif,.gif" />
       </label>
 
       <div class="toolbar-divider"></div>
@@ -2195,7 +2196,7 @@
         <button id="addLayerTextBtn" class="btn btn-neutral btn-sm" title="Add an additional chatlog text layer (secondary chatbox)">
           + Add Chatlog Text Layer
         </button>
-        <input type="file" id="layerImageFileInput" accept="image/*" multiple style="display: none;" />
+        <input type="file" id="layerImageFileInput" accept="image/*,image/gif,.gif" multiple style="display: none;" />
       </div>
 
       <div class="layers-list-container" id="layersListContainer">
@@ -2817,6 +2818,9 @@
 
   let bgImageObject = null;
   let bgImageDataUrl = "";
+  let bgIsGif = false;
+  let bgGifFrames = null;
+  let bgGifReader = null;
   let bgX = 0;
   let bgY = 0;
   let bgScale = 1;
@@ -4099,11 +4103,29 @@
       return;
     }
 
+    const isGif = file.type === "image/gif" || (file.name && file.name.toLowerCase().endsWith(".gif"));
+
     const reader = new FileReader();
 
-    reader.onload = () => {
+    reader.onload = async () => {
       bgImageDataUrl = reader.result;
       backgroundImage.src = bgImageDataUrl;
+
+      let gifFrames = null;
+      let gifReader = null;
+      if (isGif && window.GifReader) {
+        try {
+          const arrayBuffer = await file.arrayBuffer();
+          gifReader = new window.GifReader(new Uint8Array(arrayBuffer));
+          gifFrames = extractGifFrames(gifReader);
+        } catch (gifErr) {
+          console.warn("Could not decode background GIF frames:", gifErr);
+        }
+      }
+
+      bgIsGif = isGif;
+      bgGifFrames = gifFrames;
+      bgGifReader = gifReader;
 
       bgImageObject = new Image();
       bgImageObject.onload = () => {
@@ -4117,6 +4139,12 @@
         updateBackgroundTransform();
         renderLayersUI();
         updateDomLayers();
+        updateExportButtonsLabel();
+        scheduleJpegPreview();
+
+        if (isGif) {
+          showToast("success", "Background GIF Loaded", `Loaded animated background GIF (${gifFrames ? gifFrames.length : 1} frames). Auto-detect GIF export enabled!`);
+        }
       };
 
       bgImageObject.src = bgImageDataUrl;
@@ -4207,11 +4235,13 @@
   function addOverlayImageLayerFromFile(file) {
     if (!file || !file.type.startsWith("image/")) return;
 
+    const isGif = file.type === "image/gif" || (file.name && file.name.toLowerCase().endsWith(".gif"));
+
     const reader = new FileReader();
-    reader.onload = () => {
+    reader.onload = async () => {
       const dataUrl = reader.result;
       const img = new Image();
-      img.onload = () => {
+      img.onload = async () => {
         layerIdCounter++;
         const cw = getCanvasWidth();
         const ch = getCanvasHeight();
@@ -4230,6 +4260,18 @@
 
         const cleanName = file.name ? file.name.replace(/\.[^.]+$/, "") : `Image ${layerIdCounter}`;
 
+        let gifFrames = null;
+        let gifReader = null;
+        if (isGif && window.GifReader) {
+          try {
+            const arrayBuffer = await file.arrayBuffer();
+            gifReader = new window.GifReader(new Uint8Array(arrayBuffer));
+            gifFrames = extractGifFrames(gifReader);
+          } catch (gifErr) {
+            console.warn("Could not decode GIF frames:", gifErr);
+          }
+        }
+
         const newLayer = {
           id: "layer-img-" + Date.now() + "-" + layerIdCounter,
           type: "image",
@@ -4246,7 +4288,10 @@
           filter: "none",
           filterIntensity: 1,
           vignette: 0,
-          filmGrain: 0
+          filmGrain: 0,
+          isGif: isGif,
+          gifFrames: gifFrames,
+          gifReader: gifReader
         };
 
         layers.push(newLayer);
@@ -4254,7 +4299,12 @@
 
         renderLayersUI();
         updateDomLayers();
+        updateExportButtonsLabel();
         scheduleJpegPreview();
+
+        if (isGif) {
+          showToast("success", "GIF Layer Added", `Loaded animated GIF "${cleanName}" (${gifFrames ? gifFrames.length : 1} frames). Auto-detect GIF export enabled!`);
+        }
       };
       img.src = dataUrl;
     };
@@ -4402,6 +4452,7 @@
         layer.visible = !layer.visible;
         renderLayersUI();
         updateDomLayers();
+        updateExportButtonsLabel();
         scheduleJpegPreview();
       });
 
@@ -4434,6 +4485,14 @@
       nameSpan.className = "layer-name";
       nameSpan.textContent = layer.name;
 
+      if (layer.isGif || (layer.type === "background" && bgIsGif)) {
+        const gifBadge = document.createElement("span");
+        gifBadge.className = "badge";
+        gifBadge.style.cssText = "background: rgba(0, 223, 130, 0.15); color: #00df82; border: 1px solid rgba(0, 223, 130, 0.4); font-size: 10px; padding: 1px 5px; border-radius: 4px; font-weight: 700; margin-left: 6px; display: inline-block; vertical-align: middle;";
+        gifBadge.textContent = "GIF";
+        nameSpan.appendChild(gifBadge);
+      }
+
       const metaSpan = document.createElement("span");
       metaSpan.className = "layer-meta";
       const opPercent = Math.round((typeof layer.opacity === "number" ? layer.opacity : 1) * 100);
@@ -4441,7 +4500,9 @@
       const filterTag = (layer.filter && layer.filter !== "none")
         ? ` • [${getFilterDisplayName(layer.filter)}${intensityPercent < 100 ? ` ${intensityPercent}%` : ""}]`
         : "";
-      metaSpan.textContent = `${layer.type.toUpperCase()} • ${opPercent}%${filterTag}`;
+      const frameCount = (layer.isGif && layer.gifFrames) ? layer.gifFrames.length : ((layer.type === "background" && bgIsGif && bgGifFrames) ? bgGifFrames.length : 0);
+      const gifInfoTag = frameCount > 0 ? ` • ${frameCount} frames` : "";
+      metaSpan.textContent = `${layer.type.toUpperCase()} • ${opPercent}%${filterTag}${gifInfoTag}`;
 
       info.appendChild(nameSpan);
       info.appendChild(metaSpan);
@@ -4663,6 +4724,7 @@
       }
       renderLayersUI();
       updateDomLayers();
+      updateExportButtonsLabel();
       scheduleJpegPreview();
       updateSelectionBox();
       showToast("info", "Deleted Layer", `${targetLayer.name} was removed.`);
@@ -4818,12 +4880,16 @@
     bgImageDataUrl = "";
     backgroundImage.src = "";
     backgroundImageInput.value = "";
+    bgIsGif = false;
+    bgGifFrames = null;
+    bgGifReader = null;
     bgX = 0;
     bgY = 0;
     bgScale = 1;
     updateBackgroundTransform();
     renderLayersUI();
     updateDomLayers();
+    updateExportButtonsLabel();
     scheduleJpegPreview();
   }
 
@@ -6219,6 +6285,13 @@
 
   function renderJpegPreview() {
     try {
+      if (hasActiveGifLayer()) {
+        if (jpegPreviewImage) {
+          jpegPreviewImage.style.display = "none";
+        }
+        updateSelectionBox();
+        return;
+      }
       if (!sharedChatCanvas) {
         sharedChatCanvas = document.createElement("canvas");
       }
@@ -6326,18 +6399,117 @@
     });
   }
 
-  function hasVisibleBackgroundImage() {
+  function extractGifFrames(reader) {
+    if (!reader) return null;
+    const numFrames = reader.numFrames();
+    const width = reader.width;
+    const height = reader.height;
+    const frames = [];
+
+    const pixelBuffer = new Uint8ClampedArray(width * height * 4);
+    let previousBuffer = null;
+
+    for (let i = 0; i < numFrames; i++) {
+      const frameInfo = reader.frameInfo(i);
+
+      if (frameInfo.disposal === 3 && previousBuffer) {
+        pixelBuffer.set(previousBuffer);
+      }
+
+      let saveBefore = null;
+      if (frameInfo.disposal === 3) {
+        saveBefore = new Uint8ClampedArray(pixelBuffer);
+      }
+
+      reader.decodeAndBlitFrameRGBA(i, pixelBuffer);
+
+      const frameCanvas = document.createElement("canvas");
+      frameCanvas.width = width;
+      frameCanvas.height = height;
+      const ctx = frameCanvas.getContext("2d");
+      const imgData = new ImageData(new Uint8ClampedArray(pixelBuffer), width, height);
+      ctx.putImageData(imgData, 0, 0);
+
+      const delayCentis = frameInfo.delay > 0 ? frameInfo.delay : 10;
+      const delayMs = Math.max(delayCentis * 10, 20);
+
+      frames.push({
+        canvas: frameCanvas,
+        delay: delayMs,
+        width: width,
+        height: height
+      });
+
+      if (frameInfo.disposal === 2) {
+        if (frameInfo.x === 0 && frameInfo.y === 0 && frameInfo.width === width && frameInfo.height === height) {
+          pixelBuffer.fill(0);
+        } else {
+          for (let r = 0; r < frameInfo.height; r++) {
+            const rowStart = ((frameInfo.y + r) * width + frameInfo.x) * 4;
+            const rowEnd = rowStart + (frameInfo.width * 4);
+            pixelBuffer.fill(0, rowStart, rowEnd);
+          }
+        }
+      } else if (frameInfo.disposal === 3) {
+        previousBuffer = saveBefore;
+      }
+    }
+
+    return frames;
+  }
+
+  function hasActiveGifLayer() {
     const bgLayer = Array.isArray(layers) ? layers.find(l => l.type === "background") : null;
-    if (bgLayer && bgLayer.visible !== false && bgImageObject && bgImageObject.complete && bgImageObject.naturalWidth > 0) {
+    if (bgLayer && bgLayer.visible !== false && bgIsGif && bgGifFrames && bgGifFrames.length > 0) {
       return true;
     }
-    if (Array.isArray(layers) && layers.some(l => l.type === "image" && l.visible !== false && l.img && l.img.complete && l.img.naturalWidth > 0)) {
+    if (Array.isArray(layers) && layers.some(l => l.type === "image" && l.visible !== false && l.isGif && l.gifFrames && l.gifFrames.length > 0)) {
       return true;
     }
     return false;
   }
 
-  function createChatCanvas(targetCanvas = null, { isExport = false, forceBlackBg = false } = {}) {
+  function updateExportButtonsLabel() {
+    const isGif = hasActiveGifLayer();
+    if (copyPngButton) {
+      if (isGif) {
+        copyPngButton.style.display = "none";
+      } else {
+        copyPngButton.style.display = "";
+      }
+    }
+    if (downloadPngButton) {
+      if (isGif) {
+        downloadPngButton.textContent = "Download GIF";
+        downloadPngButton.title = "Download animated GIF screenshot (auto-detected GIF layer)";
+      } else {
+        downloadPngButton.textContent = "Download PNG";
+        downloadPngButton.title = "Download PNG (transparent background if no background image is added)";
+      }
+    }
+    if (downloadJpegButton) {
+      if (isGif) {
+        downloadJpegButton.style.display = "none";
+      } else {
+        downloadJpegButton.style.display = "";
+        downloadJpegButton.textContent = "Download JPEG";
+        downloadJpegButton.title = "Download JPEG";
+      }
+    }
+  }
+
+  function hasVisibleBackgroundImage() {
+    const bgLayer = Array.isArray(layers) ? layers.find(l => l.type === "background") : null;
+    if (bgLayer && bgLayer.visible !== false && ((bgImageObject && bgImageObject.complete && bgImageObject.naturalWidth > 0) || (bgIsGif && bgGifFrames && bgGifFrames.length > 0))) {
+      return true;
+    }
+    if (Array.isArray(layers) && layers.some(l => l.type === "image" && l.visible !== false && ((l.img && l.img.complete && l.img.naturalWidth > 0) || (l.isGif && l.gifFrames && l.gifFrames.length > 0)))) {
+      return true;
+    }
+    return false;
+  }
+
+  function createChatCanvas(targetCanvas = null, { isExport = false, forceBlackBg = false, gifFrameIndex = 0 } = {}) {
     const scale = 1;
     const fontPx = getFontSize();
     const fontFamily = getFontFamily();
@@ -6377,7 +6549,18 @@
       ctx.globalAlpha = typeof layer.opacity === "number" ? layer.opacity : 1;
 
       if (layer.type === "background") {
-        if (bgImageObject && bgImageObject.complete && bgImageObject.naturalWidth > 0) {
+        let drawSource = bgImageObject;
+        let sourceW = bgImageObject ? bgImageObject.naturalWidth : 0;
+        let sourceH = bgImageObject ? bgImageObject.naturalHeight : 0;
+
+        if (bgIsGif && bgGifFrames && bgGifFrames.length > 0) {
+          const frameObj = bgGifFrames[gifFrameIndex % bgGifFrames.length];
+          drawSource = frameObj.canvas;
+          sourceW = frameObj.width;
+          sourceH = frameObj.height;
+        }
+
+        if (drawSource && ((bgImageObject && bgImageObject.complete) || bgIsGif) && sourceW > 0) {
           const bgPreset = layer.filter || "none";
           const bgIntensity = typeof layer.filterIntensity === "number" ? layer.filterIntensity : 1;
           const filterStr = getCanvasFilterForPreset(bgPreset, bgIntensity);
@@ -6387,11 +6570,11 @@
           }
 
           ctx.drawImage(
-            bgImageObject,
+            drawSource,
             bgX,
             bgY,
-            bgImageObject.naturalWidth * bgScale,
-            bgImageObject.naturalHeight * bgScale
+            sourceW * bgScale,
+            sourceH * bgScale
           );
 
           ctx.filter = "none";
@@ -6403,8 +6586,8 @@
             ctx.fillRect(
               bgX,
               bgY,
-              bgImageObject.naturalWidth * bgScale,
-              bgImageObject.naturalHeight * bgScale
+              sourceW * bgScale,
+              sourceH * bgScale
             );
             ctx.restore();
           }
@@ -6429,20 +6612,31 @@
           }
         }
       } else if (layer.type === "image") {
-        if (layer.img && layer.img.complete && layer.img.naturalWidth > 0) {
+        let drawSource = layer.img;
+        let sourceW = layer.img ? layer.img.naturalWidth : 0;
+        let sourceH = layer.img ? layer.img.naturalHeight : 0;
+
+        if (layer.isGif && layer.gifFrames && layer.gifFrames.length > 0) {
+          const frameObj = layer.gifFrames[gifFrameIndex % layer.gifFrames.length];
+          drawSource = frameObj.canvas;
+          sourceW = frameObj.width;
+          sourceH = frameObj.height;
+        }
+
+        if (drawSource && ((layer.img && layer.img.complete) || layer.isGif) && sourceW > 0) {
           const imgPreset = layer.filter || "none";
           const imgIntensity = typeof layer.filterIntensity === "number" ? layer.filterIntensity : 1;
           const imgFilterStr = getCanvasFilterForPreset(imgPreset, imgIntensity);
 
-          const imgW = layer.img.naturalWidth * (layer.scale || 1);
-          const imgH = layer.img.naturalHeight * (layer.scale || 1);
+          const imgW = sourceW * (layer.scale || 1);
+          const imgH = sourceH * (layer.scale || 1);
 
           if (imgFilterStr && imgFilterStr !== "none") {
             ctx.filter = imgFilterStr;
           }
 
           ctx.drawImage(
-            layer.img,
+            drawSource,
             layer.x,
             layer.y,
             imgW,
@@ -6492,6 +6686,134 @@
     return canvas;
   }
 
+  async function renderExportGifBlob(onProgress = null) {
+    if (!window.GIFEncoder || !window.quantize || !window.applyPalette) {
+      throw new Error("GIF encoding library is not loaded.");
+    }
+
+    let maxFrames = 1;
+    if (bgIsGif && bgGifFrames && bgGifFrames.length > 0 && hasVisibleBackgroundImage()) {
+      maxFrames = Math.max(maxFrames, bgGifFrames.length);
+    }
+    const gifLayers = layers.filter(l => l.type === "image" && l.visible && l.isGif && l.gifFrames && l.gifFrames.length > 0);
+    gifLayers.forEach(l => {
+      maxFrames = Math.max(maxFrames, l.gifFrames.length);
+    });
+
+    let primaryFrames = null;
+    if (bgIsGif && bgGifFrames && bgGifFrames.length > 0 && hasVisibleBackgroundImage()) {
+      primaryFrames = bgGifFrames;
+    } else if (gifLayers.length > 0) {
+      primaryFrames = gifLayers[0].gifFrames;
+    }
+
+    const cw = getCanvasWidth();
+    const ch = getCanvasHeight();
+
+    const encoder = window.GIFEncoder();
+    const tempCanvas = document.createElement("canvas");
+    tempCanvas.width = cw;
+    tempCanvas.height = ch;
+    const tempCtx = tempCanvas.getContext("2d", { willReadFrequently: true });
+
+    const hasImage = hasVisibleBackgroundImage();
+    const isTransparent = !hasImage;
+
+    for (let i = 0; i < maxFrames; i++) {
+      if (onProgress) {
+        onProgress(i + 1, maxFrames);
+        if (i % 2 === 0) {
+          await new Promise(r => setTimeout(r, 0));
+        }
+      }
+
+      tempCtx.clearRect(0, 0, cw, ch);
+      createChatCanvas(tempCanvas, {
+        isExport: true,
+        forceBlackBg: !isTransparent,
+        gifFrameIndex: i
+      });
+
+      const imgData = tempCtx.getImageData(0, 0, cw, ch);
+      const rgba = imgData.data;
+
+      let palette, index, transparent = false, transparentIndex = 0;
+
+      if (isTransparent) {
+        palette = window.quantize(rgba, 256, { format: "rgba4444", oneBitAlpha: true });
+        index = window.applyPalette(rgba, palette, "rgba4444");
+        const transIdx = palette.findIndex(c => c.length >= 4 && c[3] === 0);
+        if (transIdx !== -1) {
+          transparent = true;
+          transparentIndex = transIdx;
+        }
+      } else {
+        palette = window.quantize(rgba, 256, { format: "rgb565" });
+        index = window.applyPalette(rgba, palette, "rgb565");
+      }
+
+      const frameDelay = (primaryFrames && primaryFrames[i % primaryFrames.length])
+        ? primaryFrames[i % primaryFrames.length].delay
+        : 100;
+
+      encoder.writeFrame(index, cw, ch, {
+        palette,
+        delay: frameDelay,
+        transparent,
+        transparentIndex,
+        repeat: 0
+      });
+    }
+
+    encoder.finish();
+    const gifBytes = encoder.bytes();
+    return new Blob([gifBytes], { type: "image/gif" });
+  }
+
+  async function downloadCanvasAsGif() {
+    const origPngText = downloadPngButton ? downloadPngButton.textContent : "Download PNG";
+    const origJpegText = downloadJpegButton ? downloadJpegButton.textContent : "Download JPEG";
+
+    try {
+      if (downloadPngButton) {
+        downloadPngButton.textContent = "Compiling GIF...";
+        downloadPngButton.disabled = true;
+      }
+      if (downloadJpegButton) {
+        downloadJpegButton.disabled = true;
+      }
+
+      const blob = await renderExportGifBlob((current, total) => {
+        const pct = Math.round((current / total) * 100);
+        if (downloadPngButton) {
+          downloadPngButton.textContent = `Compiling GIF (${pct}%)...`;
+        }
+      });
+
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.download = "gta-rp-chatlog.gif";
+      link.href = url;
+      link.click();
+      setTimeout(() => URL.revokeObjectURL(url), 10000);
+
+      showToast("info", "Downloaded Animated GIF", "Saved your animated GIF screenshot with all chatlog layers.");
+    } catch (err) {
+      console.error("Failed to download GIF:", err);
+      showToast("error", "GIF Export Failed", err?.message || "Could not generate GIF file.");
+    } finally {
+      if (downloadPngButton) {
+        downloadPngButton.disabled = false;
+        downloadPngButton.textContent = origPngText;
+      }
+      if (downloadJpegButton) {
+        downloadJpegButton.disabled = false;
+        downloadJpegButton.textContent = origJpegText;
+      }
+      updateExportButtonsLabel();
+    }
+  }
+
   async function getExportCanvas() {
     const hasImage = hasVisibleBackgroundImage();
     const canvas = createChatCanvas(null, { isExport: true });
@@ -6522,6 +6844,30 @@
   }
 
   async function copyCanvasAsPng() {
+    if (hasActiveGifLayer()) {
+      try {
+        if (copyPngButton) copyPngButton.disabled = true;
+        const blob = await renderExportGifBlob();
+        if (navigator.clipboard && window.ClipboardItem) {
+          try {
+            await navigator.clipboard.write([
+              new ClipboardItem({
+                "image/gif": blob
+              })
+            ]);
+            showToast("success", "Copied GIF to Clipboard!", "Animated GIF copied to clipboard.");
+            return;
+          } catch (clipErr) {
+            console.warn("Clipboard does not accept direct image/gif write, falling back to PNG frame:", clipErr);
+          }
+        }
+      } catch (err) {
+        console.warn("GIF clipboard write error:", err);
+      } finally {
+        if (copyPngButton) copyPngButton.disabled = false;
+      }
+    }
+
     const canvas = await getExportCanvas();
 
     if (!navigator.clipboard || !window.ClipboardItem) {
@@ -6535,10 +6881,18 @@
         "image/png": blob
       })
     ]);
+
+    if (hasActiveGifLayer()) {
+      showToast("info", "Copied PNG Frame to Clipboard", "Note: Your browser clipboard only accepts static PNG format. To save or share the animated GIF, use Download GIF or Upload to ImgBB!");
+    }
   }
 
   async function downloadCanvasAsPng() {
     try {
+      if (hasActiveGifLayer()) {
+        await downloadCanvasAsGif();
+        return;
+      }
       const canvas = await getExportCanvas();
       const isTransparent = !hasVisibleBackgroundImage();
       const link = document.createElement("a");
@@ -6560,6 +6914,10 @@
 
   function downloadCanvasAsJpeg() {
     try {
+      if (hasActiveGifLayer()) {
+        downloadCanvasAsGif();
+        return;
+      }
       const canvas = createChatCanvas(null, { isExport: true, forceBlackBg: true });
       const quality = getJpegQuality();
       const link = document.createElement("a");
@@ -7551,8 +7909,9 @@
           <div class="imgbb-history-url-row">
             <a href="${item.url}" target="_blank" rel="noopener noreferrer" class="imgbb-history-url" title="${item.url}">${item.url}</a>
           </div>
-          <div class="imgbb-history-meta">
+          <div class="imgbb-history-meta" style="display: flex; align-items: center; gap: 8px;">
             <span>📅 ${item.timeFormatted || 'Recent upload'}</span>
+            ${(item.isGif || (item.url && item.url.toLowerCase().includes('.gif'))) ? '<span style="background: rgba(0, 223, 130, 0.16); color: #00df82; border: 1px solid rgba(0, 223, 130, 0.35); font-size: 10px; font-weight: 700; padding: 1px 5px; border-radius: 3px; letter-spacing: 0.5px;">GIF</span>' : ''}
           </div>
         </div>
         <div class="imgbb-history-actions">
@@ -7807,19 +8166,42 @@
           return;
         }
 
-        // 2. Render canvas and get binary Blob (avoids reverse-proxy payload limits)
-        const canvas = await getExportCanvas();
-        const blob = await new Promise((resolve, reject) => {
-          canvas.toBlob(b => {
-            if (b) resolve(b);
-            else reject(new Error("Failed to generate image from canvas."));
-          }, "image/png");
-        });
+        // 2. Render image data (GIF if any animated GIF layer is present, or PNG canvas)
+        let blob;
+        let filename = "chatlog.png";
+        const isGif = hasActiveGifLayer();
+
+        if (isGif) {
+          uploadImgbbButton.innerHTML = `
+            <svg class="spin-anim" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10" stroke-dasharray="32" stroke-linecap="round"></circle></svg>
+            <span id="imgbbUploadStatusText">Compiling GIF (0%)...</span>
+          `;
+          const statusSpan = document.getElementById("imgbbUploadStatusText");
+          blob = await renderExportGifBlob((current, total) => {
+            const pct = Math.round((current / total) * 100);
+            if (statusSpan) {
+              statusSpan.textContent = `Compiling GIF (${pct}%)...`;
+            }
+          });
+          uploadImgbbButton.innerHTML = `
+            <svg class="spin-anim" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10" stroke-dasharray="32" stroke-linecap="round"></circle></svg>
+            <span>Uploading GIF to ImgBB...</span>
+          `;
+          filename = "chatlog.gif";
+        } else {
+          const canvas = await getExportCanvas();
+          blob = await new Promise((resolve, reject) => {
+            canvas.toBlob(b => {
+              if (b) resolve(b);
+              else reject(new Error("Failed to generate image from canvas."));
+            }, "image/png");
+          });
+        }
 
         // 3. Upload directly to ImgBB from browser (ImgBB allows CORS & accepts user residential IP)
         const fd = new FormData();
-        fd.append("image", blob, "chatlog.png");
-        fd.append("name", "gta-rp-chatlog");
+        fd.append("image", blob, filename);
+        fd.append("name", isGif ? "gta-rp-chatlog-gif" : "gta-rp-chatlog");
 
         const directRes = await fetch(`https://api.imgbb.com/1/upload?key=${encodeURIComponent(keyToUse)}`, {
           method: "POST",
@@ -7853,7 +8235,8 @@
           thumbUrl: directData.data?.thumb?.url || directData.data?.display_url || uploadedUrl,
           deleteUrl: directData.data?.delete_url || "",
           timestamp: Date.now(),
-          timeFormatted: new Date().toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }) + " at " + new Date().toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' })
+          timeFormatted: new Date().toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }) + " at " + new Date().toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' }),
+          isGif: isGif
         };
         addImgbbUploadToHistory(uploadRecord);
 
@@ -7864,8 +8247,8 @@
 
         showToast(
           "success",
-          "Uploaded to ImgBB & Copied!",
-          `Image uploaded successfully! Direct link copied to clipboard for Ctrl+V: <a href="${uploadedUrl}" target="_blank" rel="noopener noreferrer" class="toast-link">${uploadedUrl}</a>`,
+          isGif ? "Uploaded Animated GIF & Copied!" : "Uploaded to ImgBB & Copied!",
+          `${isGif ? "Animated GIF" : "Image"} uploaded successfully! Direct link copied to clipboard for Ctrl+V: <a href="${uploadedUrl}" target="_blank" rel="noopener noreferrer" class="toast-link">${uploadedUrl}</a>`,
           uploadedUrl,
           { text: "View Links 🔗", onClick: openImgbbHistoryModal }
         );
@@ -7889,14 +8272,17 @@
   copyPngButton.addEventListener("click", async () => {
     try {
       await copyCanvasAsPng();
+      const isGif = hasActiveGifLayer();
       const isTransparent = !hasVisibleBackgroundImage();
-      copyPngButton.textContent = isTransparent ? "Transparent PNG Copied!" : "PNG Copied!";
+      copyPngButton.textContent = isGif ? "GIF Copied!" : (isTransparent ? "Transparent PNG Copied!" : "PNG Copied!");
       showToast(
         "success",
-        isTransparent ? "Copied Transparent PNG" : "Copied PNG",
-        isTransparent
-          ? "Copied chatlog with transparent background to clipboard! Perfect for extrapolating into Photoshop or image editors."
-          : "Copied image composite to clipboard!"
+        isGif ? "Copied GIF to Clipboard" : (isTransparent ? "Copied Transparent PNG" : "Copied PNG"),
+        isGif
+          ? "Copied animated GIF to clipboard."
+          : (isTransparent
+              ? "Copied chatlog with transparent background to clipboard! Perfect for extrapolating into Photoshop or image editors."
+              : "Copied image composite to clipboard!")
       );
       setTimeout(() => {
         copyPngButton.textContent = "Copy PNG";
@@ -8070,6 +8456,7 @@
   render();
   renderLayersUI();
   updateDomLayers();
+  updateExportButtonsLabel();
 
   // Tip Rotation Carousel
   const siteTips = [
