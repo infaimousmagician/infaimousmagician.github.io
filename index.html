@@ -2421,6 +2421,13 @@
           </button>
         </div>
 
+        <div id="imgbbCopyTipBanner" style="display: none; background: rgba(0, 223, 130, 0.08); border: 1px solid rgba(0, 223, 130, 0.28); border-radius: 6px; padding: 8px 12px; font-size: 12px; color: #d0d0d0; line-height: 1.45; align-items: flex-start; gap: 8px;">
+          <span style="font-size: 14px; line-height: 1; margin-top: 1px;">💡</span>
+          <div>
+            <span style="color: #00df82; font-weight: 700;">Forum Embedding Tip:</span> If images don't automatically embed when you paste the links on the forum, press the <kbd style="background: #252525; border: 1px solid #484848; border-radius: 3px; padding: 1px 5px; font-size: 11px; color: #fff; font-family: inherit;">Spacebar</kbd> right after the link so the forum software instantly converts it into the embedded image.
+          </div>
+        </div>
+
         <div id="imgbbHistoryList" class="imgbb-history-list" style="display: flex; flex-direction: column; gap: 8px; overflow-y: auto; max-height: 52vh; padding-right: 2px;">
           <!-- Populated dynamically via JS -->
         </div>
@@ -7440,6 +7447,7 @@
   const doneImgbbHistoryModalBtn = document.getElementById("doneImgbbHistoryModalBtn");
   const imgbbHistoryList = document.getElementById("imgbbHistoryList");
   const imgbbHistoryEmpty = document.getElementById("imgbbHistoryEmpty");
+  const imgbbCopyTipBanner = document.getElementById("imgbbCopyTipBanner");
   const copyAllImgbbLinksBtn = document.getElementById("copyAllImgbbLinksBtn");
   const copyAllImgbbBbcodeBtn = document.getElementById("copyAllImgbbBbcodeBtn");
   const clearImgbbHistoryBtn = document.getElementById("clearImgbbHistoryBtn");
@@ -7620,7 +7628,17 @@
       setTimeout(() => {
         copyAllImgbbLinksBtn.textContent = orig;
       }, 1500);
-      showToast("success", "Links Copied (Oldest First)", `Copied ${history.length} ImgBB link(s) in ascending order with space & indent for forums.`);
+
+      // Reveal the forum embedding tip banner inside the modal
+      if (imgbbCopyTipBanner) {
+        imgbbCopyTipBanner.style.display = "flex";
+      }
+
+      showToast(
+        "success",
+        "Links Copied (Oldest First)",
+        `Copied ${history.length} link(s) in chronological order.<div style="margin-top: 6px; padding-top: 6px; border-top: 1px solid rgba(255,255,255,0.12); font-size: 11.5px; color: #ddd; line-height: 1.45;">💡 <strong>Forum Tip:</strong> If the images don't automatically embed when pasted on the forum, press <kbd style="background: #252525; border: 1px solid #555; border-radius: 3px; padding: 1px 5px; font-size: 10.5px; color: #fff;">Spacebar</kbd> after the link to trigger image embedding.</div>`
+      );
     });
   }
 
