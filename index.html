@@ -658,6 +658,7 @@
     gap: 8px;
     pointer-events: none;
     max-width: calc(100vw - 40px);
+    width: 490px;
   }
 
   .toast {
@@ -665,14 +666,14 @@
     background: #1a1a1a;
     border: 1px solid #333333;
     color: #f0f0f0;
-    padding: 12px 16px;
+    padding: 13px 18px;
     border-radius: 8px;
     box-shadow: 0 10px 28px rgba(0, 0, 0, 0.75);
     font-size: 13px;
     display: flex;
     align-items: flex-start;
     gap: 12px;
-    width: 420px;
+    width: 490px;
     max-width: 100%;
     animation: toastSlideIn 0.22s cubic-bezier(0.16, 1, 0.3, 1);
     transition: opacity 0.2s ease, transform 0.2s ease;
@@ -707,10 +708,11 @@
   }
 
   .toast-message {
-    font-size: 12px;
+    font-size: 12.5px;
     color: #cccccc;
-    word-break: break-all;
-    line-height: 1.4;
+    word-break: normal;
+    overflow-wrap: break-word;
+    line-height: 1.45;
   }
 
   .toast-link {
