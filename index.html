@@ -6805,14 +6805,14 @@
     canvas.style.width = canvasWidth + "px";
     canvas.style.height = canvasHeight + "px";
 
+    const hasImage = hasVisibleBackgroundImage();
+    const isTransparent = Boolean(isExport && !hasImage && !forceBlackBg);
+
     const ctx = canvas.getContext("2d");
     if (clearCanvas) {
       ctx.setTransform(1, 0, 0, 1, 0, 0);
       ctx.scale(scale, scale);
       ctx.clearRect(0, 0, canvasWidth, canvasHeight);
-
-      const hasImage = hasVisibleBackgroundImage();
-      const isTransparent = isExport && !hasImage && !forceBlackBg;
 
       if (!isTransparent) {
         ctx.fillStyle = "#000";
@@ -8224,9 +8224,16 @@
     imgbbHistoryModal.style.display = "flex";
   }
 
+  let clearHistoryConfirmTimer = null;
+
   function closeImgbbHistoryModal() {
     if (!imgbbHistoryModal) return;
     imgbbHistoryModal.style.display = "none";
+    if (clearImgbbHistoryBtn) {
+      clearTimeout(clearHistoryConfirmTimer);
+      clearImgbbHistoryBtn.removeAttribute("data-confirming");
+      clearImgbbHistoryBtn.textContent = "Clear History";
+    }
   }
 
   function renderImgbbHistoryList() {
@@ -8241,7 +8248,11 @@
       if (imgbbHistoryEmpty) imgbbHistoryEmpty.style.display = "block";
       if (copyAllImgbbLinksBtn) copyAllImgbbLinksBtn.disabled = true;
       if (copyAllImgbbBbcodeBtn) copyAllImgbbBbcodeBtn.disabled = true;
-      if (clearImgbbHistoryBtn) clearImgbbHistoryBtn.disabled = true;
+      if (clearImgbbHistoryBtn) {
+        clearImgbbHistoryBtn.disabled = true;
+        clearImgbbHistoryBtn.removeAttribute("data-confirming");
+        clearImgbbHistoryBtn.textContent = "Clear History";
+      }
       return;
     }
 
@@ -8369,9 +8380,25 @@
   }
 
   if (clearImgbbHistoryBtn) {
-    clearImgbbHistoryBtn.addEventListener("click", () => {
-      if (confirm("Are you sure you want to clear your uploaded links history?")) {
+    clearImgbbHistoryBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const history = getImgbbUploadHistory();
+      if (!history || history.length === 0) return;
+
+      if (clearImgbbHistoryBtn.getAttribute("data-confirming") === "true") {
+        clearTimeout(clearHistoryConfirmTimer);
+        clearImgbbHistoryBtn.removeAttribute("data-confirming");
+        clearImgbbHistoryBtn.textContent = "Clear History";
         clearImgbbUploadHistory();
+      } else {
+        clearImgbbHistoryBtn.setAttribute("data-confirming", "true");
+        clearImgbbHistoryBtn.textContent = "⚠️ Click to Confirm";
+
+        clearTimeout(clearHistoryConfirmTimer);
+        clearHistoryConfirmTimer = setTimeout(() => {
+          clearImgbbHistoryBtn.removeAttribute("data-confirming");
+          clearImgbbHistoryBtn.textContent = "Clear History";
+        }, 4000);
       }
     });
   }
