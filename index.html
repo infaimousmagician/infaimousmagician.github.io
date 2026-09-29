@@ -2193,13 +2193,6 @@
         <input id="backgroundOpacityInput" type="range" min="0" max="100" step="1" value="100" style="width: 75px;" />
         <span id="backgroundOpacityValue">100%</span>
       </label>
-
-      <div class="toolbar-divider" id="textJpegQualityDivider" style="display: none;"></div>
-
-      <button type="button" id="textJpegQualityBtn" class="btn btn-sm btn-text-jpeg is-affected" style="display: none;" title="Toggle whether JPEG Quality affects the appearance of this chatlog text">
-        <span id="textJpegQualityIcon" style="font-size: 11px;">📉</span>
-        <span id="textJpegQualityText">JPEG Affects Text: ON</span>
-      </button>
     </div>
 
     <div class="toolbar-group" id="censorshipToolbarGroup" style="display: none;">
@@ -2770,10 +2763,6 @@
   const layerTextBgOpacityValue = document.getElementById("layerTextBgOpacityValue");
   const layerTextJpegQualityRow = document.getElementById("layerTextJpegQualityRow");
   const inspectorTextJpegQualityBtn = document.getElementById("inspectorTextJpegQualityBtn");
-  const textJpegQualityBtn = document.getElementById("textJpegQualityBtn");
-  const textJpegQualityIcon = document.getElementById("textJpegQualityIcon");
-  const textJpegQualityText = document.getElementById("textJpegQualityText");
-  const textJpegQualityDivider = document.getElementById("textJpegQualityDivider");
   const layerScaleRow = document.getElementById("layerScaleRow");
   const layerScaleInput = document.getElementById("layerScaleInput");
   const layerScaleValue = document.getElementById("layerScaleValue");
@@ -3902,28 +3891,10 @@
     const isTextSelected = Boolean(selected && selected.type === "text");
     const layer = isTextSelected ? selected : getActiveTextLayer();
     const isAffected = isLayerAffectedByJpegQuality(layer);
-    const quality = getJpegQuality();
-    const isBelow100 = quality < 0.999;
+    const isBelow100 = getJpegQuality() < 0.999;
 
-    if (textJpegQualityBtn) {
-      if (!isBelow100) {
-        textJpegQualityBtn.style.display = "none";
-        if (textJpegQualityDivider) textJpegQualityDivider.style.display = "none";
-      } else {
-        textJpegQualityBtn.style.display = "inline-flex";
-        if (textJpegQualityDivider) textJpegQualityDivider.style.display = "";
-        if (isAffected) {
-          textJpegQualityBtn.className = "btn btn-sm btn-text-jpeg is-affected";
-          textJpegQualityBtn.title = "JPEG Quality affects the appearance of this chatlog text. Click to disable (makes text uncompressed).";
-          if (textJpegQualityIcon) textJpegQualityIcon.textContent = "📉";
-          if (textJpegQualityText) textJpegQualityText.textContent = "JPEG Affects Text: ON";
-        } else {
-          textJpegQualityBtn.className = "btn btn-sm btn-text-jpeg is-crisp";
-          textJpegQualityBtn.title = "Chatlog text is protected from JPEG quality degradation. Click to allow JPEG Quality on text.";
-          if (textJpegQualityIcon) textJpegQualityIcon.textContent = "✨";
-          if (textJpegQualityText) textJpegQualityText.textContent = "JPEG Affects Text: OFF";
-        }
-      }
+    if (layerTextJpegQualityRow) {
+      layerTextJpegQualityRow.style.display = (isTextSelected && isBelow100) ? "flex" : "none";
     }
 
     if (inspectorTextJpegQualityBtn) {
@@ -4805,7 +4776,8 @@
 
     if (layerTextJpegQualityRow) {
       const isText = layer.type === "text";
-      layerTextJpegQualityRow.style.display = isText ? "flex" : "none";
+      const isBelow100 = getJpegQuality() < 0.999;
+      layerTextJpegQualityRow.style.display = (isText && isBelow100) ? "flex" : "none";
       if (isText) {
         updateTextJpegQualityButtonUI();
       }
@@ -8059,7 +8031,6 @@
       const cleanVal = isNaN(val) ? 0 : Math.max(0, Math.min(1000, val));
       textOffsetInput.value = cleanVal;
       setTextOffset(cleanVal);
-      showToast("info", "Text Offset Updated", `Chatlog starting offset set to ${cleanVal}px.`);
     });
   }
 
@@ -8694,10 +8665,6 @@
     updateDomLayers();
     scheduleJpegPreview();
   });
-
-  if (textJpegQualityBtn) {
-    textJpegQualityBtn.addEventListener("click", toggleTextJpegQuality);
-  }
 
   if (inspectorTextJpegQualityBtn) {
     inspectorTextJpegQualityBtn.addEventListener("click", toggleTextJpegQuality);
