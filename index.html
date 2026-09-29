@@ -244,6 +244,103 @@
     color: #ffffff;
   }
 
+  .btn-text-jpeg {
+    font-size: 11.5px;
+    padding: 4px 9px;
+    border-radius: 5px;
+    transition: all 0.15s ease;
+    white-space: nowrap;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    cursor: pointer;
+    font-family: inherit;
+  }
+  .btn-text-jpeg.is-affected {
+    background: #272727;
+    border: 1px solid #444;
+    color: #c0c0c0;
+  }
+  .btn-text-jpeg.is-affected:hover {
+    background: #333;
+    border-color: #555;
+    color: #fff;
+  }
+  .btn-text-jpeg.is-crisp {
+    background: rgba(0, 217, 132, 0.14);
+    border: 1px solid rgba(0, 217, 132, 0.6);
+    color: #00ff9d;
+    font-weight: 700;
+    box-shadow: 0 0 8px rgba(0, 217, 132, 0.15);
+  }
+  .btn-text-jpeg.is-crisp:hover {
+    background: rgba(0, 217, 132, 0.22);
+    border-color: #00ff9d;
+    color: #ffffff;
+  }
+
+  .btn-layer-opt {
+    font-family: inherit;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    display: inline-flex;
+    align-items: center;
+  }
+  .btn-layer-opt.is-affected {
+    background: #252525;
+    border: 1px solid #3d3d3d;
+    color: #c0c0c0;
+  }
+  .btn-layer-opt.is-affected:hover {
+    background: #2e2e2e;
+    color: #fff;
+  }
+  .btn-layer-opt.is-crisp {
+    background: rgba(0, 217, 132, 0.14);
+    border: 1px solid rgba(0, 217, 132, 0.6);
+    color: #00ff9d;
+    font-weight: 700;
+  }
+  .btn-layer-opt.is-crisp:hover {
+    background: rgba(0, 217, 132, 0.22);
+    border-color: #00ff9d;
+    color: #ffffff;
+  }
+
+  .btn-text-badge-toggle {
+    font-family: inherit;
+    font-size: 10.5px;
+    font-weight: 600;
+    padding: 2px 7px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    line-height: 1.3;
+    white-space: nowrap;
+    border: 1px solid transparent;
+  }
+  .btn-text-badge-toggle.is-affected {
+    background: #222;
+    border-color: #3d3d3d;
+    color: #999;
+  }
+  .btn-text-badge-toggle.is-affected:hover {
+    background: #2a2a2a;
+    border-color: #555;
+    color: #ccc;
+  }
+  .btn-text-badge-toggle.is-crisp {
+    background: rgba(0, 217, 132, 0.15);
+    border-color: rgba(0, 217, 132, 0.5);
+    color: #00ff9d;
+  }
+  .btn-text-badge-toggle.is-crisp:hover {
+    background: rgba(0, 217, 132, 0.25);
+    border-color: #00ff9d;
+    color: #fff;
+  }
+
   .btn-accent {
     background: var(--accent-dark);
     border-color: var(--accent);
@@ -2094,6 +2191,13 @@
         <input id="backgroundOpacityInput" type="range" min="0" max="100" step="1" value="100" style="width: 75px;" />
         <span id="backgroundOpacityValue">100%</span>
       </label>
+
+      <div class="toolbar-divider"></div>
+
+      <button type="button" id="textJpegQualityBtn" class="btn btn-sm btn-text-jpeg is-affected" title="Toggle whether JPEG Quality affects the appearance of this chatlog text">
+        <span id="textJpegQualityIcon" style="font-size: 11px;">📉</span>
+        <span id="textJpegQualityText">JPEG Affects Text: ON</span>
+      </button>
     </div>
 
     <div class="toolbar-group" id="censorshipToolbarGroup" style="display: none;">
@@ -2158,6 +2262,7 @@
         <div style="display: flex; align-items: center; gap: 8px;">
           <span>Input</span>
           <span id="activeTextLayerBadge" class="active-text-layer-badge" title="Active Chatlog Layer">Chatlog Text 1</span>
+          <button type="button" id="inputPaneJpegQualityBtn" class="btn-text-badge-toggle is-affected" title="Toggle whether JPEG Quality affects the appearance of this chatlog text">JPEG Affects Text: ON</button>
         </div>
         <div class="quick-char-wrapper" style="display: flex; align-items: center; gap: 6px;" title="Set your character's name to automatically differentiate say dialogue (yours in white, others slightly darker)">
           <span style="font-size: 11px; color: #8c8c8c; font-weight: normal;">Character:</span>
@@ -2217,6 +2322,12 @@
           <span class="inspector-label">BG Opacity:</span>
           <input type="range" id="layerTextBgOpacityInput" min="0" max="100" step="1" value="100" class="inspector-slider" title="Dark text background opacity (0% to 100%)" />
           <span id="layerTextBgOpacityValue" class="inspector-val">100%</span>
+        </div>
+        <div class="inspector-row" id="layerTextJpegQualityRow" style="display: none;">
+          <span class="inspector-label" style="width: 70px;">JPEG Quality:</span>
+          <button type="button" id="inspectorTextJpegQualityBtn" class="btn btn-xs btn-layer-opt is-affected" style="flex: 1; justify-content: center; padding: 4px 6px;" title="Toggle whether JPEG Quality affects the appearance of this chatlog text">
+            Affects Text: ON
+          </button>
         </div>
         <div class="inspector-row" id="layerScaleRow">
           <span class="inspector-label">Scale:</span>
@@ -2656,6 +2767,12 @@
   const layerTextBgRow = document.getElementById("layerTextBgRow");
   const layerTextBgOpacityInput = document.getElementById("layerTextBgOpacityInput");
   const layerTextBgOpacityValue = document.getElementById("layerTextBgOpacityValue");
+  const layerTextJpegQualityRow = document.getElementById("layerTextJpegQualityRow");
+  const inspectorTextJpegQualityBtn = document.getElementById("inspectorTextJpegQualityBtn");
+  const textJpegQualityBtn = document.getElementById("textJpegQualityBtn");
+  const textJpegQualityIcon = document.getElementById("textJpegQualityIcon");
+  const textJpegQualityText = document.getElementById("textJpegQualityText");
+  const inputPaneJpegQualityBtn = document.getElementById("inputPaneJpegQualityBtn");
   const layerScaleRow = document.getElementById("layerScaleRow");
   const layerScaleInput = document.getElementById("layerScaleInput");
   const layerScaleValue = document.getElementById("layerScaleValue");
@@ -2711,7 +2828,8 @@
       textOffset: 15,
       textPositionMode: "top-left",
       userHasCustomDraggedText: false,
-      textPanelWidth: 500
+      textPanelWidth: 500,
+      jpegAffectsText: true
     }
   ];
   let selectedLayerId = "layer-text";
@@ -2865,6 +2983,7 @@
     canvasWidth: 600,
     canvasHeight: 600,
     jpegQuality: 1,
+    jpegAffectsText: true,
     atmospherePreset: "none",
     filterIntensity: 1,
     vignette: false,
@@ -3079,6 +3198,7 @@
         canvasWidth: Number(canvasWidthInput.value) || DEFAULT_SETTINGS.canvasWidth,
         canvasHeight: Number(canvasHeightInput.value) || DEFAULT_SETTINGS.canvasHeight,
         jpegQuality: Number(jpegQualityInput.value) || DEFAULT_SETTINGS.jpegQuality,
+        jpegAffectsText: isLayerAffectedByJpegQuality(getActiveTextLayer()),
         atmospherePreset: (() => {
           const bg = layers.find(l => l.type === "background");
           return bg && bg.filter ? bg.filter : (atmospherePresetSelect ? atmospherePresetSelect.value : DEFAULT_SETTINGS.atmospherePreset);
@@ -3246,6 +3366,14 @@
           jpegQualityValue.textContent = Math.round(jpegQualityInput.value * 100) + "%";
         }
       }
+      if (typeof s.jpegAffectsText === "boolean") {
+        DEFAULT_SETTINGS.jpegAffectsText = s.jpegAffectsText;
+        layers.forEach(l => {
+          if (l.type === "text" && l.jpegAffectsText === undefined) {
+            l.jpegAffectsText = s.jpegAffectsText;
+          }
+        });
+      }
       if (typeof s.atmospherePreset === "string") {
         const mappedPreset = s.atmospherePreset === "cold" ? "invert" : s.atmospherePreset;
         const bgLayer = layers.find(l => l.type === "background");
@@ -3350,6 +3478,13 @@
       jpegQualityInput.value = DEFAULT_SETTINGS.jpegQuality;
       if (jpegQualityValue) jpegQualityValue.textContent = "100%";
     }
+    DEFAULT_SETTINGS.jpegAffectsText = true;
+    layers.forEach(l => {
+      if (l.type === "text") {
+        l.jpegAffectsText = true;
+      }
+    });
+    updateTextJpegQualityButtonUI();
     if (atmospherePresetSelect) atmospherePresetSelect.value = DEFAULT_SETTINGS.atmospherePreset;
     if (inspectorAtmosphereSelect) inspectorAtmosphereSelect.value = DEFAULT_SETTINGS.atmospherePreset;
     const bgLayer = layers.find(l => l.type === "background");
@@ -3752,6 +3887,82 @@
     return false;
   }
 
+  function isLayerAffectedByJpegQuality(layer) {
+    if (!layer || layer.type !== "text") return true;
+    if (typeof layer.jpegAffectsText === "boolean") {
+      return layer.jpegAffectsText;
+    }
+    return DEFAULT_SETTINGS.jpegAffectsText !== false;
+  }
+
+  function updateTextJpegQualityButtonUI() {
+    const selected = getSelectedLayer();
+    const isTextSelected = Boolean(selected && selected.type === "text");
+    const layer = isTextSelected ? selected : getActiveTextLayer();
+    const isAffected = isLayerAffectedByJpegQuality(layer);
+
+    if (textJpegQualityBtn) {
+      if (isAffected) {
+        textJpegQualityBtn.className = "btn btn-sm btn-text-jpeg is-affected";
+        textJpegQualityBtn.title = "JPEG Quality affects the appearance of this chatlog text. Click to disable (makes text crisp & uncompressed).";
+        if (textJpegQualityIcon) textJpegQualityIcon.textContent = "📉";
+        if (textJpegQualityText) textJpegQualityText.textContent = "JPEG Affects Text: ON";
+      } else {
+        textJpegQualityBtn.className = "btn btn-sm btn-text-jpeg is-crisp";
+        textJpegQualityBtn.title = "Chatlog text is protected from JPEG quality degradation. Click to allow JPEG Quality on text.";
+        if (textJpegQualityIcon) textJpegQualityIcon.textContent = "✨";
+        if (textJpegQualityText) textJpegQualityText.textContent = "JPEG Affects Text: OFF";
+      }
+    }
+
+    if (inspectorTextJpegQualityBtn) {
+      if (isAffected) {
+        inspectorTextJpegQualityBtn.className = "btn btn-xs btn-layer-opt is-affected";
+        inspectorTextJpegQualityBtn.title = "JPEG Quality affects this text. Click to protect text.";
+        inspectorTextJpegQualityBtn.innerHTML = `<span>Affects Text: ON</span>`;
+      } else {
+        inspectorTextJpegQualityBtn.className = "btn btn-xs btn-layer-opt is-crisp";
+        inspectorTextJpegQualityBtn.title = "Protected from JPEG compression. Click to allow JPEG Quality.";
+        inspectorTextJpegQualityBtn.innerHTML = `<span>Affects Text: OFF</span>`;
+      }
+    }
+
+    if (inputPaneJpegQualityBtn) {
+      inputPaneJpegQualityBtn.style.display = isTextSelected ? "inline-block" : "none";
+      if (isAffected) {
+        inputPaneJpegQualityBtn.className = "btn-text-badge-toggle is-affected";
+        inputPaneJpegQualityBtn.title = "JPEG Quality affects this text. Click to disable JPEG Quality on text.";
+        inputPaneJpegQualityBtn.textContent = "JPEG Affects Text: ON";
+      } else {
+        inputPaneJpegQualityBtn.className = "btn-text-badge-toggle is-crisp";
+        inputPaneJpegQualityBtn.title = "Text is protected from JPEG compression. Click to enable JPEG Quality on text.";
+        inputPaneJpegQualityBtn.textContent = "JPEG Affects Text: OFF";
+      }
+    }
+  }
+
+  function toggleTextJpegQuality() {
+    const layer = getActiveTextLayer();
+    if (!layer) return;
+
+    const currentVal = isLayerAffectedByJpegQuality(layer);
+    const newVal = !currentVal;
+    layer.jpegAffectsText = newVal;
+    DEFAULT_SETTINGS.jpegAffectsText = newVal;
+
+    updateTextJpegQualityButtonUI();
+    scheduleJpegPreview();
+    saveCurrentSettings();
+
+    showToast(
+      "info",
+      newVal ? "JPEG Quality on Text: ON" : "JPEG Quality on Text: OFF",
+      newVal
+        ? "JPEG Quality compression will now affect this chatlog text along with the image."
+        : "Chatlog text is now unaffected by JPEG Quality compression."
+    );
+  }
+
   function updateTextToolbarVisibility() {
     const selected = getSelectedLayer();
     const isTextSelected = Boolean(selected && selected.type === "text");
@@ -3763,6 +3974,7 @@
       outlineBgToolbarGroup.style.display = isTextSelected ? "flex" : "none";
     }
     updateCensorshipVisibility();
+    updateTextJpegQualityButtonUI();
   }
 
   function updateCensorshipVisibility() {
@@ -4324,10 +4536,18 @@
       }
     }
 
+    if (inputPaneJpegQualityBtn) {
+      const selected = getSelectedLayer();
+      const isText = Boolean(selected && selected.type === "text");
+      inputPaneJpegQualityBtn.style.display = isText ? "inline-block" : "none";
+    }
+
     if (textLayersSwitcher) {
       textLayersSwitcher.style.display = "none";
       textLayersSwitcher.innerHTML = "";
     }
+
+    updateTextJpegQualityButtonUI();
   }
 
   function selectLayer(layerId) {
@@ -4407,7 +4627,8 @@
       textOffset: currentTextOffset,
       textPositionMode: DEFAULT_SETTINGS.textPosition || "top-left",
       userHasCustomDraggedText: false,
-      textPanelWidth: getTextPanelWidth()
+      textPanelWidth: getTextPanelWidth(),
+      jpegAffectsText: (currentActive && typeof currentActive.jpegAffectsText === "boolean") ? currentActive.jpegAffectsText : (DEFAULT_SETTINGS.jpegAffectsText !== false)
     };
 
     layers.push(newLayer);
@@ -4587,6 +4808,14 @@
         const op = isNaN(rawOp) ? 100 : Math.max(0, Math.min(rawOp, 100));
         if (layerTextBgOpacityInput) layerTextBgOpacityInput.value = op;
         if (layerTextBgOpacityValue) layerTextBgOpacityValue.textContent = `${op}%`;
+      }
+    }
+
+    if (layerTextJpegQualityRow) {
+      const isText = layer.type === "text";
+      layerTextJpegQualityRow.style.display = isText ? "flex" : "none";
+      if (isText) {
+        updateTextJpegQualityButtonUI();
       }
     }
 
@@ -6283,7 +6512,10 @@
     return Math.min(Math.max(value, 0.01), 1);
   }
 
-  function renderJpegPreview() {
+  let sharedBaseCanvas = null;
+  let currentPreviewRenderId = 0;
+
+  async function renderJpegPreview() {
     try {
       if (hasActiveGifLayer()) {
         if (jpegPreviewImage) {
@@ -6295,11 +6527,59 @@
       if (!sharedChatCanvas) {
         sharedChatCanvas = document.createElement("canvas");
       }
-      const canvas = createChatCanvas(sharedChatCanvas);
+
       const quality = getJpegQuality();
-      const dataUrl = canvas.toDataURL("image/jpeg", quality);
+      const hasUnaffectedText = layers.some(l => l.type === "text" && l.visible !== false && !isLayerAffectedByJpegQuality(l));
+
+      // Standard single-pass if quality is ~100% or all text layers are affected by JPEG quality
+      if (!hasUnaffectedText || quality >= 0.98) {
+        const canvas = createChatCanvas(sharedChatCanvas);
+        const dataUrl = canvas.toDataURL("image/jpeg", quality);
+        if (jpegPreviewImage) {
+          jpegPreviewImage.src = dataUrl;
+          jpegPreviewImage.style.display = "block";
+          jpegPreviewImage.style.zIndex = "50";
+        }
+        updateSelectionBox();
+        return;
+      }
+
+      // Multi-pass: Compress base pass with JPEG quality, then draw crisp text on top
+      const renderId = ++currentPreviewRenderId;
+      if (!sharedBaseCanvas) {
+        sharedBaseCanvas = document.createElement("canvas");
+      }
+
+      const baseCanvas = createChatCanvas(sharedBaseCanvas, { textLayerFilter: "jpeg-affected" });
+      const baseJpegDataUrl = baseCanvas.toDataURL("image/jpeg", quality);
+
+      const img = new Image();
+      await new Promise((resolve, reject) => {
+        img.onload = resolve;
+        img.onerror = reject;
+        img.src = baseJpegDataUrl;
+      });
+
+      if (renderId !== currentPreviewRenderId) return;
+
+      const cw = getCanvasWidth();
+      const ch = getCanvasHeight();
+      if (sharedChatCanvas.width !== cw || sharedChatCanvas.height !== ch) {
+        sharedChatCanvas.width = cw;
+        sharedChatCanvas.height = ch;
+      }
+      const ctx = sharedChatCanvas.getContext("2d");
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
+      ctx.clearRect(0, 0, cw, ch);
+      ctx.drawImage(img, 0, 0);
+
+      createChatCanvas(sharedChatCanvas, {
+        clearCanvas: false,
+        textLayerFilter: "jpeg-unaffected"
+      });
+
       if (jpegPreviewImage) {
-        jpegPreviewImage.src = dataUrl;
+        jpegPreviewImage.src = sharedChatCanvas.toDataURL("image/png");
         jpegPreviewImage.style.display = "block";
         jpegPreviewImage.style.zIndex = "50";
       }
@@ -6509,7 +6789,13 @@
     return false;
   }
 
-  function createChatCanvas(targetCanvas = null, { isExport = false, forceBlackBg = false, gifFrameIndex = 0 } = {}) {
+  function createChatCanvas(targetCanvas = null, {
+    isExport = false,
+    forceBlackBg = false,
+    gifFrameIndex = 0,
+    textLayerFilter = "all",
+    clearCanvas = true
+  } = {}) {
     const scale = 1;
     const fontPx = getFontSize();
     const fontFamily = getFontFamily();
@@ -6530,20 +6816,32 @@
     canvas.style.height = canvasHeight + "px";
 
     const ctx = canvas.getContext("2d");
-    ctx.setTransform(1, 0, 0, 1, 0, 0);
-    ctx.scale(scale, scale);
-    ctx.clearRect(0, 0, canvasWidth, canvasHeight);
+    if (clearCanvas) {
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
+      ctx.scale(scale, scale);
+      ctx.clearRect(0, 0, canvasWidth, canvasHeight);
 
-    const hasImage = hasVisibleBackgroundImage();
-    const isTransparent = isExport && !hasImage && !forceBlackBg;
+      const hasImage = hasVisibleBackgroundImage();
+      const isTransparent = isExport && !hasImage && !forceBlackBg;
 
-    if (!isTransparent) {
-      ctx.fillStyle = "#000";
-      ctx.fillRect(0, 0, canvasWidth, canvasHeight);
+      if (!isTransparent) {
+        ctx.fillStyle = "#000";
+        ctx.fillRect(0, 0, canvasWidth, canvasHeight);
+      }
+    } else {
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
+      ctx.scale(scale, scale);
     }
 
     layers.forEach(layer => {
       if (!layer.visible) return;
+
+      if (textLayerFilter === "jpeg-unaffected") {
+        if (layer.type !== "text") return;
+        if (isLayerAffectedByJpegQuality(layer)) return;
+      } else if (textLayerFilter === "jpeg-affected") {
+        if (layer.type === "text" && !isLayerAffectedByJpegQuality(layer)) return;
+      }
 
       ctx.save();
       ctx.globalAlpha = typeof layer.opacity === "number" ? layer.opacity : 1;
@@ -6816,31 +7114,61 @@
 
   async function getExportCanvas() {
     const hasImage = hasVisibleBackgroundImage();
-    const canvas = createChatCanvas(null, { isExport: true });
-
-    // When no background image is added, export directly with a transparent canvas
-    // (JPEG compression does not support alpha transparency and would convert it to opaque black)
-    if (!hasImage) {
-      return canvas;
-    }
-
     const quality = getJpegQuality();
-    if (quality >= 0.98) {
-      return canvas;
+    const hasUnaffectedText = layers.some(l => l.type === "text" && l.visible !== false && !isLayerAffectedByJpegQuality(l));
+
+    // When no background image is added and no crisp text logic needed, export directly with a transparent canvas
+    if (!hasImage && !hasUnaffectedText) {
+      return createChatCanvas(null, { isExport: true });
     }
-    const jpegDataUrl = canvas.toDataURL("image/jpeg", quality);
-    const img = new Image();
-    await new Promise((resolve, reject) => {
-      img.onload = resolve;
-      img.onerror = reject;
-      img.src = jpegDataUrl;
+
+    if (!hasUnaffectedText) {
+      const canvas = createChatCanvas(null, { isExport: true });
+      if (!hasImage || quality >= 0.98) {
+        return canvas;
+      }
+      const jpegDataUrl = canvas.toDataURL("image/jpeg", quality);
+      const img = new Image();
+      await new Promise((resolve, reject) => {
+        img.onload = resolve;
+        img.onerror = reject;
+        img.src = jpegDataUrl;
+      });
+      const bakedCanvas = document.createElement("canvas");
+      bakedCanvas.width = canvas.width;
+      bakedCanvas.height = canvas.height;
+      const ctx = bakedCanvas.getContext("2d");
+      ctx.drawImage(img, 0, 0);
+      return bakedCanvas;
+    }
+
+    // Has text layer(s) that bypass JPEG Quality:
+    const baseCanvas = createChatCanvas(null, { isExport: true, textLayerFilter: "jpeg-affected" });
+    const outputCanvas = document.createElement("canvas");
+    outputCanvas.width = getCanvasWidth();
+    outputCanvas.height = getCanvasHeight();
+    const outCtx = outputCanvas.getContext("2d");
+
+    if (quality < 0.98 && hasImage) {
+      const jpegDataUrl = baseCanvas.toDataURL("image/jpeg", quality);
+      const img = new Image();
+      await new Promise((resolve, reject) => {
+        img.onload = resolve;
+        img.onerror = reject;
+        img.src = jpegDataUrl;
+      });
+      outCtx.drawImage(img, 0, 0);
+    } else {
+      outCtx.drawImage(baseCanvas, 0, 0);
+    }
+
+    createChatCanvas(outputCanvas, {
+      isExport: true,
+      clearCanvas: false,
+      textLayerFilter: "jpeg-unaffected"
     });
-    const bakedCanvas = document.createElement("canvas");
-    bakedCanvas.width = canvas.width;
-    bakedCanvas.height = canvas.height;
-    const ctx = bakedCanvas.getContext("2d");
-    ctx.drawImage(img, 0, 0);
-    return bakedCanvas;
+
+    return outputCanvas;
   }
 
   async function copyCanvasAsPng() {
@@ -6912,17 +7240,47 @@
     }
   }
 
-  function downloadCanvasAsJpeg() {
+  async function downloadCanvasAsJpeg() {
     try {
       if (hasActiveGifLayer()) {
         downloadCanvasAsGif();
         return;
       }
-      const canvas = createChatCanvas(null, { isExport: true, forceBlackBg: true });
       const quality = getJpegQuality();
+      const hasUnaffectedText = layers.some(l => l.type === "text" && l.visible !== false && !isLayerAffectedByJpegQuality(l));
+
+      let exportDataUrl;
+      if (hasUnaffectedText && quality < 0.98) {
+        const baseCanvas = createChatCanvas(null, { isExport: true, forceBlackBg: true, textLayerFilter: "jpeg-affected" });
+        const jpegDataUrl = baseCanvas.toDataURL("image/jpeg", quality);
+        const img = new Image();
+        await new Promise((resolve, reject) => {
+          img.onload = resolve;
+          img.onerror = reject;
+          img.src = jpegDataUrl;
+        });
+
+        const outputCanvas = document.createElement("canvas");
+        outputCanvas.width = getCanvasWidth();
+        outputCanvas.height = getCanvasHeight();
+        const outCtx = outputCanvas.getContext("2d");
+        outCtx.drawImage(img, 0, 0);
+
+        createChatCanvas(outputCanvas, {
+          isExport: true,
+          clearCanvas: false,
+          textLayerFilter: "jpeg-unaffected"
+        });
+
+        exportDataUrl = outputCanvas.toDataURL("image/jpeg", 0.98);
+      } else {
+        const canvas = createChatCanvas(null, { isExport: true, forceBlackBg: true });
+        exportDataUrl = canvas.toDataURL("image/jpeg", quality);
+      }
+
       const link = document.createElement("a");
       link.download = "gta-rp-chatlog.jpeg";
-      link.href = canvas.toDataURL("image/jpeg", quality);
+      link.href = exportDataUrl;
       link.click();
     } catch (err) {
       console.error("Failed to download JPEG:", err);
@@ -8315,6 +8673,18 @@
     updateDomLayers();
     scheduleJpegPreview();
   });
+
+  if (textJpegQualityBtn) {
+    textJpegQualityBtn.addEventListener("click", toggleTextJpegQuality);
+  }
+
+  if (inspectorTextJpegQualityBtn) {
+    inspectorTextJpegQualityBtn.addEventListener("click", toggleTextJpegQuality);
+  }
+
+  if (inputPaneJpegQualityBtn) {
+    inputPaneJpegQualityBtn.addEventListener("click", toggleTextJpegQuality);
+  }
 
   if (openSettingsModalButton) {
     openSettingsModalButton.addEventListener("click", openSettingsModal);
