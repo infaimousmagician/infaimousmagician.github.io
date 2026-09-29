@@ -2192,9 +2192,9 @@
         <span id="backgroundOpacityValue">100%</span>
       </label>
 
-      <div class="toolbar-divider"></div>
+      <div class="toolbar-divider" id="textJpegQualityDivider" style="display: none;"></div>
 
-      <button type="button" id="textJpegQualityBtn" class="btn btn-sm btn-text-jpeg is-affected" title="Toggle whether JPEG Quality affects the appearance of this chatlog text">
+      <button type="button" id="textJpegQualityBtn" class="btn btn-sm btn-text-jpeg is-affected" style="display: none;" title="Toggle whether JPEG Quality affects the appearance of this chatlog text">
         <span id="textJpegQualityIcon" style="font-size: 11px;">📉</span>
         <span id="textJpegQualityText">JPEG Affects Text: ON</span>
       </button>
@@ -2262,7 +2262,6 @@
         <div style="display: flex; align-items: center; gap: 8px;">
           <span>Input</span>
           <span id="activeTextLayerBadge" class="active-text-layer-badge" title="Active Chatlog Layer">Chatlog Text 1</span>
-          <button type="button" id="inputPaneJpegQualityBtn" class="btn-text-badge-toggle is-affected" title="Toggle whether JPEG Quality affects the appearance of this chatlog text">JPEG Affects Text: ON</button>
         </div>
         <div class="quick-char-wrapper" style="display: flex; align-items: center; gap: 6px;" title="Set your character's name to automatically differentiate say dialogue (yours in white, others slightly darker)">
           <span style="font-size: 11px; color: #8c8c8c; font-weight: normal;">Character:</span>
@@ -2772,7 +2771,7 @@
   const textJpegQualityBtn = document.getElementById("textJpegQualityBtn");
   const textJpegQualityIcon = document.getElementById("textJpegQualityIcon");
   const textJpegQualityText = document.getElementById("textJpegQualityText");
-  const inputPaneJpegQualityBtn = document.getElementById("inputPaneJpegQualityBtn");
+  const textJpegQualityDivider = document.getElementById("textJpegQualityDivider");
   const layerScaleRow = document.getElementById("layerScaleRow");
   const layerScaleInput = document.getElementById("layerScaleInput");
   const layerScaleValue = document.getElementById("layerScaleValue");
@@ -3415,6 +3414,7 @@
         }
       }
       updateAtmosphereDom();
+      updateTextJpegQualityButtonUI();
     } catch (err) {
       console.warn("Could not load settings from localStorage:", err);
     }
@@ -3900,18 +3900,27 @@
     const isTextSelected = Boolean(selected && selected.type === "text");
     const layer = isTextSelected ? selected : getActiveTextLayer();
     const isAffected = isLayerAffectedByJpegQuality(layer);
+    const quality = getJpegQuality();
+    const isBelow100 = quality < 0.999;
 
     if (textJpegQualityBtn) {
-      if (isAffected) {
-        textJpegQualityBtn.className = "btn btn-sm btn-text-jpeg is-affected";
-        textJpegQualityBtn.title = "JPEG Quality affects the appearance of this chatlog text. Click to disable (makes text crisp & uncompressed).";
-        if (textJpegQualityIcon) textJpegQualityIcon.textContent = "📉";
-        if (textJpegQualityText) textJpegQualityText.textContent = "JPEG Affects Text: ON";
+      if (!isBelow100) {
+        textJpegQualityBtn.style.display = "none";
+        if (textJpegQualityDivider) textJpegQualityDivider.style.display = "none";
       } else {
-        textJpegQualityBtn.className = "btn btn-sm btn-text-jpeg is-crisp";
-        textJpegQualityBtn.title = "Chatlog text is protected from JPEG quality degradation. Click to allow JPEG Quality on text.";
-        if (textJpegQualityIcon) textJpegQualityIcon.textContent = "✨";
-        if (textJpegQualityText) textJpegQualityText.textContent = "JPEG Affects Text: OFF";
+        textJpegQualityBtn.style.display = "inline-flex";
+        if (textJpegQualityDivider) textJpegQualityDivider.style.display = "";
+        if (isAffected) {
+          textJpegQualityBtn.className = "btn btn-sm btn-text-jpeg is-affected";
+          textJpegQualityBtn.title = "JPEG Quality affects the appearance of this chatlog text. Click to disable (makes text uncompressed).";
+          if (textJpegQualityIcon) textJpegQualityIcon.textContent = "📉";
+          if (textJpegQualityText) textJpegQualityText.textContent = "JPEG Affects Text: ON";
+        } else {
+          textJpegQualityBtn.className = "btn btn-sm btn-text-jpeg is-crisp";
+          textJpegQualityBtn.title = "Chatlog text is protected from JPEG quality degradation. Click to allow JPEG Quality on text.";
+          if (textJpegQualityIcon) textJpegQualityIcon.textContent = "✨";
+          if (textJpegQualityText) textJpegQualityText.textContent = "JPEG Affects Text: OFF";
+        }
       }
     }
 
@@ -3924,19 +3933,6 @@
         inspectorTextJpegQualityBtn.className = "btn btn-xs btn-layer-opt is-crisp";
         inspectorTextJpegQualityBtn.title = "Protected from JPEG compression. Click to allow JPEG Quality.";
         inspectorTextJpegQualityBtn.innerHTML = `<span>Affects Text: OFF</span>`;
-      }
-    }
-
-    if (inputPaneJpegQualityBtn) {
-      inputPaneJpegQualityBtn.style.display = isTextSelected ? "inline-block" : "none";
-      if (isAffected) {
-        inputPaneJpegQualityBtn.className = "btn-text-badge-toggle is-affected";
-        inputPaneJpegQualityBtn.title = "JPEG Quality affects this text. Click to disable JPEG Quality on text.";
-        inputPaneJpegQualityBtn.textContent = "JPEG Affects Text: ON";
-      } else {
-        inputPaneJpegQualityBtn.className = "btn-text-badge-toggle is-crisp";
-        inputPaneJpegQualityBtn.title = "Text is protected from JPEG compression. Click to enable JPEG Quality on text.";
-        inputPaneJpegQualityBtn.textContent = "JPEG Affects Text: OFF";
       }
     }
   }
@@ -4534,12 +4530,6 @@
       } else {
         activeTextLayerBadge.style.display = "none";
       }
-    }
-
-    if (inputPaneJpegQualityBtn) {
-      const selected = getSelectedLayer();
-      const isText = Boolean(selected && selected.type === "text");
-      inputPaneJpegQualityBtn.style.display = isText ? "inline-block" : "none";
     }
 
     if (textLayersSwitcher) {
@@ -7497,6 +7487,7 @@
   jpegQualityInput.addEventListener("input", () => {
     const qualityPercent = Math.round(jpegQualityInput.value * 100);
     jpegQualityValue.textContent = qualityPercent + "%";
+    updateTextJpegQualityButtonUI();
     scheduleJpegPreview();
     saveCurrentSettingsDebounced();
   });
@@ -7504,6 +7495,7 @@
   jpegQualityInput.addEventListener("change", () => {
     const qualityPercent = Math.round(jpegQualityInput.value * 100);
     jpegQualityValue.textContent = qualityPercent + "%";
+    updateTextJpegQualityButtonUI();
     scheduleJpegPreview();
     saveCurrentSettings();
   });
@@ -8680,10 +8672,6 @@
 
   if (inspectorTextJpegQualityBtn) {
     inspectorTextJpegQualityBtn.addEventListener("click", toggleTextJpegQuality);
-  }
-
-  if (inputPaneJpegQualityBtn) {
-    inputPaneJpegQualityBtn.addEventListener("click", toggleTextJpegQuality);
   }
 
   if (openSettingsModalButton) {
