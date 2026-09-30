@@ -2551,56 +2551,6 @@
     </div>
   </div>
 
-  <!-- Missing Asterisk Action Reminder Modal -->
-  <div id="actionCheckModal" class="modal-backdrop" style="display: none;" role="dialog" aria-label="Action Asterisk Reminder">
-    <div class="modal-dialog" style="width: 580px;">
-      <div class="modal-header">
-        <div class="modal-title">
-          <span style="font-size: 16px;">⚠️</span>
-          <span>Missing Action Asterisks Reminder</span>
-          <span id="actionCheckCountBadge" class="badge" style="background: rgba(255, 179, 71, 0.16); color: #ffb347; border: 1px solid rgba(255, 179, 71, 0.4); font-size: 11px; padding: 1px 7px; border-radius: 999px; font-weight: 700;">1 found</span>
-        </div>
-        <button type="button" id="closeActionCheckModalBtn" class="toast-close" title="Close modal (Esc)">&times;</button>
-      </div>
-      <div class="modal-body" style="gap: 13px; max-height: 72vh;">
-        <div style="font-size: 13px; color: #d6d6d6; line-height: 1.5;">
-          We detected character actions in your dialogue that are <strong>not surrounded by asterisks (<code>*</code>)</strong>. In GTA RP, inline actions are wrapped in asterisks so they render in purple action color instead of normal speech:
-        </div>
-
-        <div id="actionCheckList" style="display: flex; flex-direction: column; gap: 8px; max-height: 44vh; overflow-y: auto; padding-right: 2px;">
-          <!-- Dynamically populated with detected lines -->
-        </div>
-
-        <div style="background: rgba(0, 223, 130, 0.08); border: 1px solid rgba(0, 223, 130, 0.25); border-radius: 6px; padding: 9px 12px; font-size: 12px; color: #d0d0d0; line-height: 1.45; display: flex; align-items: flex-start; gap: 8px;">
-          <span style="font-size: 14px; line-height: 1; margin-top: 1px;">💡</span>
-          <div>
-            Click <strong>✨ Auto-Fix & Upload</strong> to automatically wrap detected actions in <code>*...*</code>, update your canvas, and continue uploading to ImgBB immediately.
-          </div>
-        </div>
-
-        <div style="display: flex; justify-content: flex-end; align-items: center; margin-top: -2px;">
-          <label style="display: inline-flex; align-items: center; gap: 6px; font-size: 11.5px; color: #888888; cursor: pointer; user-select: none;">
-            <input type="checkbox" id="dontRemindActionAsterisksCheckbox" />
-            <span>Don't remind me again</span>
-          </label>
-        </div>
-      </div>
-      <div class="modal-footer" style="display: flex; justify-content: space-between; align-items: center; gap: 8px;">
-        <button type="button" id="actionCheckUploadAnywayBtn" class="btn btn-neutral btn-sm" title="Upload to ImgBB without modifying chatlog">
-          Upload Anyway
-        </button>
-        <div style="display: flex; gap: 8px;">
-          <button type="button" id="actionCheckEditBtn" class="btn btn-neutral btn-sm" title="Return to editor to inspect and edit chatlog">
-            Review / Edit Input
-          </button>
-          <button type="button" id="actionCheckAutoFixBtn" class="btn btn-accent btn-sm" style="font-weight: 700;" title="Automatically add asterisks to detected actions and upload">
-            ✨ Auto-Fix & Upload
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
-
   <!-- Settings & Preferences Modal -->
   <div id="settingsModal" class="modal-backdrop" style="display: none;" role="dialog" aria-label="Application Settings">
     <div class="modal-dialog" style="width: 520px;">
@@ -2683,23 +2633,6 @@
             </div>
             <div class="settings-help-text">
               Paste any YouTube song or video link (e.g., <code>https://www.youtube.com/watch?v=...</code> or <code>https://youtu.be/...</code>). The 🎵 button in the header will play this track on repeat. This setting is saved permanently and is preserved even when resetting other configurations.
-            </div>
-          </div>
-        </div>
-
-        <!-- Section: Formatting & Export Preferences -->
-        <div class="settings-section">
-          <div class="settings-section-title">
-            <span>✨</span>
-            <span>Formatting & Export</span>
-          </div>
-          <div class="settings-field-group">
-            <label class="control" style="display: inline-flex; align-items: center; gap: 8px; cursor: pointer; color: #ddd; font-size: 13px;">
-              <input id="warnUnenclosedActionsToggle" type="checkbox" checked />
-              <span>Remind if say dialogue actions are missing asterisks (*) before uploading to ImgBB</span>
-            </label>
-            <div class="settings-help-text">
-              Detects character actions in speech (e.g. <code>chuckles</code>, <code>sighs</code>, <code>shakes head</code>) that lack surrounding <code>*...*</code> asterisks before uploading to ImgBB, letting you review or auto-wrap them so they render in purple action color.
             </div>
           </div>
         </div>
@@ -2807,16 +2740,6 @@
   const customMusicUrlStatus = document.getElementById("customMusicUrlStatus");
   const resetMusicToDefaultBtn = document.getElementById("resetMusicToDefaultBtn");
   const toastContainer = document.getElementById("toastContainer");
-
-  const actionCheckModal = document.getElementById("actionCheckModal");
-  const closeActionCheckModalBtn = document.getElementById("closeActionCheckModalBtn");
-  const actionCheckList = document.getElementById("actionCheckList");
-  const actionCheckCountBadge = document.getElementById("actionCheckCountBadge");
-  const actionCheckAutoFixBtn = document.getElementById("actionCheckAutoFixBtn");
-  const actionCheckEditBtn = document.getElementById("actionCheckEditBtn");
-  const actionCheckUploadAnywayBtn = document.getElementById("actionCheckUploadAnywayBtn");
-  const dontRemindActionAsterisksCheckbox = document.getElementById("dontRemindActionAsterisksCheckbox");
-  const warnUnenclosedActionsToggle = document.getElementById("warnUnenclosedActionsToggle");
 
   const layersPane = document.getElementById("layersPane");
   const layersList = document.getElementById("layersList");
@@ -3051,7 +2974,6 @@
     canvasHeight: 600,
     jpegQuality: 1,
     jpegAffectsText: true,
-    warnUnenclosedActions: true,
     atmospherePreset: "none",
     filterIntensity: 1,
     vignette: false,
@@ -3267,7 +3189,6 @@
         canvasHeight: Number(canvasHeightInput.value) || DEFAULT_SETTINGS.canvasHeight,
         jpegQuality: Number(jpegQualityInput.value) || DEFAULT_SETTINGS.jpegQuality,
         jpegAffectsText: isLayerAffectedByJpegQuality(getActiveTextLayer()),
-        warnUnenclosedActions: warnUnenclosedActionsToggle ? warnUnenclosedActionsToggle.checked : (DEFAULT_SETTINGS.warnUnenclosedActions !== false),
         atmospherePreset: (() => {
           const bg = layers.find(l => l.type === "background");
           return bg && bg.filter ? bg.filter : (atmospherePresetSelect ? atmospherePresetSelect.value : DEFAULT_SETTINGS.atmospherePreset);
@@ -3443,10 +3364,6 @@
           }
         });
       }
-      if (typeof s.warnUnenclosedActions === "boolean") {
-        DEFAULT_SETTINGS.warnUnenclosedActions = s.warnUnenclosedActions;
-        if (warnUnenclosedActionsToggle) warnUnenclosedActionsToggle.checked = s.warnUnenclosedActions;
-      }
       if (typeof s.atmospherePreset === "string") {
         const mappedPreset = s.atmospherePreset === "cold" ? "invert" : s.atmospherePreset;
         const bgLayer = layers.find(l => l.type === "background");
@@ -3553,8 +3470,6 @@
       if (jpegQualityValue) jpegQualityValue.textContent = "100%";
     }
     DEFAULT_SETTINGS.jpegAffectsText = true;
-    DEFAULT_SETTINGS.warnUnenclosedActions = true;
-    if (warnUnenclosedActionsToggle) warnUnenclosedActionsToggle.checked = true;
     layers.forEach(l => {
       if (l.type === "text") {
         l.jpegAffectsText = true;
@@ -8562,571 +8477,145 @@
     return copied;
   }
 
-  // -------------------------------------------------------------
-  // Un-enclosed Action Asterisk Detection & Warning for ImgBB
-  // -------------------------------------------------------------
-  const UNENCLOSED_ACTION_PATTERNS = [
-    // Multi-word action phrases (checked first)
-    { label: "shakes head", regex: /\b(?:shakes|shaking)\s+(?:his\s+|her\s+|their\s+)?head\b/gi },
-    { label: "nods head", regex: /\b(?:nods|nodding)\s+(?:his\s+|her\s+|their\s+)?head\b/gi },
-    { label: "rolls eyes", regex: /\b(?:rolls|rolling)\s+(?:his\s+|her\s+|their\s+)?eyes\b/gi },
-    { label: "clears throat", regex: /\b(?:clears|clearing)\s+(?:his\s+|her\s+|their\s+)?throat\b/gi },
-    { label: "crosses arms", regex: /\b(?:crosses|crossing)\s+(?:his\s+|her\s+|their\s+)?arms\b/gi },
-    { label: "raises eyebrow", regex: /\braises\s+(?:an\s+|his\s+|her\s+|their\s+)?eyebrow\b/gi },
-    { label: "bites lip", regex: /\bbites\s+(?:his\s+|her\s+|their\s+)?lip\b/gi },
-    { label: "scratches head", regex: /\bscratches\s+(?:his\s+|her\s+|their\s+)?head\b/gi },
-    { label: "rubs neck", regex: /\brubs\s+(?:the\s+back\s+of\s+|his\s+|her\s+|their\s+)?neck\b/gi },
-    { label: "glances around", regex: /\bglances\s+(?:around|away|back)\b/gi },
-    { label: "looks around", regex: /\blooks\s+(?:around|away|down|back)\b/gi },
-    { label: "waves hand", regex: /\bwaves\s+(?:his\s+|her\s+|their\s+)?hand\b/gi },
-    { label: "points at", regex: /\bpoints\s+(?:at|to|towards)\b/gi },
-
-    // Single-word common GTA RP action verbs
-    { label: "chuckles", regex: /\b(?:chuckles|chuckle|chuckling)\b/gi },
-    { label: "snickers", regex: /\b(?:snickers|snicker|snickering)\b/gi },
-    { label: "giggles", regex: /\b(?:giggles|giggle|giggling)\b/gi },
-    { label: "laughs", regex: /\b(?:laughs|laugh|laughing)\b/gi },
-    { label: "cackles", regex: /\b(?:cackles|cackle|cackling)\b/gi },
-    { label: "sighs", regex: /\b(?:sighs|sigh|sighing)\b/gi },
-    { label: "smirks", regex: /\b(?:smirks|smirk|smirking)\b/gi },
-    { label: "grins", regex: /\b(?:grins|grin|grinning)\b/gi },
-    { label: "smiles", regex: /\b(?:smiles|smile|smiling)\b/gi },
-    { label: "beams", regex: /\b(?:beams|beam|beaming)\b/gi },
-    { label: "nods", regex: /\b(?:nods|nod|nodding)\b/gi },
-    { label: "shrugs", regex: /\b(?:shrugs|shrug|shrugging)\b/gi },
-    { label: "frowns", regex: /\b(?:frowns|frown|frowning)\b/gi },
-    { label: "scowls", regex: /\b(?:scowls|scowl|scowling)\b/gi },
-    { label: "scoffs", regex: /\b(?:scoffs|scoff|scoffing)\b/gi },
-    { label: "glares", regex: /\b(?:glares|glare|glaring)\b/gi },
-    { label: "winks", regex: /\b(?:winks|wink|winking)\b/gi },
-    { label: "blinks", regex: /\b(?:blinks|blink|blinking)\b/gi },
-    { label: "squints", regex: /\b(?:squints|squint|squinting)\b/gi },
-    { label: "grimaces", regex: /\b(?:grimaces|grimace|grimacing)\b/gi },
-    { label: "winces", regex: /\b(?:winces|wince|wincing)\b/gi },
-    { label: "gasps", regex: /\b(?:gasps|gasp|gasping)\b/gi },
-    { label: "groans", regex: /\b(?:groans|groan|groaning)\b/gi },
-    { label: "grunts", regex: /\b(?:grunts|grunt|grunting)\b/gi },
-    { label: "huffs", regex: /\b(?:huffs|huff|huffing)\b/gi },
-    { label: "snarls", regex: /\b(?:snarls|snarl|snarling)\b/gi },
-    { label: "growls", regex: /\b(?:growls|growl|growling)\b/gi },
-    { label: "yawns", regex: /\b(?:yawns|yawn|yawning)\b/gi },
-    { label: "coughs", regex: /\b(?:coughs|cough|coughing)\b/gi },
-    { label: "gulps", regex: /\b(?:gulps|gulp|gulping)\b/gi },
-    { label: "snorts", regex: /\b(?:snorts|snort|snorting)\b/gi },
-    { label: "wheezes", regex: /\b(?:wheezes|wheeze|wheezing)\b/gi },
-    { label: "mutters", regex: /\b(?:mutters|mutter|muttering)\b/gi },
-    { label: "murmurs", regex: /\b(?:murmurs|murmur|murmuring)\b/gi },
-    { label: "hums", regex: /\b(?:hums|hum|humming)\b/gi },
-    { label: "stammers", regex: /\b(?:stammers|stammer|stammering)\b/gi },
-    { label: "stutters", regex: /\b(?:stutters|stutter|stuttering)\b/gi },
-    { label: "whimpers", regex: /\b(?:whimpers|whimper|whimpering)\b/gi },
-    { label: "whines", regex: /\b(?:whines|whine|whining)\b/gi },
-    { label: "sniffs", regex: /\b(?:sniffs|sniff|sniffing)\b/gi },
-    { label: "sobs", regex: /\b(?:sobs|sob|sobbing)\b/gi },
-    { label: "swallows", regex: /\b(?:swallows|swallow|swallowing)\b/gi },
-    { label: "chokes", regex: /\b(?:chokes|choke|choking)\b/gi },
-    { label: "spits", regex: /\b(?:spits|spit|spitting)\b/gi },
-    { label: "shushes", regex: /\b(?:shushes|shush|shushing)\b/gi },
-    { label: "hisses", regex: /\b(?:hisses|hiss|hissing)\b/gi },
-    { label: "pouts", regex: /\b(?:pouts|pout|pouting)\b/gi },
-    { label: "sneers", regex: /\b(?:sneers|sneer|sneering)\b/gi },
-    { label: "blushes", regex: /\b(?:blushes|blush|blushing)\b/gi },
-    { label: "peers", regex: /\b(?:peers|peer|peering)\b/gi },
-    { label: "glances", regex: /\b(?:glances|glance|glancing)\b/gi },
-    { label: "glowers", regex: /\b(?:glowers|glower|glowering)\b/gi },
-    { label: "facepalms", regex: /\b(?:facepalms|facepalm)\b/gi },
-    { label: "pauses", regex: /\b(?:pauses|pause|pausing)\b/gi },
-    { label: "hesitates", regex: /\b(?:hesitates|hesitate|hesitating)\b/gi },
-    { label: "gestures", regex: /\b(?:gestures|gesture|gesturing)\b/gi },
-    { label: "waves", regex: /\b(?:waves|wave|waving)\b/gi },
-    { label: "points", regex: /\b(?:points|point|pointing)\b/gi },
-    { label: "shivers", regex: /\b(?:shivers|shiver|shivering)\b/gi },
-    { label: "trembles", regex: /\b(?:trembles|tremble|trembling)\b/gi },
-    { label: "shudders", regex: /\b(?:shudders|shudder|shuddering)\b/gi },
-    { label: "flinches", regex: /\b(?:flinches|flinch|flinching)\b/gi },
-    { label: "fidgets", regex: /\b(?:fidgets|fidget|fidgeting)\b/gi },
-    { label: "cringes", regex: /\b(?:cringes|cringe|cringing)\b/gi },
-    { label: "stretches", regex: /\b(?:stretches|stretch|stretching)\b/gi },
-    { label: "salutes", regex: /\b(?:salutes|salute|saluting)\b/gi },
-    { label: "bows", regex: /\b(?:bows|bow|bowing)\b/gi },
-    { label: "slumps", regex: /\b(?:slumps|slump|slumping)\b/gi },
-    { label: "leans", regex: /\b(?:leans|lean|leaning)\b/gi },
-    { label: "applauds", regex: /\b(?:applauds|applaud|applauding)\b/gi },
-    { label: "claps", regex: /\b(?:claps|clap|clapping)\b/gi },
-    { label: "snaps", regex: /\b(?:snaps|snap|snapping)\b/gi },
-    { label: "scratches", regex: /\b(?:scratches|scratch|scratching)\b/gi },
-    { label: "taps", regex: /\b(?:taps|tap|tapping)\b/gi },
-    { label: "kneels", regex: /\b(?:kneels|kneel|kneeling)\b/gi },
-    { label: "ducks", regex: /\b(?:ducks|duck|ducking)\b/gi },
-    { label: "dodges", regex: /\b(?:dodges|dodge|dodging)\b/gi },
-    { label: "stumbles", regex: /\b(?:stumbles|stumble|stumbling)\b/gi },
-    { label: "paces", regex: /\b(?:paces|pace|pacing)\b/gi },
-    { label: "shuffles", regex: /\b(?:shuffles|shuffle|shuffling)\b/gi }
-  ];
-
-  function parseSpeechDialogue(line) {
-    if (!line || typeof line !== "string") return null;
-
-    // Check if line contains a dialogue/say verb followed by colon
-    const speechMatch = line.match(/^(.*?\b(?:says|whispers|shouts|yells|screams|calls|asks|exclaims)\b[^:]*:\s*)(.*)$/i);
-    if (!speechMatch) {
-      const phoneMatch = line.match(/^(.*?\b(?:calls|phone)\b[^:]*:\s*)(.*)$/i);
-      if (phoneMatch) {
-        return {
-          prefix: phoneMatch[1],
-          dialogue: phoneMatch[2]
-        };
-      }
-      return null;
-    }
-
-    return {
-      prefix: speechMatch[1],
-      dialogue: speechMatch[2]
-    };
-  }
-
-  function detectUnasteriskedActions() {
-    const results = [];
-    const textLayers = layers.filter(l => l.type === "text");
-
-    const activeLayer = getActiveTextLayer();
-    if (activeLayer && input) {
-      activeLayer.text = input.value;
-    }
-
-    textLayers.forEach(layer => {
-      const rawText = (targetLayerMatchesActive(layer, activeLayer) && input) ? input.value : (layer.text || "");
-      if (!rawText) return;
-
-      const lines = rawText.split(/\r?\n/);
-      lines.forEach((line, lineIndex) => {
-        const parsed = parseSpeechDialogue(line);
-        if (!parsed || !parsed.dialogue) return;
-
-        const { prefix, dialogue } = parsed;
-
-        // Collect spans that are already enclosed in asterisks (*...*), italics (/.../), blur (☘...☘), or quotes
-        const protectedRanges = [];
-
-        // 1. Asterisks *...*
-        const astRegex = /\*([^*\r\n]+)\*/g;
-        let m;
-        while ((m = astRegex.exec(dialogue)) !== null) {
-          protectedRanges.push({ start: m.index, end: m.index + m[0].length });
-        }
-
-        // 2. Italics /.../
-        const itRegex = /(?<!\d|\/)\/([^/\r\n]+)\/(?!\d|\/)/g;
-        while ((m = itRegex.exec(dialogue)) !== null) {
-          protectedRanges.push({ start: m.index, end: m.index + m[0].length });
-        }
-
-        // 3. Blur ☘...☘
-        const blRegex = /☘([^☘\r\n]+)☘/g;
-        while ((m = blRegex.exec(dialogue)) !== null) {
-          protectedRanges.push({ start: m.index, end: m.index + m[0].length });
-        }
-
-        // 4. Quotes "..." or '...'
-        const quoteRegex = /"([^"\r\n]+)"|'([^'\r\n]+)'/g;
-        while ((m = quoteRegex.exec(dialogue)) !== null) {
-          protectedRanges.push({ start: m.index, end: m.index + m[0].length });
-        }
-
-        const lineMatches = [];
-        const matchedSpans = [];
-
-        for (const pattern of UNENCLOSED_ACTION_PATTERNS) {
-          pattern.regex.lastIndex = 0;
-          let match;
-          while ((match = pattern.regex.exec(dialogue)) !== null) {
-            const matchStart = match.index;
-            const matchEnd = match.index + match[0].length;
-
-            // Inside an already protected range?
-            const isProtected = protectedRanges.some(r =>
-              (matchStart >= r.start && matchStart < r.end) ||
-              (matchEnd > r.start && matchEnd <= r.end)
-            );
-            if (isProtected) continue;
-
-            // Already captured by a longer multi-word pattern?
-            const isCovered = matchedSpans.some(s =>
-              (matchStart >= s.start && matchStart < s.end) ||
-              (matchEnd > s.start && matchEnd <= s.end)
-            );
-            if (isCovered) continue;
-
-            // Check boundary characters
-            const charBefore = matchStart > 0 ? dialogue[matchStart - 1] : "";
-            const charAfter = matchEnd < dialogue.length ? dialogue[matchEnd] : "";
-            if (charBefore === "*" || charAfter === "*") continue;
-
-            // If preceded by standard English subject pronouns or determiners (e.g. "she smiles", "he chuckles", "a laugh")
-            const textBefore = dialogue.slice(0, matchStart);
-            if (/(?:\b(?:he|she|it|who|which|that|someone|anyone|everyone|nobody|the|a|an|my|your|his|her|their|our))\s+$/i.test(textBefore)) {
-              continue;
-            }
-
-            matchedSpans.push({ start: matchStart, end: matchEnd });
-            lineMatches.push({
-              actionText: match[0],
-              startInDialogue: matchStart,
-              endInDialogue: matchEnd,
-              startInLine: prefix.length + matchStart,
-              endInLine: prefix.length + matchEnd
-            });
-          }
-        }
-
-        if (lineMatches.length > 0) {
-          lineMatches.sort((a, b) => a.startInDialogue - b.startInDialogue);
-          results.push({
-            layerId: layer.id,
-            layerName: layer.name || `Chatlog Layer`,
-            lineIndex: lineIndex,
-            lineNumber: lineIndex + 1,
-            originalLine: line,
-            prefix: prefix,
-            dialogue: dialogue,
-            matches: lineMatches
-          });
-        }
-      });
-    });
-
-    return results;
-  }
-
-  function targetLayerMatchesActive(layer, activeLayer) {
-    if (!layer || !activeLayer) return false;
-    return layer.id === activeLayer.id || (selectedLayerId && layer.id === selectedLayerId);
-  }
-
-  function autoFixUnasteriskedActions(detections) {
-    let totalFixed = 0;
-    const activeLayer = getActiveTextLayer();
-    if (activeLayer && input) {
-      activeLayer.text = input.value;
-    }
-
-    const byLayer = {};
-    for (const d of detections) {
-      if (!byLayer[d.layerId]) byLayer[d.layerId] = [];
-      byLayer[d.layerId].push(d);
-    }
-
-    for (const layerId of Object.keys(byLayer)) {
-      const layerDetections = byLayer[layerId];
-      const targetLayer = layers.find(l => l.id === layerId) || (activeLayer?.id === layerId ? activeLayer : null);
-      if (!targetLayer) continue;
-
-      const rawText = (targetLayer.id === activeLayer?.id && input) ? input.value : (targetLayer.text || "");
-      const lines = rawText.split(/\r?\n/);
-
-      for (const item of layerDetections) {
-        if (item.lineIndex < 0 || item.lineIndex >= lines.length) continue;
-
-        let newDialogue = item.dialogue;
-        // Replace from right to left to avoid index shifting
-        const sortedMatches = [...item.matches].sort((a, b) => b.startInDialogue - a.startInDialogue);
-        for (const m of sortedMatches) {
-          const before = newDialogue.slice(0, m.startInDialogue);
-          const after = newDialogue.slice(m.endInDialogue);
-          newDialogue = before + `*${m.actionText}*` + after;
-          totalFixed++;
-        }
-        lines[item.lineIndex] = item.prefix + newDialogue;
-      }
-
-      const updatedText = lines.join("\n");
-      targetLayer.text = updatedText;
-      if (targetLayer.id === activeLayer?.id && input) {
-        input.value = updatedText;
-      }
-    }
-
-    render();
-    scheduleJpegPreview();
-    updateDomLayers();
-    saveCurrentSettingsDebounced();
-
-    return totalFixed;
-  }
-
-  let currentActionDetections = [];
-
-  function openActionCheckModal(detections) {
-    currentActionDetections = detections;
-    if (!actionCheckModal) return;
-
-    if (actionCheckCountBadge) {
-      const totalOccurrences = detections.reduce((sum, d) => sum + d.matches.length, 0);
-      actionCheckCountBadge.textContent = `${totalOccurrences} found`;
-    }
-
-    if (actionCheckList) {
-      actionCheckList.innerHTML = detections.map(item => {
-        let formattedLine = escapeHtml(item.prefix);
-        let lastIdx = 0;
-        for (const m of item.matches) {
-          formattedLine += escapeHtml(item.dialogue.slice(lastIdx, m.startInDialogue));
-          formattedLine += `<mark style="background: rgba(255, 179, 71, 0.22); color: #ffb347; border: 1px solid rgba(255, 179, 71, 0.6); padding: 1px 5px; border-radius: 3px; font-weight: 700;">${escapeHtml(m.actionText)}</mark>`;
-          lastIdx = m.endInDialogue;
-        }
-        formattedLine += escapeHtml(item.dialogue.slice(lastIdx));
-
-        const actionsSummary = item.matches.map(m => `<code>*${escapeHtml(m.actionText)}*</code>`).join(", ");
-
-        return `
-          <div class="action-check-item" style="background: #181818; border: 1px solid #333333; border-radius: 6px; padding: 10px 12px; font-size: 12px;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; font-size: 11px; color: #888888;">
-              <span style="font-weight: 600; color: #bbb;">Line ${item.lineNumber} ${item.layerName ? `(${escapeHtml(item.layerName)})` : ""}</span>
-              <span style="color: #ffb347; font-weight: 600;">Missing: ${actionsSummary}</span>
-            </div>
-            <div style="font-family: monospace; line-height: 1.45; color: #e6e6e6; word-break: break-word; background: #0e0e0e; padding: 6px 8px; border-radius: 4px; border-left: 3px solid #ffb347;">
-              ${formattedLine}
-            </div>
-          </div>
-        `;
-      }).join("");
-    }
-
-    if (dontRemindActionAsterisksCheckbox) {
-      dontRemindActionAsterisksCheckbox.checked = false;
-    }
-
-    actionCheckModal.style.display = "flex";
-  }
-
-  function closeActionCheckModal() {
-    if (!actionCheckModal) return;
-    actionCheckModal.style.display = "none";
-  }
-
-  if (closeActionCheckModalBtn) {
-    closeActionCheckModalBtn.addEventListener("click", closeActionCheckModal);
-  }
-
-  if (actionCheckModal) {
-    actionCheckModal.addEventListener("click", (e) => {
-      if (e.target === actionCheckModal) closeActionCheckModal();
-    });
-  }
-
-  if (actionCheckAutoFixBtn) {
-    actionCheckAutoFixBtn.addEventListener("click", async () => {
-      closeActionCheckModal();
-      if (dontRemindActionAsterisksCheckbox && dontRemindActionAsterisksCheckbox.checked) {
-        DEFAULT_SETTINGS.warnUnenclosedActions = false;
-        if (warnUnenclosedActionsToggle) warnUnenclosedActionsToggle.checked = false;
-        saveCurrentSettings();
-      }
-      const count = autoFixUnasteriskedActions(currentActionDetections);
-      showToast(
-        "success",
-        "Asterisks Auto-Added (*)",
-        `Wrapped ${count} action(s) in asterisks (now rendering in purple). Uploading to ImgBB...`
-      );
-      await performImgbbUpload();
-    });
-  }
-
-  if (actionCheckUploadAnywayBtn) {
-    actionCheckUploadAnywayBtn.addEventListener("click", async () => {
-      closeActionCheckModal();
-      if (dontRemindActionAsterisksCheckbox && dontRemindActionAsterisksCheckbox.checked) {
-        DEFAULT_SETTINGS.warnUnenclosedActions = false;
-        if (warnUnenclosedActionsToggle) warnUnenclosedActionsToggle.checked = false;
-        saveCurrentSettings();
-      }
-      await performImgbbUpload();
-    });
-  }
-
-  if (actionCheckEditBtn) {
-    actionCheckEditBtn.addEventListener("click", () => {
-      closeActionCheckModal();
-      if (currentActionDetections.length > 0) {
-        const first = currentActionDetections[0];
-        if (first.layerId && first.layerId !== selectedLayerId) {
-          selectLayer(first.layerId);
-        }
-        if (input) {
-          input.focus();
-          const lines = input.value.split(/\r?\n/);
-          let charOffset = 0;
-          for (let i = 0; i < first.lineIndex && i < lines.length; i++) {
-            charOffset += lines[i].length + 1;
-          }
-          if (first.matches && first.matches[0]) {
-            charOffset += first.matches[0].startInLine;
-            input.setSelectionRange(charOffset, charOffset + first.matches[0].actionText.length);
-          }
-        }
-      }
-    });
-  }
-
-  async function performImgbbUpload() {
-    if (!uploadImgbbButton) return;
-    const originalHtml = uploadImgbbButton.innerHTML;
-    uploadImgbbButton.disabled = true;
-    uploadImgbbButton.innerHTML = `
-      <svg class="spin-anim" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10" stroke-dasharray="32" stroke-linecap="round"></circle></svg>
-      <span>Uploading to ImgBB...</span>
-    `;
-
-    try {
-      // 1. Resolve API key (localStorage first, then server environment config)
-      let keyToUse = (localStorage.getItem("imgbb_user_key") || "").trim();
-      if (!keyToUse) {
-        try {
-          const keyRes = await fetch("/api/imgbb-key");
-          const keyData = await keyRes.json();
-          if (keyData?.apiKey) {
-            keyToUse = keyData.apiKey.trim();
-          }
-        } catch (e) {
-          console.warn("Could not check server for environment key:", e);
-        }
-      }
-
-      // If still no key, guide user to enter one
-      if (!keyToUse) {
-        openImgbbModal();
-        showToast(
-          "error",
-          "ImgBB API Key Required",
-          "An API key is required to upload directly to ImgBB. Create a free account at <strong>imgbb.com</strong>, navigate to <strong>api.imgbb.com</strong>, and enter your key.",
-          null,
-          { text: "Open Setup Guide", onClick: openImgbbModal }
-        );
-        uploadImgbbButton.innerHTML = originalHtml;
-        uploadImgbbButton.disabled = false;
-        return;
-      }
-
-      // 2. Render image data (GIF if any animated GIF layer is present, or PNG canvas)
-      let blob;
-      let filename = "chatlog.png";
-      const isGif = hasActiveGifLayer();
-
-      if (isGif) {
-        uploadImgbbButton.innerHTML = `
-          <svg class="spin-anim" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10" stroke-dasharray="32" stroke-linecap="round"></circle></svg>
-          <span id="imgbbUploadStatusText">Compiling GIF (0%)...</span>
-        `;
-        const statusSpan = document.getElementById("imgbbUploadStatusText");
-        blob = await renderExportGifBlob((current, total) => {
-          const pct = Math.round((current / total) * 100);
-          if (statusSpan) {
-            statusSpan.textContent = `Compiling GIF (${pct}%)...`;
-          }
-        });
-        uploadImgbbButton.innerHTML = `
-          <svg class="spin-anim" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10" stroke-dasharray="32" stroke-linecap="round"></circle></svg>
-          <span>Uploading GIF to ImgBB...</span>
-        `;
-        filename = "chatlog.gif";
-      } else {
-        const canvas = await getExportCanvas();
-        blob = await new Promise((resolve, reject) => {
-          canvas.toBlob(b => {
-            if (b) resolve(b);
-            else reject(new Error("Failed to generate image from canvas."));
-          }, "image/png");
-        });
-      }
-
-      // 3. Upload directly to ImgBB from browser (ImgBB allows CORS & accepts user residential IP)
-      const fd = new FormData();
-      fd.append("image", blob, filename);
-      fd.append("name", isGif ? "gta-rp-chatlog-gif" : "gta-rp-chatlog");
-
-      const directRes = await fetch(`https://api.imgbb.com/1/upload?key=${encodeURIComponent(keyToUse)}`, {
-        method: "POST",
-        body: fd
-      });
-
-      const rawText = await directRes.text();
-      let directData = null;
-      try {
-        directData = JSON.parse(rawText);
-      } catch {
-        throw new Error("ImgBB service returned an unexpected response. Please verify your connection.");
-      }
-
-      if (!directRes.ok || !directData || !directData.success) {
-        const errMsg = directData?.error?.message || `ImgBB upload failed (Status ${directRes.status})`;
-        if (directData?.error?.code === 100 || errMsg.toLowerCase().includes("api key") || errMsg.toLowerCase().includes("invalid")) {
-          openImgbbModal();
-          throw new Error(`ImgBB rejected the key: ${errMsg}. Please verify your key at api.imgbb.com.`);
-        }
-        throw new Error(errMsg);
-      }
-
-      const uploadedUrl = directData.data.url || directData.data.display_url || directData.data.url_viewer;
-      await copyTextToClipboard(uploadedUrl);
-
-      // Store upload in local history
-      const uploadRecord = {
-        id: "imgbb_" + Date.now() + "_" + Math.random().toString(36).substring(2, 7),
-        url: uploadedUrl,
-        thumbUrl: directData.data?.thumb?.url || directData.data?.display_url || uploadedUrl,
-        deleteUrl: directData.data?.delete_url || "",
-        timestamp: Date.now(),
-        timeFormatted: new Date().toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }) + " at " + new Date().toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' }),
-        isGif: isGif
-      };
-      addImgbbUploadToHistory(uploadRecord);
-
-      uploadImgbbButton.innerHTML = `
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
-        <span>Link Copied! (Ctrl+V)</span>
-      `;
-
-      showToast(
-        "success",
-        isGif ? "Uploaded Animated GIF & Copied!" : "Uploaded to ImgBB & Copied!",
-        `${isGif ? "Animated GIF" : "Image"} uploaded successfully! Direct link copied to clipboard for Ctrl+V: <a href="${uploadedUrl}" target="_blank" rel="noopener noreferrer" class="toast-link">${uploadedUrl}</a>`,
-        uploadedUrl,
-        { text: "View Links 🔗", onClick: openImgbbHistoryModal }
-      );
-
-      setTimeout(() => {
-        uploadImgbbButton.innerHTML = originalHtml;
-        uploadImgbbButton.disabled = false;
-      }, 3200);
-    } catch (err) {
-      console.error("ImgBB upload error:", err);
-      showToast("error", "ImgBB Upload Error", err.message || "Failed to complete upload.");
-      uploadImgbbButton.innerHTML = `<span>Upload Failed</span>`;
-      setTimeout(() => {
-        uploadImgbbButton.innerHTML = originalHtml;
-        uploadImgbbButton.disabled = false;
-      }, 2200);
-    }
-  }
-
   if (uploadImgbbButton) {
     uploadImgbbButton.addEventListener("click", async () => {
-      // Sync active text layer with input
-      const activeTextLayer = getActiveTextLayer();
-      if (activeTextLayer && input) {
-        activeTextLayer.text = input.value;
-      }
+      const originalHtml = uploadImgbbButton.innerHTML;
+      uploadImgbbButton.disabled = true;
+      uploadImgbbButton.innerHTML = `
+        <svg class="spin-anim" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10" stroke-dasharray="32" stroke-linecap="round"></circle></svg>
+        <span>Uploading to ImgBB...</span>
+      `;
 
-      if (DEFAULT_SETTINGS.warnUnenclosedActions !== false) {
-        const detections = detectUnasteriskedActions();
-        if (detections.length > 0) {
-          openActionCheckModal(detections);
+      try {
+        // 1. Resolve API key (localStorage first, then server environment config)
+        let keyToUse = (localStorage.getItem("imgbb_user_key") || "").trim();
+        if (!keyToUse) {
+          try {
+            const keyRes = await fetch("/api/imgbb-key");
+            const keyData = await keyRes.json();
+            if (keyData?.apiKey) {
+              keyToUse = keyData.apiKey.trim();
+            }
+          } catch (e) {
+            console.warn("Could not check server for environment key:", e);
+          }
+        }
+
+        // If still no key, guide user to enter one
+        if (!keyToUse) {
+          openImgbbModal();
+          showToast(
+            "error",
+            "ImgBB API Key Required",
+            "An API key is required to upload directly to ImgBB. Create a free account at <strong>imgbb.com</strong>, navigate to <strong>api.imgbb.com</strong>, and enter your key.",
+            null,
+            { text: "Open Setup Guide", onClick: openImgbbModal }
+          );
+          uploadImgbbButton.innerHTML = originalHtml;
+          uploadImgbbButton.disabled = false;
           return;
         }
-      }
 
-      await performImgbbUpload();
+        // 2. Render image data (GIF if any animated GIF layer is present, or PNG canvas)
+        let blob;
+        let filename = "chatlog.png";
+        const isGif = hasActiveGifLayer();
+
+        if (isGif) {
+          uploadImgbbButton.innerHTML = `
+            <svg class="spin-anim" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10" stroke-dasharray="32" stroke-linecap="round"></circle></svg>
+            <span id="imgbbUploadStatusText">Compiling GIF (0%)...</span>
+          `;
+          const statusSpan = document.getElementById("imgbbUploadStatusText");
+          blob = await renderExportGifBlob((current, total) => {
+            const pct = Math.round((current / total) * 100);
+            if (statusSpan) {
+              statusSpan.textContent = `Compiling GIF (${pct}%)...`;
+            }
+          });
+          uploadImgbbButton.innerHTML = `
+            <svg class="spin-anim" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10" stroke-dasharray="32" stroke-linecap="round"></circle></svg>
+            <span>Uploading GIF to ImgBB...</span>
+          `;
+          filename = "chatlog.gif";
+        } else {
+          const canvas = await getExportCanvas();
+          blob = await new Promise((resolve, reject) => {
+            canvas.toBlob(b => {
+              if (b) resolve(b);
+              else reject(new Error("Failed to generate image from canvas."));
+            }, "image/png");
+          });
+        }
+
+        // 3. Upload directly to ImgBB from browser (ImgBB allows CORS & accepts user residential IP)
+        const fd = new FormData();
+        fd.append("image", blob, filename);
+        fd.append("name", isGif ? "gta-rp-chatlog-gif" : "gta-rp-chatlog");
+
+        const directRes = await fetch(`https://api.imgbb.com/1/upload?key=${encodeURIComponent(keyToUse)}`, {
+          method: "POST",
+          body: fd
+        });
+
+        const rawText = await directRes.text();
+        let directData = null;
+        try {
+          directData = JSON.parse(rawText);
+        } catch {
+          throw new Error("ImgBB service returned an unexpected response. Please verify your connection.");
+        }
+
+        if (!directRes.ok || !directData || !directData.success) {
+          const errMsg = directData?.error?.message || `ImgBB upload failed (Status ${directRes.status})`;
+          if (directData?.error?.code === 100 || errMsg.toLowerCase().includes("api key") || errMsg.toLowerCase().includes("invalid")) {
+            openImgbbModal();
+            throw new Error(`ImgBB rejected the key: ${errMsg}. Please verify your key at api.imgbb.com.`);
+          }
+          throw new Error(errMsg);
+        }
+
+        const uploadedUrl = directData.data.url || directData.data.display_url || directData.data.url_viewer;
+        await copyTextToClipboard(uploadedUrl);
+
+        // Store upload in local history
+        const uploadRecord = {
+          id: "imgbb_" + Date.now() + "_" + Math.random().toString(36).substring(2, 7),
+          url: uploadedUrl,
+          thumbUrl: directData.data?.thumb?.url || directData.data?.display_url || uploadedUrl,
+          deleteUrl: directData.data?.delete_url || "",
+          timestamp: Date.now(),
+          timeFormatted: new Date().toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }) + " at " + new Date().toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' }),
+          isGif: isGif
+        };
+        addImgbbUploadToHistory(uploadRecord);
+
+        uploadImgbbButton.innerHTML = `
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
+          <span>Link Copied! (Ctrl+V)</span>
+        `;
+
+        showToast(
+          "success",
+          isGif ? "Uploaded Animated GIF & Copied!" : "Uploaded to ImgBB & Copied!",
+          `${isGif ? "Animated GIF" : "Image"} uploaded successfully! Direct link copied to clipboard for Ctrl+V: <a href="${uploadedUrl}" target="_blank" rel="noopener noreferrer" class="toast-link">${uploadedUrl}</a>`,
+          uploadedUrl,
+          { text: "View Links 🔗", onClick: openImgbbHistoryModal }
+        );
+
+        setTimeout(() => {
+          uploadImgbbButton.innerHTML = originalHtml;
+          uploadImgbbButton.disabled = false;
+        }, 3200);
+      } catch (err) {
+        console.error("ImgBB upload error:", err);
+        showToast("error", "ImgBB Upload Error", err.message || "Failed to complete upload.");
+        uploadImgbbButton.innerHTML = `<span>Upload Failed</span>`;
+        setTimeout(() => {
+          uploadImgbbButton.innerHTML = originalHtml;
+          uploadImgbbButton.disabled = false;
+        }, 2200);
+      }
     });
   }
 
@@ -9286,9 +8775,6 @@
 
   document.addEventListener("keydown", (e) => {
     if (e.key === "Escape") {
-      if (actionCheckModal && actionCheckModal.style.display !== "none") {
-        closeActionCheckModal();
-      }
       if (settingsModal && settingsModal.style.display !== "none") {
         closeSettingsModal();
       }
@@ -9300,13 +8786,6 @@
       }
     }
   });
-
-  if (warnUnenclosedActionsToggle) {
-    warnUnenclosedActionsToggle.addEventListener("change", () => {
-      DEFAULT_SETTINGS.warnUnenclosedActions = warnUnenclosedActionsToggle.checked;
-      saveCurrentSettings();
-    });
-  }
 
   if (resetSettingsButton) {
     resetSettingsButton.addEventListener("click", () => {
