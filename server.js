@@ -131,6 +131,130 @@ app.post('/api/upload-imgbb', async (req, res) => {
   }
 });
 
+app.get('/api/imgur-status', (req, res) => {
+  const clientId = process.env.IMGUR_CLIENT_ID ? process.env.IMGUR_CLIENT_ID.trim() : '';
+  res.json({
+    configured: Boolean(clientId && clientId.length > 3),
+    hasEnvKey: Boolean(clientId && clientId.length > 3)
+  });
+});
+
+app.get('/api/imgur-key', (req, res) => {
+  const clientId = process.env.IMGUR_CLIENT_ID ? process.env.IMGUR_CLIENT_ID.trim() : '';
+  res.json({
+    configured: Boolean(clientId && clientId.length > 3),
+    clientId: clientId || null
+  });
+});
+
+app.post('/api/upload-imgur', async (req, res) => {
+  try {
+    const envClientId = process.env.IMGUR_CLIENT_ID ? process.env.IMGUR_CLIENT_ID.trim() : '';
+    const userClientId = req.body?.customClientId ? String(req.body.customClientId).trim() : '';
+    const clientId = userClientId || envClientId;
+
+    if (!clientId) {
+      return res.status(400).json({
+        success: false,
+        needsKey: true,
+        error: 'No Imgur Client ID found. Please enter your free Client ID from api.imgur.com/oauth2/addclient.'
+      });
+    }
+
+    const { image, name, title, description } = req.body || {};
+    if (!image) {
+      return res.status(400).json({
+        success: false,
+        error: 'Missing image data for upload.'
+      });
+    }
+
+    // Strip data URL prefix if present
+    const base64Data = image.replace(/^data:image\/[a-z]+;base64,/, '');
+
+    const formData = new FormData();
+    formData.append('image', base64Data);
+    formData.append('type', 'base64');
+    if (title || name) {
+      formData.append('title', title || name);
+    }
+    if (description) {
+      formData.append('description', description);
+    }
+
+    let imgurResponse;
+    try {
+      imgurResponse = await fetch('https://api.imgur.com/3/image', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Client-ID ${clientId}`,
+          'Accept': 'application/json',
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36'
+        },
+        body: formData,
+      });
+    } catch (netErr) {
+      console.error('Network error contacting Imgur:', netErr);
+      return res.json({
+        success: false,
+        fallbackClientUpload: true,
+        clientKey: clientId,
+        error: 'Direct server connection to Imgur timed out. Trying direct browser upload...'
+      });
+    }
+
+    // Imgur blocks datacenter IPs with 429
+    if (imgurResponse.status === 429) {
+      console.log('Imgur rate-limited server IP (HTTP 429). Instructing browser to upload directly.');
+      return res.json({
+        success: false,
+        fallbackClientUpload: true,
+        clientKey: clientId,
+        error: 'Imgur flagged cloud server IP. Completing upload directly from your browser...'
+      });
+    }
+
+    const rawText = await imgurResponse.text();
+    let data = null;
+    try {
+      data = JSON.parse(rawText);
+    } catch {
+      console.warn('Imgur returned non-JSON response:', rawText.slice(0, 200));
+      return res.json({
+        success: false,
+        fallbackClientUpload: true,
+        clientKey: clientId,
+        error: 'Imgur firewall blocked server IP. Falling back to direct browser upload...'
+      });
+    }
+
+    if (!imgurResponse.ok || !data?.success) {
+      const errMsg = data?.data?.error || `Imgur upload failed (Status ${imgurResponse.status})`;
+      return res.status(imgurResponse.status || 400).json({
+        success: false,
+        error: errMsg
+      });
+    }
+
+    return res.json({
+      success: true,
+      url: data.data.link,
+      display_url: data.data.link,
+      delete_url: data.data.deletehash ? `https://imgur.com/delete/${data.data.deletehash}` : '',
+      deletehash: data.data.deletehash,
+      id: data.data.id,
+      width: data.data.width,
+      height: data.data.height
+    });
+  } catch (err) {
+    console.error('Error in /api/upload-imgur:', err);
+    return res.status(500).json({
+      success: false,
+      error: 'An internal error occurred while processing the upload.'
+    });
+  }
+});
+
 // Express error handler for payload-too-large or parser errors
 app.use((err, req, res, next) => {
   if (err) {

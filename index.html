@@ -1586,7 +1586,6 @@
     position: absolute;
     inset: 0;
     pointer-events: none;
-    z-index: 3;
   }
 
   .active-text-layer-badge {
@@ -1618,6 +1617,9 @@
     word-break: normal;
     transform-origin: top left;
     user-select: none;
+    padding-top: 2px;
+    padding-left: 4px;
+    box-sizing: border-box;
   }
 
   .line {
@@ -1679,6 +1681,7 @@
 
   .timestamp {
     color: #d8d8d8;
+    font-weight: 700;
   }
 
   .say {
@@ -4475,11 +4478,17 @@
           gifReader: gifReader
         };
 
-        layers.push(newLayer);
+        const firstTextIdx = layers.findIndex(l => l.type === "text");
+        if (firstTextIdx !== -1) {
+          layers.splice(firstTextIdx, 0, newLayer);
+        } else {
+          layers.push(newLayer);
+        }
         selectedLayerId = newLayer.id;
 
         renderLayersUI();
         updateDomLayers();
+        renderTextLayersDom();
         updateExportButtonsLabel();
         scheduleJpegPreview();
 
@@ -4868,6 +4877,7 @@
     layers[idx + 1] = temp;
     renderLayersUI();
     updateDomLayers();
+    renderTextLayersDom();
     scheduleJpegPreview();
   }
 
@@ -4879,6 +4889,7 @@
     layers[idx - 1] = temp;
     renderLayersUI();
     updateDomLayers();
+    renderTextLayersDom();
     scheduleJpegPreview();
   }
 
@@ -4898,6 +4909,8 @@
       }
       renderLayersUI();
       updateDomLayers();
+      renderTextLayersDom();
+      updateExportButtonsLabel();
       scheduleJpegPreview();
       updateSelectionBox();
     } else if (targetLayer.type === "text") {
@@ -4917,6 +4930,7 @@
       }
       renderLayersUI();
       updateDomLayers();
+      renderTextLayersDom();
       updateExportButtonsLabel();
       scheduleJpegPreview();
       updateSelectionBox();
@@ -6651,14 +6665,9 @@
     const frames = [];
 
     const pixelBuffer = new Uint8ClampedArray(width * height * 4);
-    let previousBuffer = null;
 
     for (let i = 0; i < numFrames; i++) {
       const frameInfo = reader.frameInfo(i);
-
-      if (frameInfo.disposal === 3 && previousBuffer) {
-        pixelBuffer.set(previousBuffer);
-      }
 
       let saveBefore = null;
       if (frameInfo.disposal === 3) {
@@ -6694,8 +6703,8 @@
             pixelBuffer.fill(0, rowStart, rowEnd);
           }
         }
-      } else if (frameInfo.disposal === 3) {
-        previousBuffer = saveBefore;
+      } else if (frameInfo.disposal === 3 && saveBefore) {
+        pixelBuffer.set(saveBefore);
       }
     }
 
@@ -6716,10 +6725,13 @@
   function updateExportButtonsLabel() {
     const isGif = hasActiveGifLayer();
     if (copyPngButton) {
+      copyPngButton.style.display = "";
       if (isGif) {
-        copyPngButton.style.display = "none";
+        copyPngButton.textContent = "Copy GIF";
+        copyPngButton.title = "Copy animated GIF screenshot to clipboard (or static PNG frame if browser restricts GIF clipboard)";
       } else {
-        copyPngButton.style.display = "";
+        copyPngButton.textContent = "Copy PNG";
+        copyPngButton.title = "Download PNG (transparent background if no background image is added)";
       }
     }
     if (downloadPngButton) {
@@ -6948,6 +6960,90 @@
     return canvas;
   }
 
+  function parseRgbColor(str) {
+    if (!str || typeof str !== "string") return null;
+    const hexMatch = str.trim().match(/^#?([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/);
+    if (hexMatch) {
+      let hex = hexMatch[1];
+      if (hex.length === 3) {
+        hex = hex[0] + hex[0] + hex[1] + hex[1] + hex[2] + hex[2];
+      }
+      const num = parseInt(hex, 16);
+      return [(num >> 16) & 255, (num >> 8) & 255, num & 255];
+    }
+    const rgbMatch = str.match(/rgba?\((\d+)\s*,\s*(\d+)\s*,\s*(\d+)/i);
+    if (rgbMatch) {
+      return [parseInt(rgbMatch[1], 10), parseInt(rgbMatch[2], 10), parseInt(rgbMatch[3], 10)];
+    }
+    return null;
+  }
+
+  function getCoreTextLayerColors(isTransparent = false) {
+    const colorSet = [];
+    const seen = new Set();
+
+    function addColor(c, a = 255) {
+      if (!c) return;
+      const r = Math.min(255, Math.max(0, Math.round(c[0])));
+      const g = Math.min(255, Math.max(0, Math.round(c[1])));
+      const b = Math.min(255, Math.max(0, Math.round(c[2])));
+      const alpha = isTransparent ? (typeof c[3] === "number" ? c[3] : a) : 255;
+      const key = isTransparent ? `${r},${g},${b},${alpha}` : `${r},${g},${b}`;
+      if (!seen.has(key)) {
+        seen.add(key);
+        colorSet.push(isTransparent ? [r, g, b, alpha] : [r, g, b]);
+      }
+    }
+
+    if (isTransparent) {
+      addColor([0, 0, 0, 0]);
+    }
+
+    // Critical dark background / stroke / shadow shades
+    addColor([0, 0, 0]);
+    addColor([255, 255, 255]);
+    addColor([18, 18, 18]);
+    addColor([40, 40, 40]);
+    addColor([75, 75, 75]);
+    addColor([120, 120, 120]);
+    addColor([170, 170, 170]);
+
+    // All standard GTA RP chat colors
+    if (typeof CHAT_COLORS === "object" && CHAT_COLORS) {
+      Object.values(CHAT_COLORS).forEach(hex => {
+        const rgb = parseRgbColor(hex);
+        if (rgb) addColor(rgb);
+      });
+    }
+
+    // Accent clover green
+    addColor([0, 223, 130]);
+
+    // Scan all text layers for custom color codes or text
+    if (Array.isArray(layers)) {
+      layers.forEach(l => {
+        if (l.type !== "text") return;
+        const text = (l.id === selectedLayerId) ? (input ? input.value : "") : (l.text || "");
+        if (!text) return;
+        const matches = text.match(/\{#?[0-9a-fA-F]{3,6}\}/gi);
+        if (matches) {
+          matches.forEach(m => {
+            const raw = m.slice(1, -1);
+            const rgb = parseRgbColor(raw);
+            if (rgb) addColor(rgb);
+          });
+        }
+      });
+    }
+
+    if (customColorHexInput && customColorHexInput.value) {
+      const rgb = parseRgbColor(customColorHexInput.value);
+      if (rgb) addColor(rgb);
+    }
+
+    return colorSet;
+  }
+
   async function renderExportGifBlob(onProgress = null) {
     if (!window.GIFEncoder || !window.quantize || !window.applyPalette) {
       throw new Error("GIF encoding library is not loaded.");
@@ -6972,14 +7068,87 @@
     const cw = getCanvasWidth();
     const ch = getCanvasHeight();
 
+    const hasImage = hasVisibleBackgroundImage();
+    const isTransparent = !hasImage;
+    const format = isTransparent ? "rgba4444" : "rgb565";
+    const disposeMode = isTransparent ? 2 : 1;
+
+    const coreTextColors = getCoreTextLayerColors(isTransparent);
+
+    // Build Master Palette: Sample representative frames to capture visual color range
+    const sampleCanvas = document.createElement("canvas");
+    sampleCanvas.width = cw;
+    sampleCanvas.height = ch;
+    const sampleCtx = sampleCanvas.getContext("2d", { willReadFrequently: true });
+
+    const numSamples = Math.min(maxFrames, 8);
+    const sampleIndices = [];
+    for (let s = 0; s < numSamples; s++) {
+      sampleIndices.push(Math.floor((s * maxFrames) / numSamples));
+    }
+
+    const targetSamplePixels = 60000;
+    const pixelsPerFrame = Math.max(500, Math.floor(targetSamplePixels / sampleIndices.length));
+    const pooledBuffer = new Uint8ClampedArray(pixelsPerFrame * sampleIndices.length * 4);
+    let pooledOffset = 0;
+
+    for (const fIdx of sampleIndices) {
+      sampleCtx.clearRect(0, 0, cw, ch);
+      createChatCanvas(sampleCanvas, {
+        isExport: true,
+        forceBlackBg: !isTransparent,
+        gifFrameIndex: fIdx
+      });
+      const data = sampleCtx.getImageData(0, 0, cw, ch).data;
+      const step = Math.max(1, Math.floor((cw * ch) / pixelsPerFrame));
+      for (let p = 0; p < cw * ch && pooledOffset < pooledBuffer.length; p += step) {
+        const srcIdx = p * 4;
+        pooledBuffer[pooledOffset] = data[srcIdx];
+        pooledBuffer[pooledOffset + 1] = data[srcIdx + 1];
+        pooledBuffer[pooledOffset + 2] = data[srcIdx + 2];
+        pooledBuffer[pooledOffset + 3] = data[srcIdx + 3];
+        pooledOffset += 4;
+      }
+    }
+
+    // Quantize the pooled scene pixels
+    const maxBgColors = Math.max(32, 256 - coreTextColors.length);
+    const bgPalette = window.quantize(
+      pooledBuffer.subarray(0, pooledOffset),
+      maxBgColors,
+      { format, oneBitAlpha: isTransparent }
+    );
+
+    // Merge core text colors with background palette (no duplicates, max 256)
+    const masterPalette = [];
+    const seenMap = new Set();
+    function pushColor(c) {
+      if (!c) return;
+      const key = c.slice(0, isTransparent ? 4 : 3).join(",");
+      if (!seenMap.has(key) && masterPalette.length < 256) {
+        seenMap.add(key);
+        masterPalette.push(c);
+      }
+    }
+
+    coreTextColors.forEach(pushColor);
+    bgPalette.forEach(pushColor);
+
+    while (masterPalette.length < 2) {
+      masterPalette.push(isTransparent ? [0, 0, 0, 0] : [0, 0, 0]);
+    }
+
+    let transparentIndex = 0;
+    if (isTransparent) {
+      const tIdx = masterPalette.findIndex(c => c.length >= 4 && c[3] === 0);
+      transparentIndex = tIdx !== -1 ? tIdx : 0;
+    }
+
     const encoder = window.GIFEncoder();
     const tempCanvas = document.createElement("canvas");
     tempCanvas.width = cw;
     tempCanvas.height = ch;
     const tempCtx = tempCanvas.getContext("2d", { willReadFrequently: true });
-
-    const hasImage = hasVisibleBackgroundImage();
-    const isTransparent = !hasImage;
 
     for (let i = 0; i < maxFrames; i++) {
       if (onProgress) {
@@ -6999,32 +7168,29 @@
       const imgData = tempCtx.getImageData(0, 0, cw, ch);
       const rgba = imgData.data;
 
-      let palette, index, transparent = false, transparentIndex = 0;
-
-      if (isTransparent) {
-        palette = window.quantize(rgba, 256, { format: "rgba4444", oneBitAlpha: true });
-        index = window.applyPalette(rgba, palette, "rgba4444");
-        const transIdx = palette.findIndex(c => c.length >= 4 && c[3] === 0);
-        if (transIdx !== -1) {
-          transparent = true;
-          transparentIndex = transIdx;
-        }
-      } else {
-        palette = window.quantize(rgba, 256, { format: "rgb565" });
-        index = window.applyPalette(rgba, palette, "rgb565");
-      }
+      const index = window.applyPalette(rgba, masterPalette, format);
 
       const frameDelay = (primaryFrames && primaryFrames[i % primaryFrames.length])
         ? primaryFrames[i % primaryFrames.length].delay
         : 100;
 
-      encoder.writeFrame(index, cw, ch, {
-        palette,
-        delay: frameDelay,
-        transparent,
-        transparentIndex,
-        repeat: 0
-      });
+      if (i === 0) {
+        encoder.writeFrame(index, cw, ch, {
+          palette: masterPalette,
+          delay: frameDelay,
+          transparent: isTransparent,
+          transparentIndex: transparentIndex,
+          repeat: 0,
+          dispose: disposeMode
+        });
+      } else {
+        encoder.writeFrame(index, cw, ch, {
+          delay: frameDelay,
+          transparent: isTransparent,
+          transparentIndex: transparentIndex,
+          dispose: disposeMode
+        });
+      }
     }
 
     encoder.finish();
