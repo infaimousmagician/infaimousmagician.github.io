@@ -1586,6 +1586,7 @@
     position: absolute;
     inset: 0;
     pointer-events: none;
+    z-index: 25;
   }
 
   .active-text-layer-badge {
@@ -3975,42 +3976,83 @@
 
   function getComputedChatTextShadow() {
     const { style, thickness } = getOutlineSettings();
-    const t = thickness.toFixed(1) + "px";
-    const negT = (-thickness).toFixed(1) + "px";
+    const t = thickness;
 
     if (style === "none") {
       return "none";
     }
-    if (style === "stroke") {
-      return `
-        ${negT} ${negT} 0 rgba(0,0,0,0.88),
-        ${t} ${negT} 0 rgba(0,0,0,0.88),
-        ${negT} ${t} 0 rgba(0,0,0,0.88),
-        ${t} ${t} 0 rgba(0,0,0,0.88)
-      `;
-    }
+
     if (style === "shadow") {
-      const shadowOffset = Math.max(1, thickness).toFixed(1) + "px";
-      const shadowBlur = Math.max(2, thickness * 1.6).toFixed(1) + "px";
-      return `${shadowOffset} ${shadowOffset} ${shadowBlur} rgba(0,0,0,0.95)`;
+      // Authentic crisp GTA chat drop shadow with zero blur
+      const offset = Math.max(1, Math.round(t));
+      if (offset <= 1) {
+        return "1px 1px 0 rgba(0,0,0,0.95)";
+      }
+      const shadows = [];
+      for (let i = 1; i <= offset; i++) {
+        shadows.push(`${i}px ${i}px 0 rgba(0,0,0,0.95)`);
+      }
+      return shadows.join(", ");
     }
+
+    if (style === "stroke") {
+      // Full 8-direction outline (cardinals + diagonals) to prevent background bleed-through
+      const offsets = [
+        [-t, 0], [t, 0], [0, -t], [0, t],
+        [-t, -t], [t, -t], [-t, t], [t, t]
+      ];
+      const shadows = [];
+      if (t > 1.2) {
+        const half = Number((t * 0.5).toFixed(1));
+        const subOffsets = [
+          [-half, 0], [half, 0], [0, -half], [0, half],
+          [-half, -half], [half, -half], [-half, half], [half, half]
+        ];
+        subOffsets.forEach(([dx, dy]) => {
+          shadows.push(`${dx}px ${dy}px 0 rgba(0,0,0,0.95)`);
+        });
+      }
+      offsets.forEach(([dx, dy]) => {
+        shadows.push(`${dx.toFixed(1)}px ${dy.toFixed(1)}px 0 rgba(0,0,0,0.95)`);
+      });
+      return shadows.join(", ");
+    }
+
     if (style === "both") {
-      const shadowOffset = (thickness * 1.4).toFixed(1) + "px";
-      const shadowBlur = (thickness * 2).toFixed(1) + "px";
-      return `
-        ${negT} ${negT} 0 rgba(0,0,0,0.88),
-        ${t} ${negT} 0 rgba(0,0,0,0.88),
-        ${negT} ${t} 0 rgba(0,0,0,0.88),
-        ${t} ${t} 0 rgba(0,0,0,0.88),
-        ${shadowOffset} ${shadowOffset} ${shadowBlur} rgba(0,0,0,0.95)
-      `;
+      // Gapless 8-direction outline + solid drop shadow (zero blur)
+      const shadowOffset = Math.max(1, Math.round(t * 1.2));
+      const shadows = [];
+      const offsets = [
+        [-t, 0], [t, 0], [0, -t], [0, t],
+        [-t, -t], [t, -t], [-t, t], [t, t]
+      ];
+      if (t > 1.2) {
+        const half = Number((t * 0.5).toFixed(1));
+        [[-half, 0], [half, 0], [0, -half], [0, half], [-half, -half], [half, -half], [-half, half], [half, half]].forEach(([dx, dy]) => {
+          shadows.push(`${dx}px ${dy}px 0 rgba(0,0,0,0.95)`);
+        });
+      }
+      offsets.forEach(([dx, dy]) => {
+        shadows.push(`${dx.toFixed(1)}px ${dy.toFixed(1)}px 0 rgba(0,0,0,0.95)`);
+      });
+      // Crisp solid drop shadow behind the outline
+      for (let i = 1; i <= shadowOffset; i++) {
+        shadows.push(`${i}px ${i}px 0 rgba(0,0,0,0.95)`);
+        shadows.push(`${i + 1}px ${i}px 0 rgba(0,0,0,0.95)`);
+        shadows.push(`${i}px ${i + 1}px 0 rgba(0,0,0,0.95)`);
+      }
+      return shadows.join(", ");
     }
+
     return "none";
   }
 
   function applyOutlineStyleToElement(el) {
-    if (!el) return;
-    el.style.setProperty("--chat-text-shadow", getComputedChatTextShadow());
+    const shadowVal = getComputedChatTextShadow();
+    document.documentElement.style.setProperty("--chat-text-shadow", shadowVal);
+    if (el) {
+      el.style.setProperty("--chat-text-shadow", shadowVal);
+    }
   }
 
   function updateOutlineSettings() {
@@ -6461,21 +6503,7 @@
     const block = Math.max(3, Math.min(Math.round(blockSize), 20));
 
     // First render the text normally on canvas so stroke, color, and background integrate seamlessly
-    ctx.save();
-    if (outline.style === "stroke" || outline.style === "both") {
-      ctx.lineWidth = outline.thickness;
-      ctx.strokeStyle = "rgba(0,0,0,0.88)";
-      ctx.strokeText(text, x, y);
-    }
-    if (outline.style === "shadow" || outline.style === "both") {
-      ctx.shadowColor = "rgba(0,0,0,0.95)";
-      ctx.shadowOffsetX = outline.thickness;
-      ctx.shadowOffsetY = outline.thickness;
-      ctx.shadowBlur = Math.max(2, outline.thickness * 1.6);
-    }
-    ctx.fillStyle = fillStyle;
-    ctx.fillText(text, x, y);
-    ctx.restore();
+    drawTextWithOutlineAndShadow(ctx, text, x, y, fillStyle, outline);
 
     // Downscale and upscale with nearest-neighbor to produce true, crisp mosaic pixel blocks
     const sx = Math.max(0, Math.floor(x - 1));
@@ -6498,6 +6526,80 @@
     ctx.save();
     ctx.imageSmoothingEnabled = false;
     ctx.drawImage(downCanvas, 0, 0, downW, downH, sx, sy, sw, sh);
+    ctx.restore();
+  }
+
+  function drawTextWithOutlineAndShadow(ctx, text, x, y, fillStyle, outline) {
+    const style = outline.style || "stroke";
+    const thickness = outline.thickness || 1.5;
+
+    ctx.save();
+    ctx.lineJoin = "round";
+    ctx.miterLimit = 2;
+
+    if (style === "none") {
+      ctx.fillStyle = fillStyle;
+      ctx.fillText(text, x, y);
+      ctx.restore();
+      return;
+    }
+
+    if (style === "shadow") {
+      // Solid crisp drop shadow with zero blur (pure GTA RP chat aesthetic)
+      const offset = Math.max(1, Math.round(thickness));
+      ctx.fillStyle = "rgba(0, 0, 0, 0.95)";
+      if (offset >= 2) {
+        for (let i = 1; i <= offset; i++) {
+          ctx.fillText(text, x + i, y + i);
+        }
+      } else {
+        ctx.fillText(text, x + offset, y + offset);
+      }
+      ctx.fillStyle = fillStyle;
+      ctx.fillText(text, x, y);
+      ctx.restore();
+      return;
+    }
+
+    if (style === "stroke") {
+      // Solid black outline stroke (thickness * 2 because half is under fill)
+      ctx.lineWidth = thickness * 2;
+      ctx.strokeStyle = "rgba(0, 0, 0, 0.95)";
+      ctx.strokeText(text, x, y);
+      ctx.fillStyle = fillStyle;
+      ctx.fillText(text, x, y);
+      ctx.restore();
+      return;
+    }
+
+    if (style === "both") {
+      // Solid drop shadow pass behind the stroke
+      const shadowOffset = Math.max(1, Math.round(thickness * 1.2));
+      ctx.lineWidth = thickness * 2;
+      ctx.strokeStyle = "rgba(0, 0, 0, 0.95)";
+      if (shadowOffset >= 2) {
+        for (let i = 1; i <= shadowOffset; i++) {
+          ctx.strokeText(text, x + i, y + i);
+          ctx.fillStyle = "rgba(0, 0, 0, 0.95)";
+          ctx.fillText(text, x + i, y + i);
+        }
+      } else {
+        ctx.strokeText(text, x + shadowOffset, y + shadowOffset);
+        ctx.fillStyle = "rgba(0, 0, 0, 0.95)";
+        ctx.fillText(text, x + shadowOffset, y + shadowOffset);
+      }
+      // Outline stroke pass
+      ctx.strokeStyle = "rgba(0, 0, 0, 0.95)";
+      ctx.strokeText(text, x, y);
+      // Fill pass
+      ctx.fillStyle = fillStyle;
+      ctx.fillText(text, x, y);
+      ctx.restore();
+      return;
+    }
+
+    ctx.fillStyle = fillStyle;
+    ctx.fillText(text, x, y);
     ctx.restore();
   }
 
@@ -6526,23 +6628,7 @@
       }
     }
 
-    ctx.save();
-    if (outline.style === "stroke" || outline.style === "both") {
-      ctx.lineWidth = outline.thickness;
-      ctx.strokeStyle = "rgba(0,0,0,0.88)";
-      ctx.strokeText(text, x, y);
-    }
-
-    if (outline.style === "shadow" || outline.style === "both") {
-      ctx.shadowColor = "rgba(0,0,0,0.95)";
-      ctx.shadowOffsetX = outline.thickness;
-      ctx.shadowOffsetY = outline.thickness;
-      ctx.shadowBlur = Math.max(2, outline.thickness * 1.6);
-    }
-
-    ctx.fillStyle = fillStyle;
-    ctx.fillText(text, x, y);
-    ctx.restore();
+    drawTextWithOutlineAndShadow(ctx, text, x, y, fillStyle, outline);
   }
 
   function drawLineWithTimestamp(ctx, text, classColor, x, y, lineHeight = 18) {
@@ -6873,10 +6959,10 @@
 
   function hasActiveGifLayer() {
     const bgLayer = Array.isArray(layers) ? layers.find(l => l.type === "background") : null;
-    if (bgLayer && bgLayer.visible !== false && bgIsGif && bgGifFrames && bgGifFrames.length > 0) {
+    if (bgLayer && bgLayer.visible !== false && bgIsGif && (bgImageDataUrl || (bgGifFrames && bgGifFrames.length > 0))) {
       return true;
     }
-    if (Array.isArray(layers) && layers.some(l => l.type === "image" && l.visible !== false && l.isGif && l.gifFrames && l.gifFrames.length > 0)) {
+    if (Array.isArray(layers) && layers.some(l => l.type === "image" && l.visible !== false && l.isGif && (l.dataUrl || (l.gifFrames && l.gifFrames.length > 0)))) {
       return true;
     }
     return false;
@@ -7209,19 +7295,39 @@
       throw new Error("GIF encoding library is not loaded.");
     }
 
+    if (bgIsGif && (!bgGifFrames || bgGifFrames.length === 0) && bgGifReader) {
+      try {
+        bgGifFrames = extractGifFrames(bgGifReader);
+      } catch (e) {
+        console.warn("Could not extract background frames during export:", e);
+      }
+    }
+
+    const gifLayers = layers.filter(l => l.type === "image" && l.visible && l.isGif);
+    gifLayers.forEach(l => {
+      if ((!l.gifFrames || l.gifFrames.length === 0) && l.gifReader) {
+        try {
+          l.gifFrames = extractGifFrames(l.gifReader);
+        } catch (e) {
+          console.warn("Could not extract overlay frames during export:", e);
+        }
+      }
+    });
+
     let maxFrames = 1;
     if (bgIsGif && bgGifFrames && bgGifFrames.length > 0 && hasVisibleBackgroundImage()) {
       maxFrames = Math.max(maxFrames, bgGifFrames.length);
     }
-    const gifLayers = layers.filter(l => l.type === "image" && l.visible && l.isGif && l.gifFrames && l.gifFrames.length > 0);
     gifLayers.forEach(l => {
-      maxFrames = Math.max(maxFrames, l.gifFrames.length);
+      if (l.gifFrames && l.gifFrames.length > 0) {
+        maxFrames = Math.max(maxFrames, l.gifFrames.length);
+      }
     });
 
     let primaryFrames = null;
     if (bgIsGif && bgGifFrames && bgGifFrames.length > 0 && hasVisibleBackgroundImage()) {
       primaryFrames = bgGifFrames;
-    } else if (gifLayers.length > 0) {
+    } else if (gifLayers.length > 0 && gifLayers[0].gifFrames && gifLayers[0].gifFrames.length > 0) {
       primaryFrames = gifLayers[0].gifFrames;
     }
 
