@@ -2554,6 +2554,119 @@
     </div>
   </div>
 
+  <!-- GTAW Log Parser Walkthrough Modal -->
+  <div id="gtawLogParserModal" class="modal-backdrop" style="display: none;" role="dialog" aria-label="GTAW Log Parser Automatic Logging Setup">
+    <div class="modal-dialog" style="width: 580px; max-width: 95vw;">
+      <div class="modal-header">
+        <div class="modal-title" style="display: flex; align-items: center; gap: 8px;">
+          <span style="font-size: 18px;">📋</span>
+          <span style="font-weight: 700;">GTAW Log Parser • Automatic Logging</span>
+          <span style="background: #082d1c; color: #00df82; border: 1px solid rgba(0, 223, 130, 0.4); font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 4px; letter-spacing: 0.04em;">RECOMMENDED</span>
+        </div>
+        <button type="button" id="closeGtawModalBtn" class="toast-close" title="Close guide (Esc)">&times;</button>
+      </div>
+      <div class="modal-body" style="display: flex; flex-direction: column; gap: 14px; max-height: 72vh; overflow-y: auto;">
+        <div style="font-size: 12.5px; color: #b5b5b5; line-height: 1.5; background: #141414; border: 1px solid #282828; border-radius: 8px; padding: 10px 14px;">
+          Set up automatic chatlog backup so you never lose roleplay dialogue or have to manually save files. Follow these simple steps to configure <strong style="color: #fff;">GTAW Log Parser</strong>:
+        </div>
+
+        <!-- Step 1 -->
+        <div class="modal-step">
+          <div class="modal-step-number">1</div>
+          <div class="modal-step-content">
+            <div class="modal-step-title" style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 6px;">
+              <span>Install the Logger</span>
+              <a href="https://github.com/AdvGTAW/GTAW-Log-Parser" target="_blank" rel="noopener noreferrer" style="font-size: 11px; color: #00df82; text-decoration: underline; font-weight: 600; display: inline-flex; align-items: center; gap: 4px;">
+                <span>github.com/AdvGTAW/GTAW-Log-Parser</span>
+                <span>↗</span>
+              </a>
+            </div>
+            <div class="modal-step-desc">
+              Download and install the <strong>GTAW Log Parser</strong> tool from the official GitHub repository releases:
+              <div style="margin-top: 6px;">
+                <a href="https://github.com/AdvGTAW/GTAW-Log-Parser" target="_blank" rel="noopener noreferrer" class="btn btn-neutral btn-xs" style="text-decoration: none; display: inline-flex; align-items: center; gap: 6px; color: #00df82;">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path></svg>
+                  <span>Open GTAW-Log-Parser Repository</span>
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 2 -->
+        <div class="modal-step">
+          <div class="modal-step-number">2</div>
+          <div class="modal-step-content">
+            <div class="modal-step-title">Open Automatic Backup Settings</div>
+            <div class="modal-step-desc">
+              Launch GTAW Log Parser and click on <strong>Automatic Backup Settings</strong> in the menu.
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 3 -->
+        <div class="modal-step">
+          <div class="modal-step-number">3</div>
+          <div class="modal-step-content">
+            <div class="modal-step-title">Set up a Backup Path</div>
+            <div class="modal-step-desc">
+              Choose your preferred destination folder on your computer where your parsed chatlog backups will be saved.
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 4 -->
+        <div class="modal-step">
+          <div class="modal-step-number">4</div>
+          <div class="modal-step-content">
+            <div class="modal-step-title">Configure Automatic Logging Timers</div>
+            <div class="modal-step-desc">
+              Click on the automatic logging settings to enable both triggers:
+              <div style="margin-top: 6px; display: flex; flex-direction: column; gap: 4px; font-size: 12px; color: #e0e0e0;">
+                <div style="display: flex; align-items: center; gap: 6px;">
+                  <span style="color: #00df82; font-weight: 800;">✓</span>
+                  <span><strong>When game closes</strong></span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 6px;">
+                  <span style="color: #00df82; font-weight: 800;">✓</span>
+                  <span><strong>Every 10 minutes</strong></span>
+                </div>
+              </div>
+              <div style="margin-top: 8px; color: #00df82; font-weight: 700; font-size: 12.5px;">
+                ✨ Voila! Done.
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 5 / Final Instruction -->
+        <div class="modal-tip-box" style="background: rgba(0, 223, 130, 0.08); border-color: rgba(0, 223, 130, 0.35);">
+          <div style="font-weight: 700; color: #ffffff; margin-bottom: 4px; display: flex; align-items: center; gap: 6px;">
+            <span style="color: #00df82;">💡</span>
+            <span>How to Use With GTA RP Chatlog Magician:</span>
+          </div>
+          <div style="color: #c2ebd9; font-size: 12px; line-height: 1.5;">
+            These automatically backed-up logs will be what you copy directly into the <strong>Chatlog Text</strong> boxes on the left. The Magician will instantly format dialogue, /me actions, /do, phone calls, whispers, and radio timestamps into clean screenshot text!
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer" style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
+        <label style="display: inline-flex; align-items: center; gap: 7px; font-size: 12px; color: #aaaaaa; cursor: pointer; user-select: none;">
+          <input type="checkbox" id="gtawDontShowAgainCheckbox" checked style="accent-color: var(--accent); cursor: pointer;" />
+          <span>Don't show again on startup</span>
+        </label>
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <a href="https://github.com/AdvGTAW/GTAW-Log-Parser" target="_blank" rel="noopener noreferrer" class="btn btn-neutral btn-sm" style="text-decoration: none;">
+            GitHub Repo ↗
+          </a>
+          <button type="button" id="acknowledgeGtawModalBtn" class="btn btn-primary btn-sm" style="font-weight: 700;">
+            Got it! Don't show again
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- Settings & Preferences Modal -->
   <div id="settingsModal" class="modal-backdrop" style="display: none;" role="dialog" aria-label="Application Settings">
     <div class="modal-dialog" style="width: 520px;">
@@ -2636,6 +2749,28 @@
             </div>
             <div class="settings-help-text">
               Paste any YouTube song or video link (e.g., <code>https://www.youtube.com/watch?v=...</code> or <code>https://youtu.be/...</code>). The 🎵 button in the header will play this track on repeat. This setting is saved permanently and is preserved even when resetting other configurations.
+            </div>
+          </div>
+        </div>
+
+        <!-- Section: GTAW Log Parser Setup Guide -->
+        <div class="settings-section">
+          <div class="settings-section-title">
+            <span>📋</span>
+            <span>GTAW Log Parser Guide</span>
+          </div>
+          <div class="settings-field-group">
+            <div class="settings-help-text">
+              Configure automatic GTA World chatlog backup using GTAW Log Parser (triggers when the game closes and every 10 minutes) so your logs are always ready to copy & paste into screenshot text layers.
+            </div>
+            <div style="display: flex; gap: 8px; align-items: center; margin-top: 4px; flex-wrap: wrap;">
+              <button type="button" id="settingsOpenGtawGuideBtn" class="btn btn-neutral btn-sm" style="display: inline-flex; align-items: center; gap: 6px;">
+                <span>📋</span>
+                <span>Open Setup Guide</span>
+              </button>
+              <button type="button" id="settingsResetGtawGuidePromptBtn" class="btn btn-neutral btn-xs" title="Reset startup prompt so the setup walkthrough will pop up on next page refresh" style="color: #999;">
+                ↺ Reset Startup Prompt
+              </button>
             </div>
           </div>
         </div>
@@ -2728,6 +2863,14 @@
   const clearButton = document.getElementById("clearButton");
   const resetSettingsButton = document.getElementById("resetSettingsButton");
   const openSettingsModalButton = document.getElementById("openSettingsModalButton");
+  const openGtawGuideBtn = document.getElementById("openGtawGuideBtn");
+  const gtawLogParserModal = document.getElementById("gtawLogParserModal");
+  const closeGtawModalBtn = document.getElementById("closeGtawModalBtn");
+  const acknowledgeGtawModalBtn = document.getElementById("acknowledgeGtawModalBtn");
+  const gtawDontShowAgainCheckbox = document.getElementById("gtawDontShowAgainCheckbox");
+  const settingsOpenGtawGuideBtn = document.getElementById("settingsOpenGtawGuideBtn");
+  const settingsResetGtawGuidePromptBtn = document.getElementById("settingsResetGtawGuidePromptBtn");
+  const GTAW_GUIDE_STORAGE_KEY = "gtaw_log_parser_guide_acknowledged";
   const settingsModal = document.getElementById("settingsModal");
   const closeSettingsModalBtn = document.getElementById("closeSettingsModalBtn");
   const closeSettingsModalFooterBtn = document.getElementById("closeSettingsModalFooterBtn");
@@ -3169,6 +3312,23 @@
   function closeSettingsModal() {
     if (!settingsModal) return;
     settingsModal.style.display = "none";
+  }
+
+  function openGtawModal() {
+    if (!gtawLogParserModal) return;
+    gtawLogParserModal.style.display = "flex";
+  }
+
+  function closeGtawModal(markAcknowledged = false) {
+    if (!gtawLogParserModal) return;
+    gtawLogParserModal.style.display = "none";
+    if (markAcknowledged || (gtawDontShowAgainCheckbox && gtawDontShowAgainCheckbox.checked)) {
+      try {
+        localStorage.setItem(GTAW_GUIDE_STORAGE_KEY, "true");
+      } catch (e) {
+        console.warn("Could not save GTAW guide acknowledgement:", e);
+      }
+    }
   }
 
   function saveCurrentSettings() {
@@ -8931,6 +9091,48 @@
     });
   }
 
+  if (openGtawGuideBtn) {
+    openGtawGuideBtn.addEventListener("click", openGtawModal);
+  }
+
+  if (closeGtawModalBtn) {
+    closeGtawModalBtn.addEventListener("click", () => {
+      closeGtawModal(false);
+    });
+  }
+
+  if (acknowledgeGtawModalBtn) {
+    acknowledgeGtawModalBtn.addEventListener("click", () => {
+      closeGtawModal(true);
+      showToast("success", "Guide Acknowledged", "You can reopen this guide anytime in ⚙ Settings or via the footer tip.");
+    });
+  }
+
+  if (settingsOpenGtawGuideBtn) {
+    settingsOpenGtawGuideBtn.addEventListener("click", () => {
+      openGtawModal();
+    });
+  }
+
+  if (settingsResetGtawGuidePromptBtn) {
+    settingsResetGtawGuidePromptBtn.addEventListener("click", () => {
+      try {
+        localStorage.removeItem(GTAW_GUIDE_STORAGE_KEY);
+        showToast("info", "Startup Prompt Reset", "The GTAW Log Parser setup guide will automatically appear when the page is opened.");
+      } catch (e) {
+        console.warn(e);
+      }
+    });
+  }
+
+  if (gtawLogParserModal) {
+    gtawLogParserModal.addEventListener("click", (e) => {
+      if (e.target === gtawLogParserModal) {
+        closeGtawModal(false);
+      }
+    });
+  }
+
   if (settingsModal) {
     settingsModal.addEventListener("click", (e) => {
       if (e.target === settingsModal) {
@@ -8941,6 +9143,9 @@
 
   document.addEventListener("keydown", (e) => {
     if (e.key === "Escape") {
+      if (gtawLogParserModal && gtawLogParserModal.style.display !== "none") {
+        closeGtawModal(false);
+      }
       if (settingsModal && settingsModal.style.display !== "none") {
         closeSettingsModal();
       }
@@ -8961,6 +9166,18 @@
 
   loadAndApplySavedSettings();
   updateImgbbHistoryButton();
+
+  // Auto-display GTAW Log Parser guide for first-time visitors until permanently acknowledged
+  try {
+    const isGtawGuideAcknowledged = localStorage.getItem(GTAW_GUIDE_STORAGE_KEY);
+    if (isGtawGuideAcknowledged !== "true") {
+      setTimeout(() => {
+        openGtawModal();
+      }, 400);
+    }
+  } catch (err) {
+    console.warn("Could not check GTAW guide persistence state:", err);
+  }
 
   const initialFontSize = Number(fontSize.value) || 14;
   document.documentElement.style.setProperty("--chat-font-size", initialFontSize + "px");
@@ -8996,7 +9213,8 @@
     "Use <strong>▲ Forward</strong> and <strong>▼ Backward</strong> in the Layers pane to reorder depth, toggle visibility with the eye icon, adjust layer opacity (0–100%), or click <strong>Center</strong> to align any layer.",
     "Type any width and height into <strong>Canvas width / height</strong> to match 1080p, 1440p, 4K, or custom screenshot aspect ratios.",
     "Click <strong>Copy PNG</strong> to copy the rendered chatlog directly to your clipboard for instant pasting into Discord, forums, or image editing software.",
-    "Click <strong>Upload to ImgBB</strong> to upload your chatlog directly to ImgBB and automatically copy the direct image link to your clipboard."
+    "Click <strong>Upload to ImgBB</strong> to upload your chatlog directly to ImgBB and automatically copy the direct image link to your clipboard.",
+    "Never lose roleplay logs! Follow our <a href='#' data-action='open-gtaw-guide' style='color: var(--accent); font-weight: 700; text-decoration: underline; cursor: pointer;'>GTAW Log Parser Guide 📋</a> to set up automatic logging every 10 minutes and on game exit, then copy the logs into your Chatlog Text boxes!"
   ];
 
   let currentTipIndex = 0;
@@ -9046,10 +9264,17 @@
 
   if (tipTextEl) {
     tipTextEl.addEventListener("click", (e) => {
-      const target = e.target.closest("[data-action='open-settings']");
-      if (target) {
+      const settingsTarget = e.target.closest("[data-action='open-settings']");
+      if (settingsTarget) {
         e.preventDefault();
         openSettingsModal();
+        return;
+      }
+      const gtawTarget = e.target.closest("[data-action='open-gtaw-guide']");
+      if (gtawTarget) {
+        e.preventDefault();
+        openGtawModal();
+        return;
       }
     });
   }
