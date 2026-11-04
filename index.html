@@ -3338,7 +3338,16 @@
         differentiateSay: differentiateSayToggle ? differentiateSayToggle.checked : DEFAULT_SETTINGS.differentiateSay,
         otherSayColor: CHAT_COLORS["say-other"] || DEFAULT_SETTINGS.otherSayColor,
         textPosition: textPositionMode || DEFAULT_SETTINGS.textPosition,
-        textOffset: (textOffsetInput ? parseInt(textOffsetInput.value, 10) : currentTextOffset) || DEFAULT_SETTINGS.textOffset,
+        textOffset: (() => {
+          if (textOffsetInput) {
+            const val = parseInt(textOffsetInput.value, 10);
+            if (!isNaN(val) && val >= 0) return Math.max(0, Math.min(1000, val));
+          }
+          if (typeof currentTextOffset === "number" && !isNaN(currentTextOffset) && currentTextOffset >= 0) {
+            return Math.max(0, Math.min(1000, currentTextOffset));
+          }
+          return DEFAULT_SETTINGS.textOffset;
+        })(),
         fontFamily: fontFamilySelect ? fontFamilySelect.value : DEFAULT_SETTINGS.fontFamily,
         fontSize: Number(fontSize.value) || DEFAULT_SETTINGS.fontSize,
         textPanelWidth: Number(textPanelWidthInput.value) || DEFAULT_SETTINGS.textPanelWidth,
@@ -3459,8 +3468,13 @@
       if (typeof s.textOffset === "number" && !isNaN(s.textOffset)) {
         currentTextOffset = Math.max(0, Math.min(1000, s.textOffset));
         if (textOffsetInput) textOffsetInput.value = currentTextOffset;
+        layers.forEach(l => {
+          if (l.type === "text") {
+            l.textOffset = currentTextOffset;
+          }
+        });
         const active = getActiveTextLayer();
-        if (active && typeof active.textOffset !== "number") {
+        if (active) {
           active.textOffset = currentTextOffset;
         }
       }
@@ -3468,6 +3482,9 @@
         setTextPosition(s.textPosition, true, false);
       } else {
         setTextPosition("top-left", true, false);
+      }
+      if (typeof s.textOffset === "number" && !isNaN(s.textOffset)) {
+        setTextOffset(currentTextOffset, true);
       }
       if (fontFamilySelect && typeof s.fontFamily === "string") {
         fontFamilySelect.value = s.fontFamily;
@@ -8350,13 +8367,16 @@
   if (textOffsetInput) {
     textOffsetInput.addEventListener("input", () => {
       const val = parseInt(textOffsetInput.value, 10);
-      setTextOffset(isNaN(val) ? 0 : val);
+      const cleanVal = isNaN(val) ? 0 : Math.max(0, Math.min(1000, val));
+      setTextOffset(cleanVal);
+      saveCurrentSettings();
     });
     textOffsetInput.addEventListener("change", () => {
       const val = parseInt(textOffsetInput.value, 10);
       const cleanVal = isNaN(val) ? 0 : Math.max(0, Math.min(1000, val));
       textOffsetInput.value = cleanVal;
       setTextOffset(cleanVal);
+      saveCurrentSettings();
     });
   }
 
@@ -9673,6 +9693,14 @@
       }
     });
   }
+
+  // Ensure any pending settings (offset, typography, layers) are immediately saved on page refresh or navigation
+  window.addEventListener("beforeunload", () => {
+    saveCurrentSettings();
+  });
+  window.addEventListener("pagehide", () => {
+    saveCurrentSettings();
+  });
 </script>
 <div id="ytMusicWidget" class="yt-music-widget" role="region" aria-label="Background Music Player">
   <div class="yt-music-header">
