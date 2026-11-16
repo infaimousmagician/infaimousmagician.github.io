@@ -3316,6 +3316,7 @@
 
   function openGtawModal() {
     if (!gtawLogParserModal) return;
+    closeSettingsModal();
     gtawLogParserModal.style.display = "flex";
   }
 
@@ -9130,6 +9131,7 @@
 
   if (settingsOpenGtawGuideBtn) {
     settingsOpenGtawGuideBtn.addEventListener("click", () => {
+      closeSettingsModal();
       openGtawModal();
     });
   }
