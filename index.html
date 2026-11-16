@@ -2977,6 +2977,8 @@
   const TIMESTAMP_REGEX = /^\s*(?:\[|\()\s*\d{2}:\d{2}(?::\d{2})?\s*(?:\]|\))\s*/;
   const TIMESTAMP_CAPTURE_REGEX = /^(\s*(?:\[|\()\s*\d{2}:\d{2}(?::\d{2})?\s*(?:\]|\))\s*)/;
   const TIMESTAMP_PREFIX_WITH_TAGS_REGEX = /^(\s*(?:(?:\{#?[0-9a-fA-F]{3,6}\}|\{[a-zA-Z]+\}|☘)\s*)*)(?:\[|\()\s*\d{2}:\d{2}(?::\d{2})?\s*(?:\]|\))(\s*(?:☘|\{\/(?:#|[0-9a-fA-F]{3,6}|[a-zA-Z]+)?\})*\s*)/i;
+  const ALERT_PREFIX_REGEX = /^\s*\[\!\]\s*/;
+  const ALERT_PREFIX_WITH_TAGS_REGEX = /^(\s*(?:(?:\{#?[0-9a-fA-F]{3,6}\}|\{[a-zA-Z]+\}|☘)\s*)*)\[\!\](\s*(?:☘|\{\/(?:#|[0-9a-fA-F]{3,6}|[a-zA-Z]+)?\})*\s*)/i;
 
   const CHAT_COLORS = {
     timestamp: "#d8d8d8",
@@ -5278,18 +5280,16 @@
     scheduleJpegPreview();
   }
 
-  function stripTimestamp(line) {
+  function stripLeadingTaggedToken(line, regexWithTags) {
     if (!line) return "";
 
-    // Check if line begins with an optionally tagged / blurred timestamp
-    const match = line.match(TIMESTAMP_PREFIX_WITH_TAGS_REGEX);
+    const match = line.match(regexWithTags);
     if (!match) {
-      // Fallback to simple timestamp regex
-      return line.replace(TIMESTAMP_REGEX, "");
+      return line;
     }
 
-    const prefix = match[1]; // content before timestamp (leading whitespace, opening color tags, blur markers)
-    const suffix = match[2]; // content immediately following timestamp (closing tags, blur markers, whitespace)
+    const prefix = match[1]; // content before token (leading whitespace, opening color tags, blur markers)
+    const suffix = match[2]; // content immediately following token (closing tags, blur markers, whitespace)
     const fullMatch = match[0];
     const restOfLine = line.slice(fullMatch.length);
 
@@ -5302,7 +5302,7 @@
     const suffixBlurs = (suffix.match(/☘/g) || []).length;
 
     let newPrefix = "";
-    // If color tags were opened in prefix and NOT closed immediately after the timestamp,
+    // If color tags were opened in prefix and NOT closed immediately after the token,
     // preserve the opening color tag so that the wrapped text retains its custom color
     if (prefixColorOpens.length > suffixColorCloses.length) {
       const needed = prefixColorOpens.length - suffixColorCloses.length;
@@ -5324,6 +5324,24 @@
     }
 
     return (newPrefix + newSuffix + restOfLine.trimStart()).trimStart();
+  }
+
+  function stripTimestamp(line) {
+    if (!line) return "";
+
+    // Strip leading [!] prefix (e.g., on /to messages) if it appears before timestamp
+    let result = stripLeadingTaggedToken(line, ALERT_PREFIX_WITH_TAGS_REGEX);
+
+    // Strip optionally tagged / blurred timestamp
+    if (TIMESTAMP_PREFIX_WITH_TAGS_REGEX.test(result)) {
+      result = stripLeadingTaggedToken(result, TIMESTAMP_PREFIX_WITH_TAGS_REGEX);
+    } else {
+      result = result.replace(TIMESTAMP_REGEX, "");
+    }
+
+    // Strip leading [!] prefix after timestamp (standard GTAW /to format: "[HH:MM:SS] [!] Name says...")
+    result = stripLeadingTaggedToken(result, ALERT_PREFIX_WITH_TAGS_REGEX);
+    return result.replace(ALERT_PREFIX_REGEX, "");
   }
 
   function getTimestampStrippedLine(line) {
@@ -5483,6 +5501,7 @@
 
   function extractSpeakerName(lineWithoutTimestamp) {
     const stripped = lineWithoutTimestamp
+      .replace(/^\s*\[\!\]\s*/, "")
       .replace(/^[\[\(](?:phone|cellphone|call|phone\s*call|ifruit[^\)\]]*)[\]\)]\s*/i, "")
       .trim();
 
@@ -5692,7 +5711,8 @@
 
     if (
       lowerWithoutTimestamp.startsWith("whispers:") ||
-      lowerText.includes(" whispers:")
+      lowerText.includes(" whispers:") ||
+      /\bwhispers\s*(?:\[[^\]]*\]|\([^\)]*\)|to\s+[A-Za-z0-9_'\.\-\s]+)*\s*:/i.test(withoutTimestamp)
     ) {
       return "whisper";
     }
@@ -5703,7 +5723,8 @@
       lowerWithoutTimestamp.startsWith("screams:") ||
       lowerText.includes(" shouts:") ||
       lowerText.includes(" yells:") ||
-      lowerText.includes(" screams:")
+      lowerText.includes(" screams:") ||
+      /\b(?:shouts|yells|screams)\s*(?:\[[^\]]*\]|\([^\)]*\)|to\s+[A-Za-z0-9_'\.\-\s]+)*\s*:/i.test(withoutTimestamp)
     ) {
       return "shout";
     }
@@ -5711,7 +5732,7 @@
     const isSayLine = (
       lowerWithoutTimestamp.startsWith("says:") ||
       lowerText.includes(" says:") ||
-      /\bsays\s*(?:\[[^\]]*\]|\([^\)]*\)|to\s+[A-Za-z0-9_'\.\-\s]+)?\s*:/i.test(withoutTimestamp) ||
+      /\bsays\s*(?:\[[^\]]*\]|\([^\)]*\)|to\s+[A-Za-z0-9_'\.\-\s]+)*\s*:/i.test(withoutTimestamp) ||
       /\bcalls\s*(?:\[[^\]]*\]|\([^\)]*\))?\s*:/i.test(withoutTimestamp)
     );
 
