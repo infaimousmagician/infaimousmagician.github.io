@@ -10054,7 +10054,7 @@
     syncMusicSettingsUI();
   }
 
-  function setAppTheme(themeName, notify = false) {
+  function setAppTheme(themeName) {
     activeTheme = (themeName === "vice-city") ? "vice-city" : "classic";
     try {
       localStorage.setItem(THEME_STORAGE_KEY, activeTheme);
@@ -10062,19 +10062,11 @@
 
     syncThemeButtonUI();
     applyThemeDefaultMusicIfUsingDefault();
-
-    if (notify) {
-      if (isViceCityTheme()) {
-        showToast("success", "Vice City Theme Active", "Welcome to Vice City! Default music switched to the Vice City track.");
-      } else {
-        showToast("info", "Classic Theme Active", "Switched back to the Classic GTA RP Chatlog Magician theme.");
-      }
-    }
   }
 
   if (themeSwitchButton) {
     themeSwitchButton.addEventListener("click", () => {
-      setAppTheme(isViceCityTheme() ? "classic" : "vice-city", true);
+      setAppTheme(isViceCityTheme() ? "classic" : "vice-city");
     });
   }
 
