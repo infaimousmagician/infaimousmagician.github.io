@@ -15,6 +15,13 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
 <script src="/vendor/gif-bundle.js"></script>
+<script>
+  try {
+    if (localStorage.getItem("gtarp_chatlog_theme_v1") === "vice-city") {
+      document.documentElement.classList.add("theme-vice-city");
+    }
+  } catch (e) {}
+</script>
 <style>
   :root {
     --page-bg: #181818;
@@ -1902,10 +1909,51 @@
     }
   }
 
-  /* Header Music Player Button */
+  /* Header Actions: Theme Switcher & Music Player Button */
   .header-actions {
     display: flex;
     align-items: center;
+    gap: 10px;
+    flex-shrink: 0;
+  }
+
+  .theme-switch-btn {
+    height: 36px;
+    padding: 0 13px;
+    border-radius: 8px;
+    background: rgba(12, 42, 28, 0.78);
+    border: 1px solid rgba(0, 217, 132, 0.45);
+    color: #d8ffec;
+    font-size: 12.5px;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    cursor: pointer;
+    white-space: nowrap;
+    flex-shrink: 0;
+    line-height: 1;
+    transition: background 0.18s ease, border-color 0.18s ease, color 0.18s ease, transform 0.18s ease, box-shadow 0.18s ease;
+    user-select: none;
+  }
+
+  .theme-switch-btn:hover {
+    background: rgba(74, 17, 63, 0.85);
+    border-color: #ff6eb4;
+    color: #ffe6f3;
+    transform: translateY(-1px);
+    box-shadow: 0 0 12px rgba(255, 79, 163, 0.35);
+  }
+
+  .theme-switch-btn:focus-visible,
+  .music-single-btn:focus-visible {
+    outline: 2px solid #ffffff;
+    outline-offset: 2px;
+  }
+
+  .theme-switch-icon {
+    font-size: 14px;
+    line-height: 1;
   }
 
   .music-single-btn {
@@ -2097,6 +2145,440 @@
     pointer-events: none;
     z-index: -1;
   }
+
+  /* ==========================================
+     VICE CITY THEME (1986 Ocean Drive Sunset)
+     ========================================== */
+  html.theme-vice-city {
+    --page-bg: #0f091a;
+    --panel-bg: #170f26;
+    --panel-bg-soft: #201535;
+    --border: #3a2658;
+    --text: #f5ecff;
+    --muted: #b7a4d4;
+    --accent: #ff4fa3;
+    --accent-hover: #ff70b5;
+    --accent-dark: #541441;
+    --accent-dark-hover: #701c58;
+    --accent-border: #d43284;
+    --accent-bg: rgba(255, 79, 163, 0.16);
+    --accent-glow: rgba(255, 79, 163, 0.35);
+  }
+
+  html.theme-vice-city header {
+    background: linear-gradient(115deg, #240938 0%, #6b145a 50%, #a5246e 76%, #0f4c64 100%);
+    border-bottom: 1px solid #ff4fa3;
+    box-shadow: 0 2px 20px rgba(255, 79, 163, 0.22);
+  }
+
+  html.theme-vice-city header h1 {
+    color: #ffffff;
+    text-shadow: 0 1px 12px rgba(255, 79, 163, 0.45);
+  }
+
+  html.theme-vice-city header span {
+    color: #9bf6ff;
+  }
+
+  html.theme-vice-city .header-icon {
+    filter: hue-rotate(160deg) saturate(1.35) brightness(1.15);
+  }
+
+  html.theme-vice-city .theme-switch-btn {
+    background: rgba(23, 10, 41, 0.82);
+    border-color: rgba(53, 242, 255, 0.65);
+    color: #bffaff;
+    box-shadow: 0 0 12px rgba(255, 79, 163, 0.25);
+  }
+
+  html.theme-vice-city .theme-switch-btn:hover {
+    background: rgba(16, 56, 40, 0.88);
+    border-color: #00d984;
+    color: #e6fff3;
+    box-shadow: 0 0 12px rgba(0, 217, 132, 0.35);
+  }
+
+  html.theme-vice-city .music-single-btn {
+    background: #361040;
+    border-color: rgba(255, 79, 163, 0.65);
+    color: #ffffff;
+  }
+
+  html.theme-vice-city .music-single-btn:hover {
+    background: #521760;
+    border-color: #ff6eb4;
+    box-shadow: 0 0 12px rgba(255, 79, 163, 0.55);
+  }
+
+  html.theme-vice-city .music-single-btn.is-playing {
+    background: #b81d74;
+    border-color: #35f2ff;
+    box-shadow: 0 0 14px rgba(53, 242, 255, 0.75);
+    animation: vice-music-note-pulse 1.8s infinite ease-in-out;
+  }
+
+  @keyframes vice-music-note-pulse {
+    0%, 100% {
+      transform: scale(1);
+      box-shadow: 0 0 10px rgba(255, 79, 163, 0.7);
+    }
+    50% {
+      transform: scale(1.1);
+      box-shadow: 0 0 18px rgba(53, 242, 255, 0.9);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .music-single-btn.is-playing,
+    html.theme-vice-city .music-single-btn.is-playing {
+      animation: none;
+    }
+  }
+
+  html.theme-vice-city .toolbar {
+    background: #120b20;
+    border-bottom-color: #352352;
+  }
+
+  html.theme-vice-city .toolbar-group {
+    background: #1b122e;
+    border-color: #352352;
+  }
+
+  html.theme-vice-city .toolbar-group-label {
+    color: #35f2ff;
+    border-right-color: #3c285e;
+  }
+
+  html.theme-vice-city .toolbar-divider {
+    background: #3c285e;
+  }
+
+  html.theme-vice-city .control select,
+  html.theme-vice-city .font-size-input,
+  html.theme-vice-city .canvas-size-input,
+  html.theme-vice-city .text-panel-width-input,
+  html.theme-vice-city .stroke-width-input,
+  html.theme-vice-city .text-offset-input {
+    background: #120b20;
+    border-color: #3f2b61;
+    color: #f5ecff;
+  }
+
+  html.theme-vice-city input[type="file"]::file-selector-button {
+    background: #271942;
+    border-color: #493073;
+    color: #f2e4ff;
+  }
+
+  html.theme-vice-city input[type="file"]::file-selector-button:hover {
+    background: #362259;
+    border-color: #6a46a3;
+    color: #ffffff;
+  }
+
+  html.theme-vice-city .btn-neutral {
+    background: #25173d;
+    border-color: #432c69;
+    color: #f4e8ff;
+  }
+
+  html.theme-vice-city .btn-neutral:hover {
+    background: #342154;
+    border-color: #64429c;
+    color: #ffffff;
+  }
+
+  html.theme-vice-city .btn-accent,
+  html.theme-vice-city .btn-export,
+  html.theme-vice-city .btn-color {
+    color: #ffe6f3;
+  }
+
+  html.theme-vice-city .btn-imgbb {
+    background: #0d3e52;
+    border-color: #1f8fb3;
+    color: #c7f9ff;
+  }
+
+  html.theme-vice-city .btn-imgbb:hover:not(:disabled) {
+    background: #135570;
+    border-color: #35d8ff;
+    color: #ffffff;
+  }
+
+  html.theme-vice-city .btn-imgbb-history {
+    background: #112d3d;
+    border-color: #1e7899;
+    color: #9df4ff;
+  }
+
+  html.theme-vice-city .btn-imgbb-history:hover {
+    background: #174057;
+    border-color: #35f2ff;
+    color: #ffffff;
+    box-shadow: 0 0 10px rgba(53, 242, 255, 0.25);
+  }
+
+  html.theme-vice-city .btn-text-jpeg.is-affected,
+  html.theme-vice-city .btn-layer-opt.is-affected,
+  html.theme-vice-city .btn-text-badge-toggle.is-affected {
+    background: #221638;
+    border-color: #3f2b61;
+    color: #cbb8e6;
+  }
+
+  html.theme-vice-city .btn-text-jpeg.is-affected:hover,
+  html.theme-vice-city .btn-layer-opt.is-affected:hover,
+  html.theme-vice-city .btn-text-badge-toggle.is-affected:hover {
+    background: #2f1f4d;
+    border-color: #5b3f8a;
+    color: #ffffff;
+  }
+
+  html.theme-vice-city .btn-text-jpeg.is-crisp,
+  html.theme-vice-city .btn-layer-opt.is-crisp,
+  html.theme-vice-city .btn-text-badge-toggle.is-crisp {
+    background: rgba(53, 242, 255, 0.14);
+    border-color: rgba(53, 242, 255, 0.6);
+    color: #63f5ff;
+    box-shadow: 0 0 8px rgba(53, 242, 255, 0.18);
+  }
+
+  html.theme-vice-city .btn-text-jpeg.is-crisp:hover,
+  html.theme-vice-city .btn-layer-opt.is-crisp:hover,
+  html.theme-vice-city .btn-text-badge-toggle.is-crisp:hover {
+    background: rgba(53, 242, 255, 0.22);
+    border-color: #35f2ff;
+    color: #ffffff;
+  }
+
+  html.theme-vice-city .btn-icon-help {
+    background: #221638;
+    border-color: #412b66;
+    color: #7bf4ff;
+  }
+
+  html.theme-vice-city .btn-icon-help:hover {
+    background: #311f52;
+    border-color: #ff6eb4;
+    color: #ffffff;
+  }
+
+  html.theme-vice-city .pane-layers {
+    background: #140d23;
+  }
+
+  html.theme-vice-city .layers-toolbar,
+  html.theme-vice-city .layer-inspector {
+    background: #110a1e;
+  }
+
+  html.theme-vice-city .layer-item {
+    background: #1d1432;
+    border-color: #352352;
+  }
+
+  html.theme-vice-city .layer-item:hover {
+    background: #281b45;
+    border-color: #4f357a;
+  }
+
+  html.theme-vice-city .layer-item.active .layer-name {
+    color: #ff9fd3;
+  }
+
+  html.theme-vice-city .layer-thumb {
+    background: #120b20;
+    border-color: #3a2658;
+  }
+
+  html.theme-vice-city .layer-mini-btn {
+    background: #281b42;
+    border-color: #442e6b;
+    color: #c8b6e6;
+  }
+
+  html.theme-vice-city .layer-mini-btn:hover:not(:disabled) {
+    background: #39265e;
+    border-color: #6b49a6;
+    color: #ffffff;
+  }
+
+  html.theme-vice-city .inspector-type-badge {
+    background: #24173c;
+    border-color: #3f2a63;
+    color: #cbb8e6;
+  }
+
+  html.theme-vice-city .layer-badge,
+  html.theme-vice-city .active-text-layer-badge {
+    background: #2b0f35;
+    color: #5cf5ff;
+    border-color: rgba(53, 242, 255, 0.48);
+    box-shadow: 0 0 10px rgba(53, 242, 255, 0.16);
+  }
+
+  html.theme-vice-city textarea {
+    background: #120b20;
+    color: #f5ecff;
+  }
+
+  html.theme-vice-city #quickCharacterNameInput {
+    background: #120b20 !important;
+    border-color: #432c69 !important;
+    color: #f5ecff !important;
+  }
+
+  html.theme-vice-city .preview-outer {
+    background:
+      linear-gradient(135deg, rgba(255, 79, 163, 0.08), rgba(53, 242, 255, 0.06)),
+      #140d23;
+  }
+
+  html.theme-vice-city .bottom-actions-panel {
+    background: #120b20;
+  }
+
+  html.theme-vice-city .actions-group {
+    background: #1d1432;
+    border-color: #352352;
+  }
+
+  html.theme-vice-city .actions-group-label {
+    color: #b79fd6;
+  }
+
+  html.theme-vice-city .footer-note {
+    background: #10091c;
+  }
+
+  html.theme-vice-city .tip-label {
+    color: #ffe6f3;
+  }
+
+  html.theme-vice-city .tip-nav-btn {
+    background: #1e1433;
+    border-color: #3c285c;
+    color: #c0addb;
+  }
+
+  html.theme-vice-city .tip-nav-btn:hover {
+    background: #2d1e4a;
+    border-color: #ff6eb4;
+    color: #ffffff;
+  }
+
+  html.theme-vice-city .color-chips-popover {
+    background: #170f28;
+    border-color: #432c69;
+  }
+
+  html.theme-vice-city .color-chips-header,
+  html.theme-vice-city .color-chips-footer {
+    border-color: #32204f;
+  }
+
+  html.theme-vice-city .color-chip-btn {
+    background: #221638;
+    border-color: #3b275c;
+  }
+
+  html.theme-vice-city .color-chip-btn:hover {
+    background: #2f1f4d;
+    border-color: #ff6eb4;
+  }
+
+  html.theme-vice-city .color-hex-input {
+    background: #120b20;
+    border-color: #3f2b61;
+  }
+
+  html.theme-vice-city .toast {
+    background: #1a112d;
+    border-color: #3f2b61;
+  }
+
+  html.theme-vice-city .toast.toast-success {
+    background: #2d0d2c;
+    border-color: #ff4fa3;
+  }
+
+  html.theme-vice-city .toast-link,
+  html.theme-vice-city .modal-step-desc a,
+  html.theme-vice-city .imgbb-history-url:hover,
+  html.theme-vice-city .settings-status-badge {
+    color: #35f2ff;
+  }
+
+  html.theme-vice-city .toast-link:hover,
+  html.theme-vice-city .modal-step-desc a:hover {
+    color: #ffe6f3;
+  }
+
+  html.theme-vice-city .modal-dialog {
+    background: #160e26;
+    border-color: #3e2961;
+  }
+
+  html.theme-vice-city .modal-header,
+  html.theme-vice-city .modal-footer {
+    background: #1e1433;
+    border-color: #352352;
+  }
+
+  html.theme-vice-city .modal-step,
+  html.theme-vice-city .settings-section,
+  html.theme-vice-city .imgbb-history-item {
+    background: #120b20;
+    border-color: #332150;
+  }
+
+  html.theme-vice-city .imgbb-history-item:hover {
+    background: #19102b;
+    border-color: #4d3478;
+  }
+
+  html.theme-vice-city .modal-step-number {
+    color: #ffe6f3;
+  }
+
+  html.theme-vice-city .modal-input {
+    background: #0d0818;
+    border-color: #3c285e;
+  }
+
+  html.theme-vice-city .modal-tip-box {
+    color: #ffe6f3;
+  }
+
+  html.theme-vice-city .yt-music-widget {
+    background: #160e26;
+    border-color: #462e6e;
+    box-shadow: 0 10px 30px rgba(10, 4, 22, 0.8), 0 0 18px rgba(255, 79, 163, 0.16);
+  }
+
+  html.theme-vice-city .yt-music-header {
+    background: #22153a;
+    border-bottom-color: #39255c;
+  }
+
+  html.theme-vice-city .yt-music-icon {
+    color: #35f2ff;
+  }
+
+  html.theme-vice-city .yt-music-body {
+    background: #120b20;
+  }
+
+  html.theme-vice-city .yt-music-controls-row {
+    background: #1b122e;
+    border-top-color: #352352;
+  }
+
+  html.theme-vice-city .yt-music-volume-range {
+    accent-color: #ff4fa3;
+  }
 </style>
 </head>
 <body>
@@ -2107,6 +2589,10 @@
       <span>Paste a GTA-style chatlog and preview it with in-game-like colors.</span>
     </div>
     <div class="header-actions">
+      <button id="themeSwitchButton" class="theme-switch-btn" type="button" title="Switch to Vice City Theme" aria-label="Switch theme" aria-pressed="false">
+        <span class="theme-switch-icon" aria-hidden="true">🌴</span>
+        <span id="themeSwitchLabel">Vice City</span>
+      </button>
       <button id="musicPlayButton" class="music-single-btn" type="button" title="Play 'Matty Boy - I'm Known For That'" aria-label="Play song">
         🎵
       </button>
@@ -9344,11 +9830,54 @@
   }
 
   // ==========================================
-  // YouTube Music Player Integration & Custom Track Settings
+  // Theme Switcher (Classic / Vice City) & YouTube Music Player Integration
   // ==========================================
-  const DEFAULT_MUSIC_URL = "https://www.youtube.com/watch?v=EgBQ67xhusU";
-  const DEFAULT_MUSIC_VIDEO_ID = "EgBQ67xhusU";
+  const THEME_STORAGE_KEY = "gtarp_chatlog_theme_v1";
+  const CLASSIC_DEFAULT_MUSIC_URL = "https://www.youtube.com/watch?v=EgBQ67xhusU";
+  const CLASSIC_DEFAULT_MUSIC_VIDEO_ID = "EgBQ67xhusU";
+  const CLASSIC_DEFAULT_MUSIC_TITLE = "Matty Boy - I'm Known For That";
+  const VICE_CITY_DEFAULT_MUSIC_URL = "https://www.youtube.com/watch?v=5dPwBWvmcbQ";
+  const VICE_CITY_DEFAULT_MUSIC_VIDEO_ID = "5dPwBWvmcbQ";
+  const VICE_CITY_DEFAULT_MUSIC_TITLE = "Vice City Theme Music";
   const MUSIC_STORAGE_KEY = "gtarp_chatlog_custom_music_url";
+
+  const themeSwitchButton = document.getElementById("themeSwitchButton");
+  const themeSwitchLabel = document.getElementById("themeSwitchLabel");
+
+  let activeTheme = (() => {
+    try {
+      return localStorage.getItem(THEME_STORAGE_KEY) === "vice-city" ? "vice-city" : "classic";
+    } catch (e) {
+      return document.documentElement.classList.contains("theme-vice-city") ? "vice-city" : "classic";
+    }
+  })();
+
+  let resolvedVideoTitles = {
+    [CLASSIC_DEFAULT_MUSIC_VIDEO_ID]: CLASSIC_DEFAULT_MUSIC_TITLE
+  };
+
+  function isViceCityTheme() {
+    return activeTheme === "vice-city";
+  }
+
+  function getDefaultMusicUrl() {
+    return isViceCityTheme() ? VICE_CITY_DEFAULT_MUSIC_URL : CLASSIC_DEFAULT_MUSIC_URL;
+  }
+
+  function getDefaultMusicVideoId() {
+    return isViceCityTheme() ? VICE_CITY_DEFAULT_MUSIC_VIDEO_ID : CLASSIC_DEFAULT_MUSIC_VIDEO_ID;
+  }
+
+  function getDefaultMusicTitle() {
+    if (isViceCityTheme()) {
+      return resolvedVideoTitles[VICE_CITY_DEFAULT_MUSIC_VIDEO_ID] || VICE_CITY_DEFAULT_MUSIC_TITLE;
+    }
+    return CLASSIC_DEFAULT_MUSIC_TITLE;
+  }
+
+  function isBuiltInDefaultVideoId(videoId) {
+    return videoId === CLASSIC_DEFAULT_MUSIC_VIDEO_ID || videoId === VICE_CITY_DEFAULT_MUSIC_VIDEO_ID;
+  }
 
   function extractYouTubeVideoId(urlOrId) {
     if (!urlOrId || typeof urlOrId !== "string") return null;
@@ -9365,15 +9894,21 @@
     return null;
   }
 
-  let currentMusicUrl = (() => {
+  function getSavedCustomMusicUrl() {
     try {
       const saved = localStorage.getItem(MUSIC_STORAGE_KEY);
-      if (saved && saved.trim()) return saved.trim();
+      if (saved && saved.trim()) {
+        const savedId = extractYouTubeVideoId(saved.trim());
+        if (savedId && !isBuiltInDefaultVideoId(savedId)) {
+          return saved.trim();
+        }
+      }
     } catch (e) {}
-    return DEFAULT_MUSIC_URL;
-  })();
+    return "";
+  }
 
-  let currentMusicVideoId = extractYouTubeVideoId(currentMusicUrl) || DEFAULT_MUSIC_VIDEO_ID;
+  let currentMusicUrl = getSavedCustomMusicUrl() || getDefaultMusicUrl();
+  let currentMusicVideoId = extractYouTubeVideoId(currentMusicUrl) || getDefaultMusicVideoId();
   let ytMusicPlayer = null;
   let ytMusicReady = false;
   let ytMusicPendingPlay = false;
@@ -9389,9 +9924,28 @@
   const ytMusicSettingsShortcutBtn = document.getElementById("ytMusicSettingsShortcutBtn");
 
   function getTrackDisplayName() {
-    return (currentMusicVideoId === DEFAULT_MUSIC_VIDEO_ID)
-      ? "Matty Boy - I'm Known For That"
-      : `Custom Track (${currentMusicVideoId})`;
+    if (resolvedVideoTitles[currentMusicVideoId]) {
+      return resolvedVideoTitles[currentMusicVideoId];
+    }
+    if (currentMusicVideoId === CLASSIC_DEFAULT_MUSIC_VIDEO_ID) {
+      return CLASSIC_DEFAULT_MUSIC_TITLE;
+    }
+    if (currentMusicVideoId === VICE_CITY_DEFAULT_MUSIC_VIDEO_ID) {
+      return VICE_CITY_DEFAULT_MUSIC_TITLE;
+    }
+    return `Custom Track (${currentMusicVideoId})`;
+  }
+
+  function capturePlayerTrackTitle() {
+    if (!ytMusicPlayer || typeof ytMusicPlayer.getVideoData !== "function") return;
+    try {
+      const data = ytMusicPlayer.getVideoData();
+      if (data && data.video_id && data.title && data.title.trim()) {
+        resolvedVideoTitles[data.video_id] = data.title.trim();
+        const isPlaying = typeof ytMusicPlayer.getPlayerState === "function" && ytMusicPlayer.getPlayerState() === 1;
+        setMusicPlayingUI(isPlaying);
+      }
+    } catch (e) {}
   }
 
   function showMusicWidget() {
@@ -9425,36 +9979,123 @@
   }
 
   function syncMusicSettingsUI() {
+    const defaultUrl = getDefaultMusicUrl();
+    const defaultId = getDefaultMusicVideoId();
+    const defaultTitle = getDefaultMusicTitle();
+    if (resetMusicToDefaultBtn) {
+      resetMusicToDefaultBtn.title = `Reset to default song (${defaultTitle})`;
+    }
     if (!customMusicUrlInput) return;
+    customMusicUrlInput.placeholder = defaultUrl;
     try {
-      const saved = localStorage.getItem(MUSIC_STORAGE_KEY);
-      const isCustom = Boolean(saved && saved.trim());
-      customMusicUrlInput.value = isCustom ? saved.trim() : DEFAULT_MUSIC_URL;
+      const savedCustom = getSavedCustomMusicUrl();
+      const isCustom = Boolean(savedCustom);
+      customMusicUrlInput.value = isCustom ? savedCustom : defaultUrl;
       if (customMusicUrlStatus) {
-        if (!isCustom || currentMusicVideoId === DEFAULT_MUSIC_VIDEO_ID) {
-          customMusicUrlStatus.textContent = "Default Track";
+        if (!isCustom || currentMusicVideoId === defaultId) {
+          customMusicUrlStatus.textContent = isViceCityTheme() ? "Vice City Default" : "Default Track";
           customMusicUrlStatus.style.color = "#888888";
         } else {
           customMusicUrlStatus.textContent = "Custom Track";
-          customMusicUrlStatus.style.color = "#00d984";
+          customMusicUrlStatus.style.color = isViceCityTheme() ? "#35f2ff" : "#00d984";
         }
       }
     } catch (e) {
-      customMusicUrlInput.value = DEFAULT_MUSIC_URL;
+      customMusicUrlInput.value = defaultUrl;
     }
   }
 
+  function syncThemeButtonUI() {
+    const vice = isViceCityTheme();
+    document.documentElement.classList.toggle("theme-vice-city", vice);
+    if (themeSwitchButton) {
+      themeSwitchButton.setAttribute("aria-pressed", vice ? "true" : "false");
+      themeSwitchButton.title = vice ? "Switch back to Classic Theme" : "Switch to Vice City Theme";
+      const iconEl = themeSwitchButton.querySelector(".theme-switch-icon");
+      if (iconEl) {
+        iconEl.textContent = vice ? "☘" : "🌴";
+      }
+      if (themeSwitchLabel) {
+        themeSwitchLabel.textContent = vice ? "Classic" : "Vice City";
+      }
+    }
+  }
+
+  function applyThemeDefaultMusicIfUsingDefault() {
+    const savedCustom = getSavedCustomMusicUrl();
+    if (savedCustom) {
+      syncMusicSettingsUI();
+      return;
+    }
+
+    const nextUrl = getDefaultMusicUrl();
+    const nextId = getDefaultMusicVideoId();
+    const changed = nextId !== currentMusicVideoId;
+
+    currentMusicUrl = nextUrl;
+    currentMusicVideoId = nextId;
+
+    let wasPlaying = false;
+    if (changed && ytMusicPlayer && ytMusicReady) {
+      try {
+        const state = ytMusicPlayer.getPlayerState();
+        wasPlaying = (state === 1);
+        if (wasPlaying) {
+          ytMusicPlayer.loadVideoById({ videoId: currentMusicVideoId });
+        } else {
+          ytMusicPlayer.cueVideoById({ videoId: currentMusicVideoId });
+        }
+      } catch (err) {
+        console.warn("Could not switch theme default track:", err);
+      }
+    }
+
+    setMusicPlayingUI(wasPlaying);
+    syncMusicSettingsUI();
+  }
+
+  function setAppTheme(themeName, notify = false) {
+    activeTheme = (themeName === "vice-city") ? "vice-city" : "classic";
+    try {
+      localStorage.setItem(THEME_STORAGE_KEY, activeTheme);
+    } catch (e) {}
+
+    syncThemeButtonUI();
+    applyThemeDefaultMusicIfUsingDefault();
+
+    if (notify) {
+      if (isViceCityTheme()) {
+        showToast("success", "Vice City Theme Active", "Welcome to Vice City! Default music switched to the Vice City track.");
+      } else {
+        showToast("info", "Classic Theme Active", "Switched back to the Classic GTA RP Chatlog Magician theme.");
+      }
+    }
+  }
+
+  if (themeSwitchButton) {
+    themeSwitchButton.addEventListener("click", () => {
+      setAppTheme(isViceCityTheme() ? "classic" : "vice-city", true);
+    });
+  }
+
+  syncThemeButtonUI();
+  setMusicPlayingUI(false);
+  syncMusicSettingsUI();
+
   function updateCustomMusicTrack(newUrl, isResetToDefault = false) {
     const trimmed = (newUrl || "").trim();
+    const defaultUrl = getDefaultMusicUrl();
+    const defaultId = getDefaultMusicVideoId();
+
     if (isResetToDefault || !trimmed) {
-      currentMusicUrl = DEFAULT_MUSIC_URL;
-      currentMusicVideoId = DEFAULT_MUSIC_VIDEO_ID;
+      currentMusicUrl = defaultUrl;
+      currentMusicVideoId = defaultId;
       try {
         localStorage.removeItem(MUSIC_STORAGE_KEY);
       } catch (e) {}
-      if (customMusicUrlInput) customMusicUrlInput.value = DEFAULT_MUSIC_URL;
+      if (customMusicUrlInput) customMusicUrlInput.value = defaultUrl;
       if (customMusicUrlStatus) {
-        customMusicUrlStatus.textContent = "Default Track";
+        customMusicUrlStatus.textContent = isViceCityTheme() ? "Vice City Default" : "Default Track";
         customMusicUrlStatus.style.color = "#888888";
       }
     } else {
@@ -9469,11 +10110,17 @@
       currentMusicUrl = trimmed;
       currentMusicVideoId = parsedId;
       try {
-        localStorage.setItem(MUSIC_STORAGE_KEY, trimmed);
+        if (parsedId === defaultId) {
+          localStorage.removeItem(MUSIC_STORAGE_KEY);
+        } else {
+          localStorage.setItem(MUSIC_STORAGE_KEY, trimmed);
+        }
       } catch (e) {}
       if (customMusicUrlStatus) {
-        customMusicUrlStatus.textContent = (parsedId === DEFAULT_MUSIC_VIDEO_ID) ? "Default Track" : "Saved ✓";
-        customMusicUrlStatus.style.color = "#00d984";
+        customMusicUrlStatus.textContent = (parsedId === defaultId)
+          ? (isViceCityTheme() ? "Vice City Default" : "Default Track")
+          : "Saved ✓";
+        customMusicUrlStatus.style.color = isViceCityTheme() ? "#35f2ff" : "#00d984";
       }
     }
 
@@ -9483,6 +10130,7 @@
       ytMusicTrackName.title = name;
     }
 
+    let isNowPlaying = false;
     // Switch video on running YouTube player
     if (ytMusicPlayer && ytMusicReady) {
       try {
@@ -9491,19 +10139,19 @@
           ytMusicPlayer.loadVideoById({
             videoId: currentMusicVideoId
           });
-          setMusicPlayingUI(true);
+          isNowPlaying = true;
         } else { // If paused, cue it up
           ytMusicPlayer.cueVideoById({
             videoId: currentMusicVideoId
           });
-          setMusicPlayingUI(false);
+          isNowPlaying = false;
         }
       } catch (err) {
         console.warn("Could not cue/load video:", err);
       }
     }
 
-    setMusicPlayingUI(false);
+    setMusicPlayingUI(isNowPlaying);
     return true;
   }
 
@@ -9541,8 +10189,8 @@
 
   if (resetMusicToDefaultBtn) {
     resetMusicToDefaultBtn.addEventListener("click", () => {
-      updateCustomMusicTrack(DEFAULT_MUSIC_URL, true);
-      showToast("info", "Music Restored", "Restored default song: Matty Boy - I'm Known For That");
+      updateCustomMusicTrack(getDefaultMusicUrl(), true);
+      showToast("info", "Music Restored", `Restored default song: ${getDefaultMusicTitle()}`);
     });
   }
 
@@ -9572,6 +10220,7 @@
               const currentVol = ytMusicVolumeSlider ? parseInt(ytMusicVolumeSlider.value, 10) : 75;
               ytMusicPlayer.setVolume(currentVol || 75);
             } catch (e) {}
+            capturePlayerTrackTitle();
             if (ytMusicPendingPlay) {
               ytMusicPendingPlay = false;
               showMusicWidget();
@@ -9580,12 +10229,15 @@
             }
           },
           onStateChange: function(event) {
-            // YT.PlayerState: PLAYING = 1, PAUSED = 2, ENDED = 0, BUFFERING = 3
+            // YT.PlayerState: PLAYING = 1, PAUSED = 2, ENDED = 0, BUFFERING = 3, CUED = 5
             if (event.data === 1) {
+              capturePlayerTrackTitle();
               showMusicWidget();
               setMusicPlayingUI(true);
             } else if (event.data === 2) {
               setMusicPlayingUI(false);
+            } else if (event.data === 5) {
+              capturePlayerTrackTitle();
             } else if (event.data === 0) {
               // Loop: Automatically replay song when finished
               try {
