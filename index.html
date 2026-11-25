@@ -7416,7 +7416,7 @@
         copyPngButton.title = "Copy animated GIF screenshot to clipboard (or static PNG frame if browser restricts GIF clipboard)";
       } else {
         copyPngButton.textContent = "Copy PNG";
-        copyPngButton.title = "Download PNG (transparent background if no background image is added)";
+        copyPngButton.title = "Copy PNG to clipboard (transparent background if no background image is added)";
       }
     }
     if (downloadPngButton) {
@@ -8011,19 +8011,34 @@
       }
     }
 
-    const canvas = await getExportCanvas();
-
     if (!navigator.clipboard || !window.ClipboardItem) {
       throw new Error("PNG clipboard copying is not supported in this browser.");
     }
 
-    const blob = await new Promise(resolve => canvas.toBlob(resolve, "image/png"));
+    const pngBlobPromise = getExportCanvas().then(canvas => new Promise((resolve, reject) => {
+      canvas.toBlob(blob => {
+        if (!blob) {
+          reject(new Error("Failed to generate PNG image."));
+          return;
+        }
+        resolve(blob);
+      }, "image/png");
+    }));
 
-    await navigator.clipboard.write([
-      new ClipboardItem({
-        "image/png": blob
-      })
-    ]);
+    try {
+      await navigator.clipboard.write([
+        new ClipboardItem({
+          "image/png": pngBlobPromise
+        })
+      ]);
+    } catch (promiseErr) {
+      const blob = await pngBlobPromise;
+      await navigator.clipboard.write([
+        new ClipboardItem({
+          "image/png": blob
+        })
+      ]);
+    }
 
     if (hasActiveGifLayer()) {
       showToast("info", "Copied PNG Frame to Clipboard", "Note: Your browser clipboard only accepts static PNG format. To save or share the animated GIF, use Download GIF or Upload to ImgBB!");
@@ -9485,17 +9500,17 @@
         isGif
           ? "Copied animated GIF to clipboard."
           : (isTransparent
-              ? "Copied chatlog with transparent background to clipboard! Perfect for extrapolating into Photoshop or image editors."
+              ? "Copied chatlog with transparent background to clipboard! Note: Pasting directly into Photoshop on Windows can turn transparency black (Windows/browser clipboard limit) — use Download PNG for Photoshop."
               : "Copied image composite to clipboard!")
       );
       setTimeout(() => {
-        copyPngButton.textContent = "Copy PNG";
+        updateExportButtonsLabel();
       }, 1500);
     } catch (error) {
       copyPngButton.textContent = "Copy failed";
       showToast("error", "Clipboard Copy Failed", error?.message || "Direct image clipboard access was blocked. Use 'Download PNG' or 'Upload to ImgBB' instead.");
       setTimeout(() => {
-        copyPngButton.textContent = "Copy PNG";
+        updateExportButtonsLabel();
       }, 1400);
       console.error(error);
     }
