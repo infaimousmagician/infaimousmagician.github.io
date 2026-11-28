@@ -1080,6 +1080,90 @@
     line-height: 1.45;
   }
 
+  .upload-host-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-top: 2px;
+  }
+
+  .upload-host-option {
+    appearance: none;
+    background: #1b1b1b;
+    border: 1px solid #323232;
+    border-radius: 7px;
+    padding: 10px 12px;
+    text-align: left;
+    cursor: pointer;
+    color: #d8d8d8;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    transition: border-color 0.15s ease, background 0.15s ease, box-shadow 0.15s ease;
+    font-family: inherit;
+  }
+
+  .upload-host-option:hover {
+    background: #222222;
+    border-color: #4a4a4a;
+  }
+
+  .upload-host-option.active {
+    background: rgba(0, 223, 130, 0.1);
+    border-color: #00df82;
+    box-shadow: 0 0 0 1px rgba(0, 223, 130, 0.25);
+  }
+
+  .upload-host-option-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 6px;
+    font-size: 13px;
+    font-weight: 700;
+    color: #ffffff;
+  }
+
+  .upload-host-check {
+    font-size: 11px;
+    font-weight: 700;
+    color: #00df82;
+    opacity: 0;
+  }
+
+  .upload-host-option.active .upload-host-check {
+    opacity: 1;
+  }
+
+  .upload-host-option-sub {
+    font-size: 11px;
+    color: #969696;
+    line-height: 1.35;
+  }
+
+  .upload-provider-badge {
+    font-size: 10px;
+    font-weight: 700;
+    padding: 1px 6px;
+    border-radius: 3px;
+    letter-spacing: 0.03em;
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    background: rgba(255, 255, 255, 0.07);
+    color: #cccccc;
+  }
+
+  .upload-provider-badge.postimages {
+    background: rgba(56, 189, 248, 0.14);
+    border-color: rgba(56, 189, 248, 0.38);
+    color: #7dd3fc;
+  }
+
+  .upload-provider-badge.imgbb {
+    background: rgba(0, 223, 130, 0.12);
+    border-color: rgba(0, 223, 130, 0.34);
+    color: #6ee7b7;
+  }
+
   .settings-danger-section {
     background: rgba(240, 0, 0, 0.06);
     border: 1px solid rgba(240, 0, 0, 0.25);
@@ -2552,6 +2636,27 @@
     color: #ffe6f3;
   }
 
+  html.theme-vice-city .upload-host-option {
+    background: #170e29;
+    border-color: #3a265c;
+    color: #e8daf5;
+  }
+
+  html.theme-vice-city .upload-host-option:hover {
+    background: #21153a;
+    border-color: #5b3b8f;
+  }
+
+  html.theme-vice-city .upload-host-option.active {
+    background: rgba(255, 79, 163, 0.14);
+    border-color: #ff4fa3;
+    box-shadow: 0 0 0 1px rgba(255, 79, 163, 0.32);
+  }
+
+  html.theme-vice-city .upload-host-check {
+    color: #38e8ff;
+  }
+
   html.theme-vice-city .yt-music-widget {
     background: #160e26;
     border-color: #462e6e;
@@ -2730,7 +2835,7 @@
     </div>
 
     <div class="toolbar-group">
-      <button id="imgbbHistoryButton" class="btn btn-imgbb-history btn-sm" style="display: none;" title="View all uploaded ImgBB links (history)">
+      <button id="imgbbHistoryButton" class="btn btn-imgbb-history btn-sm" style="display: none;" title="View all uploaded image links (history)">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>
         <span id="imgbbHistoryButtonLabel">Uploaded Links (0)</span>
       </button>
@@ -2918,11 +3023,11 @@
 
     <div class="actions-group">
       <span class="actions-group-label">Export Image</span>
-      <button id="uploadImgbbButton" class="btn btn-imgbb" title="Upload screenshot to ImgBB and copy direct link to clipboard (Ctrl+V)">
+      <button id="uploadImgbbButton" class="btn btn-imgbb" title="Upload screenshot to Postimages and copy direct .png/.gif link to clipboard (Ctrl+V)">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
-        <span>Upload to ImgBB</span>
+        <span>Upload to Postimages</span>
       </button>
-      <button id="imgbbHelpButton" class="btn-icon-help" type="button" title="How to get free ImgBB API key">?</button>
+      <button id="imgbbHelpButton" class="btn-icon-help" type="button" title="About Postimages direct uploads">?</button>
       <button id="copyPngButton" class="btn btn-export" title="Copy PNG to clipboard (transparent background if no background image is added)">Copy PNG</button>
       <button id="downloadPngButton" class="btn btn-export" title="Download PNG (transparent background if no background image is added)">Download PNG</button>
       <button id="downloadJpegButton" class="btn btn-export" title="Download JPEG">Download JPEG</button>
@@ -2990,13 +3095,60 @@
     </div>
   </div>
 
-  <!-- ImgBB Uploaded Links History Modal -->
-  <div id="imgbbHistoryModal" class="modal-backdrop" style="display: none;" role="dialog" aria-label="Uploaded ImgBB Links">
+  <!-- Postimages Info & Guide Modal -->
+  <div id="postimagesInfoModal" class="modal-backdrop" style="display: none;" role="dialog" aria-label="Postimages Upload Info">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <div class="modal-title">
+          <span>☘</span>
+          <span>Postimages Direct Upload Info</span>
+        </div>
+        <button type="button" id="closePostimagesInfoModalBtn" class="toast-close" title="Close modal (Esc)">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p style="color: #cccccc; line-height: 1.5; margin: 0;">
+          <strong>Postimages</strong> (<code>postimg.cc</code>) uploads are routed securely through this app's server proxy and automatically return direct <code>.png</code> (or <code>.gif</code>) hotlinks ready for GTA forums and <code>[IMG]</code> BBCode.
+        </p>
+
+        <div class="modal-step">
+          <div class="modal-step-number">1</div>
+          <div class="modal-step-content">
+            <div class="modal-step-title">One-Click Direct Forum Links</div>
+            <div class="modal-step-desc">
+              Click <strong>Upload to Postimages</strong> to upload your rendered screenshot (including transparent PNGs and animated GIFs). The direct <code>i.postimg.cc/...</code> link is copied to your clipboard and saved to <strong>Uploaded Links</strong> so you can copy all links or <code>[IMG]</code> BBCode in chronological order.
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-step">
+          <div class="modal-step-number">2</div>
+          <div class="modal-step-content">
+            <div class="modal-step-title">Optional Account Key (Server Environment)</div>
+            <div class="modal-step-desc">
+              Uploads work out of the box via server proxy. To link uploads to your personal Postimages account, generate a key at <a href="https://postimages.org/login/api" target="_blank" rel="noopener noreferrer">postimages.org/login/api</a> and set <code>POSTIMAGES_API_KEY</code> in your app's environment secrets.
+            </div>
+            <div id="postimagesModalStatus" style="font-size: 11px; margin-top: 6px; color: #888888;"></div>
+          </div>
+        </div>
+
+        <div class="modal-tip-box">
+          💡 Want to switch back to <strong>ImgBB</strong>? Open <strong>⚙ Settings</strong> in the top right and choose your preferred Image Upload Host at any time.
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" id="postimagesOpenSettingsBtn" class="btn btn-neutral" style="font-size: 12px;">Open Settings</button>
+        <button type="button" id="donePostimagesInfoModalBtn" class="btn btn-imgbb">Done</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Uploaded Image Links History Modal -->
+  <div id="imgbbHistoryModal" class="modal-backdrop" style="display: none;" role="dialog" aria-label="Uploaded Image Links">
     <div class="modal-dialog" style="width: 580px;">
       <div class="modal-header">
         <div class="modal-title">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--accent);"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>
-          <span>Uploaded ImgBB Links</span>
+          <span>Uploaded Image Links</span>
           <span id="imgbbHistoryCountBadge" class="badge" style="background: rgba(0, 223, 130, 0.15); color: #00df82; border: 1px solid rgba(0, 223, 130, 0.4); font-size: 11px; padding: 1px 7px; border-radius: 999px; font-weight: 700;">0</span>
         </div>
         <button type="button" id="closeImgbbHistoryModalBtn" class="toast-close" title="Close modal (Esc)">&times;</button>
@@ -3030,7 +3182,7 @@
         <div id="imgbbHistoryEmpty" style="display: none; text-align: center; padding: 32px 16px; color: #888888;">
           <div style="font-size: 28px; margin-bottom: 8px;">📤</div>
           <div style="font-weight: 600; color: #cccccc; margin-bottom: 4px;">No uploaded links yet</div>
-          <div style="font-size: 12px;">Click "Upload to ImgBB" on any chatlog and your links will appear here.</div>
+          <div style="font-size: 12px;">Click "Upload to ImgBB" or "Upload to Postimages" on any chatlog and your links will appear here.</div>
         </div>
       </div>
       <div class="modal-footer" style="display: flex; justify-content: space-between; align-items: center;">
@@ -3198,6 +3350,39 @@
             </div>
             <div class="settings-help-text">
               Store your character's in-game name. When your character speaks, their speech appears in standard bright white (<code style="color: #f1f1f1;">#f1f1f1</code>), while say dialogue from other characters is slightly darker (<code id="helpOtherSayColorCode" style="color: #c8c8c8;">#c8c8c8</code>) so you can effortlessly differentiate who is speaking in screenshots. In phone conversations, your character speaks in natural vocal tones while the caller appears in phone yellow.
+            </div>
+          </div>
+        </div>
+
+        <!-- Section: Image Upload Host -->
+        <div class="settings-section">
+          <div class="settings-section-title">
+            <span>☁️</span>
+            <span>Image Upload Host</span>
+          </div>
+          <div class="settings-field-group">
+            <div class="settings-label">
+              <span>Choose where the Upload button sends screenshots:</span>
+              <span id="uploadHostStatusBadge" class="settings-status-badge"></span>
+            </div>
+            <div class="upload-host-grid" role="radiogroup" aria-label="Image Upload Host">
+              <button type="button" id="uploadHostPostimagesBtn" class="upload-host-option active" data-host="postimages" role="radio" aria-checked="true">
+                <div class="upload-host-option-header">
+                  <span>Postimages</span>
+                  <span class="upload-host-check">✓ Active</span>
+                </div>
+                <div class="upload-host-option-sub">Server proxy · Direct .png / .gif forum links</div>
+              </button>
+              <button type="button" id="uploadHostImgbbBtn" class="upload-host-option" data-host="imgbb" role="radio" aria-checked="false">
+                <div class="upload-host-option-header">
+                  <span>ImgBB</span>
+                  <span class="upload-host-check">✓ Active</span>
+                </div>
+                <div class="upload-host-option-sub">Direct browser upload via ImgBB API key</div>
+              </button>
+            </div>
+            <div id="uploadHostHelpText" class="settings-help-text">
+              Both hosts save direct links into <strong>Uploaded Links</strong> so you can copy all links or <code>[IMG]</code> BBCode for forum posts.
             </div>
           </div>
         </div>
@@ -3793,6 +3978,12 @@
     }
     if (typeof syncMusicSettingsUI === "function") {
       syncMusicSettingsUI();
+    }
+    if (typeof syncUploadHostUI === "function") {
+      syncUploadHostUI();
+    }
+    if (typeof refreshUploadHostStatusDisplay === "function") {
+      refreshUploadHostStatusDisplay();
     }
     settingsModal.style.display = "flex";
   }
@@ -8041,7 +8232,8 @@
     }
 
     if (hasActiveGifLayer()) {
-      showToast("info", "Copied PNG Frame to Clipboard", "Note: Your browser clipboard only accepts static PNG format. To save or share the animated GIF, use Download GIF or Upload to ImgBB!");
+      const hostLabel = (typeof getSelectedUploadHost === "function" && getSelectedUploadHost() === "postimages") ? "Postimages" : "ImgBB";
+      showToast("info", "Copied PNG Frame to Clipboard", `Note: Your browser clipboard only accepts static PNG format. To save or share the animated GIF, use Download GIF or Upload to ${hostLabel}!`);
     }
   }
 
@@ -8905,6 +9097,170 @@
 
   input.addEventListener("input", render);
 
+  // Safe HTML & URL helpers for dynamic rendering
+  function escapeHtml(str) {
+    return String(str ?? "")
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#39;");
+  }
+
+  function sanitizeHttpUrl(rawUrl) {
+    if (typeof rawUrl !== "string") return "";
+    try {
+      const parsed = new URL(rawUrl.trim());
+      if (parsed.protocol === "https:" || parsed.protocol === "http:") {
+        return parsed.toString();
+      }
+    } catch {}
+    return "";
+  }
+
+  // Image Upload Host Preference Manager (ImgBB vs Postimages)
+  const UPLOAD_HOST_STORAGE_KEY = "gtarp_chatlog_upload_host_v1";
+  const uploadHostImgbbBtn = document.getElementById("uploadHostImgbbBtn");
+  const uploadHostPostimagesBtn = document.getElementById("uploadHostPostimagesBtn");
+  const uploadHostStatusBadge = document.getElementById("uploadHostStatusBadge");
+  const uploadHostHelpText = document.getElementById("uploadHostHelpText");
+  const postimagesInfoModal = document.getElementById("postimagesInfoModal");
+  const closePostimagesInfoModalBtn = document.getElementById("closePostimagesInfoModalBtn");
+  const donePostimagesInfoModalBtn = document.getElementById("donePostimagesInfoModalBtn");
+  const postimagesOpenSettingsBtn = document.getElementById("postimagesOpenSettingsBtn");
+  const postimagesModalStatus = document.getElementById("postimagesModalStatus");
+
+  const UPLOAD_ICON_SVG = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>`;
+
+  function getSelectedUploadHost() {
+    try {
+      const saved = (localStorage.getItem(UPLOAD_HOST_STORAGE_KEY) || "").trim().toLowerCase();
+      if (saved === "imgbb") return "imgbb";
+    } catch {}
+    return "postimages";
+  }
+
+  function getUploadHostLabel(host = getSelectedUploadHost()) {
+    return host === "postimages" ? "Postimages" : "ImgBB";
+  }
+
+  function syncUploadHostUI() {
+    const host = getSelectedUploadHost();
+    const isPostimages = host === "postimages";
+
+    if (uploadHostImgbbBtn) {
+      uploadHostImgbbBtn.classList.toggle("active", !isPostimages);
+      uploadHostImgbbBtn.setAttribute("aria-checked", !isPostimages ? "true" : "false");
+    }
+    if (uploadHostPostimagesBtn) {
+      uploadHostPostimagesBtn.classList.toggle("active", isPostimages);
+      uploadHostPostimagesBtn.setAttribute("aria-checked", isPostimages ? "true" : "false");
+    }
+
+    if (uploadImgbbButton && !uploadImgbbButton.disabled) {
+      uploadImgbbButton.innerHTML = `${UPLOAD_ICON_SVG}<span>Upload to ${getUploadHostLabel(host)}</span>`;
+      uploadImgbbButton.title = isPostimages
+        ? "Upload screenshot to Postimages and copy direct .png/.gif link to clipboard (Ctrl+V)"
+        : "Upload screenshot to ImgBB and copy direct link to clipboard (Ctrl+V)";
+    }
+
+    if (imgbbHelpButton) {
+      imgbbHelpButton.title = isPostimages
+        ? "About Postimages direct uploads"
+        : "How to get free ImgBB API key";
+    }
+  }
+
+  async function refreshUploadHostStatusDisplay() {
+    const host = getSelectedUploadHost();
+    if (host === "postimages") {
+      if (uploadHostHelpText) {
+        uploadHostHelpText.innerHTML = `Uploads go through the app server proxy and return direct <code>i.postimg.cc</code> <code>.png</code> / <code>.gif</code> links into <strong>Uploaded Links</strong> for easy forum pasting.`;
+      }
+      try {
+        const res = await fetch("/api/postimages-status");
+        const data = await res.json();
+        const statusHtml = data.hasEnvKey
+          ? `<span style="color: #00d984;">✓ Account key active on server</span>`
+          : `<span style="color: #7dd3fc;">✓ Ready via server proxy</span>`;
+        if (uploadHostStatusBadge) uploadHostStatusBadge.innerHTML = statusHtml;
+        if (postimagesModalStatus) {
+          postimagesModalStatus.innerHTML = data.hasEnvKey
+            ? `<span style="color: #00d984;">✓ POSTIMAGES_API_KEY is configured in app environment</span>`
+            : `<span style="color: #7dd3fc;">✓ Server proxy active (anonymous mode — add POSTIMAGES_API_KEY in secrets to link to your account)</span>`;
+        }
+      } catch {
+        if (uploadHostStatusBadge) uploadHostStatusBadge.textContent = "";
+      }
+    } else {
+      if (uploadHostHelpText) {
+        uploadHostHelpText.innerHTML = `Uploads directly to ImgBB and saves links into <strong>Uploaded Links</strong> so you can copy all links or <code>[IMG]</code> BBCode for forum posts.`;
+      }
+      const storedKey = (localStorage.getItem("imgbb_user_key") || "").trim();
+      if (storedKey) {
+        if (uploadHostStatusBadge) uploadHostStatusBadge.innerHTML = `<span style="color: #00d984;">✓ Browser key saved</span>`;
+        return;
+      }
+      try {
+        const res = await fetch("/api/imgbb-status");
+        const data = await res.json();
+        if (uploadHostStatusBadge) {
+          uploadHostStatusBadge.innerHTML = data.hasEnvKey
+            ? `<span style="color: #00d984;">✓ Server key configured</span>`
+            : `<span style="color: #f59e0b;">API key needed (click ? next to Upload)</span>`;
+        }
+      } catch {
+        if (uploadHostStatusBadge) uploadHostStatusBadge.textContent = "";
+      }
+    }
+  }
+
+  function setSelectedUploadHost(host) {
+    const normalized = host === "imgbb" ? "imgbb" : "postimages";
+    try {
+      localStorage.setItem(UPLOAD_HOST_STORAGE_KEY, normalized);
+    } catch (e) {
+      console.warn("Could not save upload host preference:", e);
+    }
+    syncUploadHostUI();
+    refreshUploadHostStatusDisplay();
+  }
+
+  function openPostimagesInfoModal() {
+    if (!postimagesInfoModal) return;
+    refreshUploadHostStatusDisplay();
+    postimagesInfoModal.style.display = "flex";
+  }
+
+  function closePostimagesInfoModal() {
+    if (!postimagesInfoModal) return;
+    postimagesInfoModal.style.display = "none";
+  }
+
+  if (uploadHostImgbbBtn) {
+    uploadHostImgbbBtn.addEventListener("click", () => setSelectedUploadHost("imgbb"));
+  }
+  if (uploadHostPostimagesBtn) {
+    uploadHostPostimagesBtn.addEventListener("click", () => setSelectedUploadHost("postimages"));
+  }
+  if (closePostimagesInfoModalBtn) {
+    closePostimagesInfoModalBtn.addEventListener("click", closePostimagesInfoModal);
+  }
+  if (donePostimagesInfoModalBtn) {
+    donePostimagesInfoModalBtn.addEventListener("click", closePostimagesInfoModal);
+  }
+  if (postimagesOpenSettingsBtn) {
+    postimagesOpenSettingsBtn.addEventListener("click", () => {
+      closePostimagesInfoModal();
+      openSettingsModal();
+    });
+  }
+  if (postimagesInfoModal) {
+    postimagesInfoModal.addEventListener("click", (event) => {
+      if (event.target === postimagesInfoModal) closePostimagesInfoModal();
+    });
+  }
+
   // ImgBB modal and key management
   const imgbbModal = document.getElementById("imgbbModal");
   const imgbbHelpButton = document.getElementById("imgbbHelpButton");
@@ -8932,7 +9288,7 @@
     if (!imgbbKeyStatus) return;
     const storedKey = localStorage.getItem("imgbb_user_key") || "";
     if (storedKey) {
-      imgbbKeyStatus.innerHTML = `<span style="color: #00d984;">✓ Key saved locally in browser (${storedKey.slice(0, 4)}...${storedKey.slice(-4)})</span>`;
+      imgbbKeyStatus.innerHTML = `<span style="color: #00d984;">✓ Key saved locally in browser (${escapeHtml(storedKey.slice(0, 4))}...${escapeHtml(storedKey.slice(-4))})</span>`;
       return;
     }
     try {
@@ -8949,7 +9305,13 @@
   }
 
   if (imgbbHelpButton) {
-    imgbbHelpButton.addEventListener("click", openImgbbModal);
+    imgbbHelpButton.addEventListener("click", () => {
+      if (getSelectedUploadHost() === "postimages") {
+        openPostimagesInfoModal();
+      } else {
+        openImgbbModal();
+      }
+    });
   }
   if (closeImgbbModalBtn) {
     closeImgbbModalBtn.addEventListener("click", closeImgbbModal);
@@ -9103,33 +9465,49 @@
     if (copyAllImgbbBbcodeBtn) copyAllImgbbBbcodeBtn.disabled = false;
     if (clearImgbbHistoryBtn) clearImgbbHistoryBtn.disabled = false;
 
-    imgbbHistoryList.innerHTML = history.map(item => `
-      <div class="imgbb-history-item" data-id="${item.id}">
-        <a href="${item.url}" target="_blank" rel="noopener noreferrer" title="Click to open image in new tab">
-          <img src="${item.thumbUrl || item.url}" class="imgbb-history-thumb" alt="Upload thumbnail" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\\'http://www.w3.org/2000/svg\\' width=\\'48\\' height=\\'48\\' fill=\\'%23222\\'><rect width=\\'48\\' height=\\'48\\'/><text x=\\'50%\\' y=\\'55%\\' fill=\\'%23666\\' font-size=\\'18\\' text-anchor=\\'middle\\'>🖼</text></svg>'" />
+    imgbbHistoryList.innerHTML = history.map(item => {
+      const safeUrl = sanitizeHttpUrl(item.url);
+      const safeThumb = sanitizeHttpUrl(item.thumbUrl || item.url) || safeUrl;
+      const safeId = escapeHtml(item.id);
+      const safeTime = escapeHtml(item.timeFormatted || "Recent upload");
+      const safeUrlEsc = escapeHtml(safeUrl);
+      const safeThumbEsc = escapeHtml(safeThumb);
+      const isPostimagesItem =
+        item.provider === "postimages" ||
+        (safeUrl && (safeUrl.includes("postimg.cc") || safeUrl.includes("postimages.org") || safeUrl.includes("postimage.org")));
+      const providerBadgeHtml = isPostimagesItem
+        ? `<span class="upload-provider-badge postimages">Postimages</span>`
+        : `<span class="upload-provider-badge imgbb">ImgBB</span>`;
+      const isGifItem = item.isGif || (safeUrl && safeUrl.toLowerCase().includes(".gif"));
+      return `
+      <div class="imgbb-history-item" data-id="${safeId}">
+        <a href="${safeUrlEsc}" target="_blank" rel="noopener noreferrer" title="Click to open image in new tab">
+          <img src="${safeThumbEsc}" class="imgbb-history-thumb" alt="Upload thumbnail" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\\'http://www.w3.org/2000/svg\\' width=\\'48\\' height=\\'48\\' fill=\\'%23222\\'><rect width=\\'48\\' height=\\'48\\'/><text x=\\'50%\\' y=\\'55%\\' fill=\\'%23666\\' font-size=\\'18\\' text-anchor=\\'middle\\'>🖼</text></svg>'" />
         </a>
         <div class="imgbb-history-details">
           <div class="imgbb-history-url-row">
-            <a href="${item.url}" target="_blank" rel="noopener noreferrer" class="imgbb-history-url" title="${item.url}">${item.url}</a>
+            <a href="${safeUrlEsc}" target="_blank" rel="noopener noreferrer" class="imgbb-history-url" title="${safeUrlEsc}">${safeUrlEsc}</a>
           </div>
-          <div class="imgbb-history-meta" style="display: flex; align-items: center; gap: 8px;">
-            <span>📅 ${item.timeFormatted || 'Recent upload'}</span>
-            ${(item.isGif || (item.url && item.url.toLowerCase().includes('.gif'))) ? '<span style="background: rgba(0, 223, 130, 0.16); color: #00df82; border: 1px solid rgba(0, 223, 130, 0.35); font-size: 10px; font-weight: 700; padding: 1px 5px; border-radius: 3px; letter-spacing: 0.5px;">GIF</span>' : ''}
+          <div class="imgbb-history-meta" style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
+            <span>📅 ${safeTime}</span>
+            ${providerBadgeHtml}
+            ${isGifItem ? '<span style="background: rgba(0, 223, 130, 0.16); color: #00df82; border: 1px solid rgba(0, 223, 130, 0.35); font-size: 10px; font-weight: 700; padding: 1px 5px; border-radius: 3px; letter-spacing: 0.5px;">GIF</span>' : ''}
           </div>
         </div>
         <div class="imgbb-history-actions">
-          <button type="button" class="btn btn-neutral btn-xs imgbb-copy-single-btn" data-url="${item.url}" title="Copy direct link to clipboard">
+          <button type="button" class="btn btn-neutral btn-xs imgbb-copy-single-btn" data-url="${safeUrlEsc}" title="Copy direct link to clipboard">
             Copy
           </button>
-          <a href="${item.url}" target="_blank" rel="noopener noreferrer" class="btn btn-neutral btn-xs" title="Open image in new tab" style="text-decoration: none; display: inline-flex; align-items: center; justify-content: center; padding: 4px 7px;">
+          <a href="${safeUrlEsc}" target="_blank" rel="noopener noreferrer" class="btn btn-neutral btn-xs" title="Open image in new tab" style="text-decoration: none; display: inline-flex; align-items: center; justify-content: center; padding: 4px 7px;">
             ↗
           </a>
-          <button type="button" class="btn btn-danger btn-xs imgbb-del-single-btn" data-id="${item.id}" title="Remove from upload history">
+          <button type="button" class="btn btn-danger btn-xs imgbb-del-single-btn" data-id="${safeId}" title="Remove from upload history">
             ✕
           </button>
         </div>
       </div>
-    `).join("");
+    `;
+    }).join("");
 
     imgbbHistoryList.querySelectorAll(".imgbb-copy-single-btn").forEach(btn => {
       btn.addEventListener("click", async (e) => {
@@ -9252,25 +9630,22 @@
 
     const iconHtml = type === "success" ? "☘" : "⚠️";
 
-    let actionsHtml = "";
-    if (linkUrl) {
-      actionsHtml = `
-        <div class="toast-actions">
-          <button type="button" class="toast-copy-btn" data-url="${linkUrl}">Copy Link</button>
-        </div>
-      `;
-    } else if (actionBtn) {
-      actionsHtml = `
-        <div class="toast-actions">
-          <button type="button" class="toast-copy-btn toast-action-custom-btn">${actionBtn.text}</button>
-        </div>
-      `;
+    const safeLinkUrl = linkUrl ? sanitizeHttpUrl(linkUrl) : "";
+    const actionButtons = [];
+    if (safeLinkUrl) {
+      actionButtons.push(`<button type="button" class="toast-copy-btn" data-url="${escapeHtml(safeLinkUrl)}">Copy Link</button>`);
     }
+    if (actionBtn && actionBtn.text) {
+      actionButtons.push(`<button type="button" class="toast-copy-btn toast-action-custom-btn">${escapeHtml(actionBtn.text)}</button>`);
+    }
+    const actionsHtml = actionButtons.length
+      ? `<div class="toast-actions">${actionButtons.join("")}</div>`
+      : "";
 
     toast.innerHTML = `
       <div class="toast-icon">${iconHtml}</div>
       <div class="toast-body">
-        <div class="toast-title">${title}</div>
+        <div class="toast-title">${escapeHtml(title)}</div>
         <div class="toast-message">${messageHtml}</div>
         ${actionsHtml}
       </div>
@@ -9346,43 +9721,59 @@
     return copied;
   }
 
+  function blobToDataUrl(blob) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(String(reader.result || ""));
+      reader.onerror = () => reject(new Error("Failed to encode image for upload."));
+      reader.readAsDataURL(blob);
+    });
+  }
+
   if (uploadImgbbButton) {
     uploadImgbbButton.addEventListener("click", async () => {
-      const originalHtml = uploadImgbbButton.innerHTML;
+      const activeHost = getSelectedUploadHost();
+      const hostLabel = getUploadHostLabel(activeHost);
+      const resetUploadBtn = () => {
+        uploadImgbbButton.disabled = false;
+        syncUploadHostUI();
+      };
+
       uploadImgbbButton.disabled = true;
       uploadImgbbButton.innerHTML = `
         <svg class="spin-anim" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10" stroke-dasharray="32" stroke-linecap="round"></circle></svg>
-        <span>Uploading to ImgBB...</span>
+        <span>Uploading to ${hostLabel}...</span>
       `;
 
       try {
-        // 1. Resolve API key (localStorage first, then server environment config)
-        let keyToUse = (localStorage.getItem("imgbb_user_key") || "").trim();
-        if (!keyToUse) {
-          try {
-            const keyRes = await fetch("/api/imgbb-key");
-            const keyData = await keyRes.json();
-            if (keyData?.apiKey) {
-              keyToUse = keyData.apiKey.trim();
+        let keyToUse = "";
+        if (activeHost === "imgbb") {
+          // 1. Resolve ImgBB API key (localStorage first, then server environment config)
+          keyToUse = (localStorage.getItem("imgbb_user_key") || "").trim();
+          if (!keyToUse) {
+            try {
+              const keyRes = await fetch("/api/imgbb-key");
+              const keyData = await keyRes.json();
+              if (keyData?.apiKey) {
+                keyToUse = keyData.apiKey.trim();
+              }
+            } catch (e) {
+              console.warn("Could not check server for environment key:", e);
             }
-          } catch (e) {
-            console.warn("Could not check server for environment key:", e);
           }
-        }
 
-        // If still no key, guide user to enter one
-        if (!keyToUse) {
-          openImgbbModal();
-          showToast(
-            "error",
-            "ImgBB API Key Required",
-            "An API key is required to upload directly to ImgBB. Create a free account at <strong>imgbb.com</strong>, navigate to <strong>api.imgbb.com</strong>, and enter your key.",
-            null,
-            { text: "Open Setup Guide", onClick: openImgbbModal }
-          );
-          uploadImgbbButton.innerHTML = originalHtml;
-          uploadImgbbButton.disabled = false;
-          return;
+          if (!keyToUse) {
+            openImgbbModal();
+            showToast(
+              "error",
+              "ImgBB API Key Required",
+              "An API key is required to upload directly to ImgBB. Create a free account at <strong>imgbb.com</strong>, navigate to <strong>api.imgbb.com</strong>, and enter your key — or switch to <strong>Postimages</strong> in Settings.",
+              null,
+              { text: "Open Setup Guide", onClick: openImgbbModal }
+            );
+            resetUploadBtn();
+            return;
+          }
         }
 
         // 2. Render image data (GIF if any animated GIF layer is present, or PNG canvas)
@@ -9404,7 +9795,7 @@
           });
           uploadImgbbButton.innerHTML = `
             <svg class="spin-anim" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10" stroke-dasharray="32" stroke-linecap="round"></circle></svg>
-            <span>Uploading GIF to ImgBB...</span>
+            <span>Uploading GIF to ${hostLabel}...</span>
           `;
           filename = "chatlog.gif";
         } else {
@@ -9417,42 +9808,86 @@
           });
         }
 
-        // 3. Upload directly to ImgBB from browser (ImgBB allows CORS & accepts user residential IP)
-        const fd = new FormData();
-        fd.append("image", blob, filename);
-        fd.append("name", isGif ? "gta-rp-chatlog-gif" : "gta-rp-chatlog");
+        // 3. Perform upload via selected host
+        let uploadedUrl = "";
+        let thumbUrl = "";
+        let deleteUrl = "";
 
-        const directRes = await fetch(`https://api.imgbb.com/1/upload?key=${encodeURIComponent(keyToUse)}`, {
-          method: "POST",
-          body: fd
-        });
+        if (activeHost === "postimages") {
+          const dataUrl = await blobToDataUrl(blob);
+          const proxyRes = await fetch("/api/upload-postimages", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+              image: dataUrl,
+              name: isGif ? "gta-rp-chatlog-gif" : "gta-rp-chatlog",
+              type: isGif ? "gif" : "png"
+            })
+          });
 
-        const rawText = await directRes.text();
-        let directData = null;
-        try {
-          directData = JSON.parse(rawText);
-        } catch {
-          throw new Error("ImgBB service returned an unexpected response. Please verify your connection.");
-        }
-
-        if (!directRes.ok || !directData || !directData.success) {
-          const errMsg = directData?.error?.message || `ImgBB upload failed (Status ${directRes.status})`;
-          if (directData?.error?.code === 100 || errMsg.toLowerCase().includes("api key") || errMsg.toLowerCase().includes("invalid")) {
-            openImgbbModal();
-            throw new Error(`ImgBB rejected the key: ${errMsg}. Please verify your key at api.imgbb.com.`);
+          const rawText = await proxyRes.text();
+          let proxyData = null;
+          try {
+            proxyData = JSON.parse(rawText);
+          } catch {
+            throw new Error("Postimages upload proxy returned an unexpected response.");
           }
-          throw new Error(errMsg);
+
+          if (!proxyRes.ok || !proxyData || !proxyData.success) {
+            throw new Error(proxyData?.error || `Postimages upload failed (Status ${proxyRes.status})`);
+          }
+
+          uploadedUrl = sanitizeHttpUrl(proxyData.url || proxyData.display_url || proxyData.viewer_url);
+          thumbUrl = sanitizeHttpUrl(proxyData.thumb_url || proxyData.display_url || uploadedUrl) || uploadedUrl;
+          deleteUrl = sanitizeHttpUrl(proxyData.delete_url || "");
+        } else {
+          // Upload directly to ImgBB from browser (ImgBB allows CORS & accepts user residential IP)
+          const fd = new FormData();
+          fd.append("image", blob, filename);
+          fd.append("name", isGif ? "gta-rp-chatlog-gif" : "gta-rp-chatlog");
+
+          const directRes = await fetch(`https://api.imgbb.com/1/upload?key=${encodeURIComponent(keyToUse)}`, {
+            method: "POST",
+            body: fd
+          });
+
+          const rawText = await directRes.text();
+          let directData = null;
+          try {
+            directData = JSON.parse(rawText);
+          } catch {
+            throw new Error("ImgBB service returned an unexpected response. Please verify your connection.");
+          }
+
+          if (!directRes.ok || !directData || !directData.success) {
+            const errMsg = directData?.error?.message || `ImgBB upload failed (Status ${directRes.status})`;
+            if (directData?.error?.code === 100 || errMsg.toLowerCase().includes("api key") || errMsg.toLowerCase().includes("invalid")) {
+              openImgbbModal();
+              throw new Error(`ImgBB rejected the key: ${errMsg}. Please verify your key at api.imgbb.com.`);
+            }
+            throw new Error(errMsg);
+          }
+
+          uploadedUrl = sanitizeHttpUrl(directData.data.url || directData.data.display_url || directData.data.url_viewer);
+          thumbUrl = sanitizeHttpUrl(directData.data?.thumb?.url || directData.data?.display_url || uploadedUrl) || uploadedUrl;
+          deleteUrl = sanitizeHttpUrl(directData.data?.delete_url || "");
         }
 
-        const uploadedUrl = directData.data.url || directData.data.display_url || directData.data.url_viewer;
+        if (!uploadedUrl) {
+          throw new Error(`${hostLabel} did not return a valid image URL.`);
+        }
+
         await copyTextToClipboard(uploadedUrl);
 
-        // Store upload in local history
+        // Store upload in shared local Uploaded Links history (for collecting all .png/.gif forum links)
         const uploadRecord = {
-          id: "imgbb_" + Date.now() + "_" + Math.random().toString(36).substring(2, 7),
+          id: `${activeHost}_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
+          provider: activeHost,
           url: uploadedUrl,
-          thumbUrl: directData.data?.thumb?.url || directData.data?.display_url || uploadedUrl,
-          deleteUrl: directData.data?.delete_url || "",
+          thumbUrl: thumbUrl || uploadedUrl,
+          deleteUrl,
           timestamp: Date.now(),
           timeFormatted: new Date().toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }) + " at " + new Date().toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' }),
           isGif: isGif
@@ -9464,25 +9899,24 @@
           <span>Link Copied! (Ctrl+V)</span>
         `;
 
+        const safeEscapedUrl = escapeHtml(uploadedUrl);
         showToast(
           "success",
-          isGif ? "Uploaded Animated GIF & Copied!" : "Uploaded to ImgBB & Copied!",
-          `${isGif ? "Animated GIF" : "Image"} uploaded successfully! Direct link copied to clipboard for Ctrl+V: <a href="${uploadedUrl}" target="_blank" rel="noopener noreferrer" class="toast-link">${uploadedUrl}</a>`,
+          isGif ? `Uploaded Animated GIF to ${hostLabel}!` : `Uploaded to ${hostLabel} & Copied!`,
+          `${isGif ? "Animated GIF" : "Image"} uploaded successfully! Direct link copied to clipboard for Ctrl+V: <a href="${safeEscapedUrl}" target="_blank" rel="noopener noreferrer" class="toast-link">${safeEscapedUrl}</a>`,
           uploadedUrl,
           { text: "View Links 🔗", onClick: openImgbbHistoryModal }
         );
 
         setTimeout(() => {
-          uploadImgbbButton.innerHTML = originalHtml;
-          uploadImgbbButton.disabled = false;
+          resetUploadBtn();
         }, 3200);
       } catch (err) {
-        console.error("ImgBB upload error:", err);
-        showToast("error", "ImgBB Upload Error", err.message || "Failed to complete upload.");
+        console.error(`${hostLabel} upload error:`, err);
+        showToast("error", `${hostLabel} Upload Error`, escapeHtml(err.message || "Failed to complete upload."));
         uploadImgbbButton.innerHTML = `<span>Upload Failed</span>`;
         setTimeout(() => {
-          uploadImgbbButton.innerHTML = originalHtml;
-          uploadImgbbButton.disabled = false;
+          resetUploadBtn();
         }, 2200);
       }
     });
@@ -9699,6 +10133,9 @@
       if (imgbbModal && imgbbModal.style.display !== "none") {
         closeImgbbModal();
       }
+      if (postimagesInfoModal && postimagesInfoModal.style.display !== "none") {
+        closePostimagesInfoModal();
+      }
     }
   });
 
@@ -9709,6 +10146,7 @@
   }
 
   loadAndApplySavedSettings();
+  syncUploadHostUI();
   updateImgbbHistoryButton();
 
   // Auto-display GTAW Log Parser guide for first-time visitors until permanently acknowledged
